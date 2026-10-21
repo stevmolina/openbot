@@ -410,7 +410,11 @@
   translate: 0 -50%;
 }
 
-:root[data-openbot-layout="simple"] .conversation-header-actions > :is(.provider-model-picker, .side-panel-toggle) {
+/* The toggle stays while it carries news: running tasks, or an agent that controls the browser. */
+:root[data-openbot-layout="simple"] .conversation-header-actions > .provider-model-picker,
+:root[data-openbot-layout="simple"]
+  .conversation-header-actions
+  > .side-panel-toggle:not(:has(.computer-control-dot, .agent-tasks-trigger-dot)) {
   display: none;
 }
 
