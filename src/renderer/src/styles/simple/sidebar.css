@@ -1,1 +1,442 @@
-/* Simple layout: sidebar. Keyed on :root[data-openbot-layout="simple"]. */
+/* Simple layout: sidebar, bottom bar and the calm top bar. Keyed on :root[data-openbot-layout="simple"].
+ *
+ * The page rail is hidden, so the sidebar runs the full height of the window, with its own surface and
+ * a line down its end. The pages that the rail opened sit beside the sidebar instead of over it: the
+ * bottom bar is the way between them, so it stays on screen. */
+
+@media (min-width: 721px) {
+  /* One surface per column, with no card around the panes. */
+  :root[data-openbot-layout="simple"] .app-window > .app-frame-edge {
+    padding: 0;
+  }
+
+  :root[data-openbot-layout="simple"] .app-window > .app-frame-edge::before {
+    inset: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  :root[data-openbot-layout="simple"] .app-window > .app-frame-edge > .sidebar {
+    background: var(--openbot-bg-sidebar);
+  }
+
+  :root[data-openbot-layout="simple"] .app-window > .app-frame-edge > .sidebar::before,
+  :root[data-openbot-layout="simple"] .app-frame-edge[data-window-page-kind="titled"] > .sidebar::before {
+    display: block;
+    inset: 0 0 0 auto;
+  }
+
+  :root[data-openbot-layout="simple"]
+    .app-window
+    > .app-frame-edge
+    > .sidebar:not(.sidebar-compact)
+    .sidebar-topbar::after {
+    content: none;
+  }
+
+  /* No rail holds the macOS window buttons, so the top row starts after them. */
+  :root[data-openbot-layout="simple"]
+    .app-window
+    > .app-frame-platform-darwin
+    > .sidebar:not(.sidebar-compact)
+    .sidebar-topbar {
+    padding-left: 78px;
+  }
+
+  /* A page opened from the bar or the photo menu sits beside the list, which stays on screen. */
+  :root[data-openbot-layout="simple"] .app-frame-edge:not([data-window-page-kind="agents"]) > .window-page {
+    left: calc(var(--left-panel-width) + 1px);
+  }
+
+  :root[data-openbot-layout="simple"] .app-frame-edge:not([data-window-page-kind="agents"]) > .sidebar > *,
+  :root[data-openbot-layout="simple"] .app-frame-edge:not([data-window-page-kind="agents"]) > .left-panel-resizer {
+    visibility: visible;
+  }
+
+  :root[data-openbot-layout="simple"]
+    .app-frame-edge:not([data-window-page-kind="agents"])
+    > .sidebar
+    .sidebar-new-button {
+    display: grid;
+  }
+
+  :root[data-openbot-layout="simple"]
+    .app-window
+    > .app-frame-edge[data-window-page-kind="titled"]
+    > .window-page
+    :is(.agent-usage-header, .routine-planner-title, .skills-marketplace-topbar) {
+    margin-left: 0;
+  }
+
+  /* The list stays beside the Tasks page, so the page has no button to show it. */
+  :root[data-openbot-layout="simple"] .app-frame .tasks-page-header > .side-panel-toggle {
+    display: none;
+  }
+}
+
+/* The server rail and the server name move to the photo menu, and the Marketplace to the plug button. */
+:root[data-openbot-layout="simple"] .app-frame > .server-rail,
+:root[data-openbot-layout="simple"] .sidebar-topbar .sidebar-server-name,
+:root[data-openbot-layout="simple"] .sidebar-topbar .sidebar-marketplace-button {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .sidebar-topbar {
+  justify-content: flex-end;
+  padding-right: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .sidebar-topbar-actions {
+  gap: var(--openbot-space-1-5);
+}
+
+/* The search and New agent are round buttons on the top row. */
+:root[data-openbot-layout="simple"] .sidebar-topbar :is(.sidebar-topbar-search, .sidebar-new-button) {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+  color: var(--openbot-text-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-openbot-layout="simple"] .sidebar-topbar :is(.sidebar-topbar-search, .sidebar-new-button):hover {
+    background: var(--openbot-bg-control-hover);
+    color: var(--openbot-text-primary);
+  }
+}
+
+/* The bottom bar: the photo, then the chat, clock and plug buttons. */
+.simple-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--openbot-space-1);
+  margin: var(--openbot-space-2) var(--openbot-space-3) var(--openbot-space-3);
+  border-radius: var(--openbot-simple-bar-radius);
+  background: var(--openbot-simple-bar);
+  padding: var(--openbot-space-1-5);
+}
+
+.simple-bar-photo {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  margin-right: auto;
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.simple-bar-photo:focus-visible {
+  outline: 0;
+  box-shadow: var(--openbot-focus-ring);
+}
+
+.simple-bar-photo[aria-current="page"] {
+  outline: 2px solid var(--openbot-simple-bar-photo-ring);
+  outline-offset: 1px;
+}
+
+.simple-bar-photo-image {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-bar-photo);
+  color: var(--openbot-simple-bar-photo-text);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-semibold);
+}
+
+.simple-bar-photo-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.simple-bar-photo-notice {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--openbot-simple-bar);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-accent);
+}
+
+.simple-bar .simple-bar-button {
+  width: 40px;
+  min-width: 40px;
+  height: 36px;
+  border-radius: var(--openbot-radius-lg);
+  padding: 0;
+  color: var(--openbot-text-secondary);
+}
+
+.simple-bar .simple-bar-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.simple-bar .simple-bar-button[aria-current="page"] {
+  background: var(--openbot-simple-bar-active);
+  box-shadow: 0 1px 3px var(--openbot-simple-shadow);
+  color: var(--openbot-text-primary);
+}
+
+/* The compact sidebar stacks the bar. */
+.sidebar-compact .simple-bar {
+  flex-direction: column;
+  margin-inline: var(--openbot-space-1-5);
+}
+
+.sidebar-compact .simple-bar-photo {
+  margin: 0 0 var(--openbot-space-1);
+}
+
+/* The photo menu: who is signed in, then the pages that the rail held. */
+.simple-photo-menu {
+  min-width: 240px;
+}
+
+.simple-photo-menu-account {
+  display: flex;
+  flex-direction: column;
+  gap: var(--openbot-space-0-5);
+}
+
+.simple-photo-menu-name {
+  color: var(--openbot-text-primary);
+  font-weight: var(--openbot-weight-medium);
+}
+
+.simple-photo-menu-email {
+  overflow: hidden;
+  max-width: 220px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The link rows of the clock and plug lists. */
+.simple-sidebar-links {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: var(--openbot-space-0-5);
+  padding: var(--openbot-space-1) var(--openbot-space-3) 0;
+}
+
+/* The plug list stands in for the list of chats, so it takes the room above the bar. */
+.simple-sidebar-list {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.simple-sidebar-links .simple-sidebar-link {
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 46px;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--openbot-simple-row-radius);
+  padding: 7px var(--openbot-space-2);
+  color: var(--openbot-text-primary);
+  font-size: var(--openbot-text-md);
+  font-weight: var(--openbot-weight-medium);
+}
+
+.simple-sidebar-links .simple-sidebar-link[aria-current="page"] {
+  background: var(--openbot-bg-control-hover);
+}
+
+.simple-sidebar-link-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-simple-row-radius);
+  background: var(--openbot-simple-card);
+  color: var(--openbot-text-secondary);
+}
+
+.simple-sidebar-links .simple-sidebar-link-icon svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+}
+
+.simple-sidebar-link-label {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.simple-sidebar-link-meta {
+  margin-left: auto;
+  color: var(--openbot-text-dim);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-regular);
+  white-space: nowrap;
+}
+
+.simple-sidebar-group {
+  margin: var(--openbot-space-3) var(--openbot-space-2) var(--openbot-space-1);
+  color: var(--openbot-text-dim);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-regular);
+  line-height: var(--openbot-leading-sm);
+}
+
+.simple-provider-logo {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+}
+
+.simple-sidebar-links .simple-provider-logo svg {
+  width: var(--openbot-icon-lg);
+  height: var(--openbot-icon-lg);
+}
+
+.simple-provider-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  margin-left: auto;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-dot-on);
+}
+
+.simple-provider-dot[data-attention] {
+  background: var(--openbot-simple-dot-attention);
+}
+
+/* The agent rows: the avatar, the name and one line of the last message. The title shows in the agent
+ * panel, and an accent dot at the end marks unread messages. */
+:root[data-openbot-layout="simple"] .sidebar :is(.agent-role-badge, .agent-row-time) {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .sidebar .agent-row {
+  height: auto;
+  min-height: 46px;
+  gap: 10px;
+  border-radius: var(--openbot-simple-row-radius);
+  padding: 7px var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .sidebar .agent-row + .agent-row {
+  margin-top: var(--openbot-space-0-5);
+}
+
+:root[data-openbot-layout="simple"] .sidebar .agent-row-active {
+  background: var(--openbot-bg-control-hover);
+}
+
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-avatar {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+
+:root[data-openbot-layout="simple"] .sidebar .agent-row-name strong {
+  font-weight: var(--openbot-weight-medium);
+}
+
+:root[data-openbot-layout="simple"] .sidebar .agent-row-preview {
+  font-size: var(--openbot-text-sm);
+  line-height: var(--openbot-leading-sm);
+}
+
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row:has(.agent-row-agent-status-unread) {
+  position: relative;
+  padding-right: var(--openbot-space-6);
+}
+
+:root[data-openbot-layout="simple"]
+  .sidebar:not(.sidebar-compact)
+  .agent-row:has(.agent-row-agent-status-unread)
+  .agent-row-avatar {
+  position: static;
+  /* A transform would hold the dot inside the avatar. */
+  transform: none;
+}
+
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-agent-status-unread {
+  top: 50%;
+  right: 10px;
+  bottom: auto;
+  width: 7px;
+  min-width: 7px;
+  height: 7px;
+  translate: 0 -50%;
+  border: 0;
+  background: var(--openbot-accent);
+  box-shadow: none;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-agent-status-unread > span {
+  display: none;
+}
+
+/* The top bar of the chat: the agent's name as a small pill in the middle. The host switcher is in the
+ * photo menu, the model in the agent panel, and the pill opens and closes the side panel. */
+:root[data-openbot-layout="simple"] .conversation-header {
+  position: relative;
+  justify-content: center;
+}
+
+:root[data-openbot-layout="simple"] .conversation-header-actions {
+  position: absolute;
+  top: 50%;
+  right: var(--openbot-space-3);
+  translate: 0 -50%;
+}
+
+/* The toggle stays while it carries news: running tasks, or an agent that controls the browser. */
+:root[data-openbot-layout="simple"] .conversation-header-actions > .provider-model-picker,
+:root[data-openbot-layout="simple"]
+  .conversation-header-actions
+  > .side-panel-toggle:not(:has(.computer-control-dot, .agent-tasks-trigger-dot)) {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .conversation-header .conversation-title {
+  height: 30px;
+  gap: 7px;
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+  box-shadow: 0 1px 4px var(--openbot-simple-shadow);
+  padding: var(--openbot-space-1) var(--openbot-space-3) var(--openbot-space-1) 5px;
+}
+
+:root[data-openbot-layout="simple"] .conversation-header .conversation-title:hover {
+  background: var(--openbot-bg-control-hover);
+}
+
+:root[data-openbot-layout="simple"] .conversation-header .conversation-title .agent-avatar {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-openbot-layout="simple"] .conversation-header .conversation-title h1 {
+  font-weight: var(--openbot-weight-medium);
+}

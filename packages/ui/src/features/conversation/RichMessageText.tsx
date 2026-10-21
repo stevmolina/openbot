@@ -6,6 +6,7 @@ import { ReferenceChip } from "@openbot/ui/reference-chip";
 import { usesTouchLayout } from "@openbot/ui/utils";
 import type { JSX } from "@solidjs/web";
 import { createMemo, createSignal, createUniqueId, For, Show, untrack } from "solid-js";
+import { avatarHeadColor } from "../../bloub-avatar";
 import type { ComposerAgent, ComposerSkill, MessageCitation } from "../../data";
 import { useText } from "../../text";
 import { AgentAvatar } from "../agents/AgentAvatar";
@@ -157,6 +158,11 @@ export function RichMessageText(props: RichMessageTextProps) {
                 kind="agent"
                 name={part.agent.name}
                 class="message-reference-chip message-agent-tag"
+                // The simple layout draws a mention as the agent's name in its face colour, read
+                // through the helper the author name of a message row uses.
+                style={{
+                  "--message-mention-color": avatarHeadColor(part.agent.avatarSeed, part.agent.avatarHue ?? null),
+                }}
                 icon={<AgentAvatar agent={part.agent} />}
                 onClick={() => props.onSelectAgent(part.agent?.id ?? "")}
               />

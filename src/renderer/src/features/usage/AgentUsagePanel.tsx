@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@openbot/ui";
 import { AgentUsageReport } from "@openbot/ui/features/usage/AgentUsageReport";
+import { SimpleUsageReport } from "@openbot/ui/features/usage/SimpleUsageReport";
 import {
   type UsageAgentLabel,
   type UsageMetric,
@@ -32,6 +33,7 @@ import { useText } from "@openbot/ui/text";
 import { errorReference } from "@openbot/user-errors";
 import { createEffect, createStore, onSettled, Show } from "solid-js";
 import { desktopAnalytics } from "../../analytics";
+import { simpleLayout } from "../../simple-layout";
 import { type UsagePort, usagePort } from "./usage-port";
 
 interface AgentUsagePanelProps {
@@ -71,7 +73,8 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
     result: null,
     phase: "loading",
     errorReference: null,
-    metric: "cost",
+    // The simple layout opens on tokens: its cost card says when a provider reports no cost.
+    metric: simpleLayout() ? "tokens" : "cost",
     period: "30d",
     serverId: props.serverId,
   });
@@ -175,6 +178,24 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
       provider: agent?.provider ?? "",
     };
   };
+  /** The metric picker: in the header, or in the chart card of the simple layout. */
+  const metricSelect = () => (
+    <UsageSelect
+      label={t("usage.panel.metric")}
+      options={usageMetrics}
+      optionLabels={usageMetricLabels}
+      value={state.metric}
+      onChange={(value) => {
+        setState((draft) => {
+          draft.metric = value;
+        });
+      }}
+    />
+  );
+  /** A loaded report starts at its total, after the tabs settle their initial selection. */
+  const reportReady = () => {
+    if (reportBody) reportBody.scrollTop = 0;
+  };
   let reportBody: HTMLDivElement | undefined;
   let heading: HTMLHeadingElement | undefined;
   onSettled(() => heading?.focus());
@@ -182,11 +203,17 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
     <section class="agent-usage" aria-label={t("usage.panel.label")}>
       <header class="agent-usage-header">
         <div class="agent-usage-identity">
-          <IconButton variant="ghost" label={t("common.back")} onClick={props.onBack}>
-            <ArrowLeft />
-          </IconButton>
+          <Show when={!simpleLayout()}>
+            <IconButton variant="ghost" label={t("common.back")} onClick={props.onBack}>
+              <ArrowLeft />
+            </IconButton>
+          </Show>
           <h2 ref={heading} tabindex={-1}>
-            {t("usage.panel.title")} <span aria-hidden="true">/</span> <span>{props.hostName}</span>
+            {t("usage.panel.title")}
+            <Show when={!simpleLayout()}>
+              {" "}
+              <span aria-hidden="true">/</span> <span>{props.hostName}</span>
+            </Show>
           </h2>
         </div>
         <div class="agent-usage-controls">
@@ -227,17 +254,7 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
             </SelectTrigger>
             <SelectContent />
           </Select>
-          <UsageSelect
-            label={t("usage.panel.metric")}
-            options={usageMetrics}
-            optionLabels={usageMetricLabels}
-            value={state.metric}
-            onChange={(value) => {
-              setState((draft) => {
-                draft.metric = value;
-              });
-            }}
-          />
+          <Show when={!simpleLayout()}>{metricSelect()}</Show>
           <UsageSelect
             label={t("usage.panel.period")}
             options={usagePeriods}
@@ -294,15 +311,25 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
           }
         >
           {(result) => (
-            <AgentUsageReport
-              result={result()}
-              metric={state.metric}
-              agentLabel={agentLabel}
-              onReady={() => {
-                // Start each loaded report at its total, after the tabs settle their initial selection.
-                if (reportBody) reportBody.scrollTop = 0;
-              }}
-            />
+            <Show
+              when={simpleLayout()}
+              fallback={
+                <AgentUsageReport
+                  result={result()}
+                  metric={state.metric}
+                  agentLabel={agentLabel}
+                  onReady={reportReady}
+                />
+              }
+            >
+              <SimpleUsageReport
+                result={result()}
+                metric={state.metric}
+                agentLabel={agentLabel}
+                chartControl={metricSelect()}
+                onReady={reportReady}
+              />
+            </Show>
           )}
         </Show>
       </div>

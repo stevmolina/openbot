@@ -11,6 +11,7 @@ import { useLayout } from "../../layout";
 import { DirectConversation } from "../../lazy-views";
 import { useNavigation } from "../../navigation";
 import { usePlatform } from "../../platform";
+import { simpleLayout } from "../../simple-layout";
 import { useTurns } from "../../turns";
 import { useAgentActions } from "../agents/agent-actions";
 import { useAgents } from "../agents/agents-context";
@@ -23,6 +24,10 @@ import { useServerSettings } from "../servers/server-settings";
 import { serverUpdateBadge, showServerUpdate } from "../servers/server-update-flow";
 import { useServers } from "../servers/servers-context";
 import { useSettings } from "../settings/settings-context";
+import { SimpleBottomBar } from "../simple-layout/SimpleBottomBar";
+import { SimpleClockList } from "../simple-layout/SimpleClockList";
+import { SimplePlugList } from "../simple-layout/SimplePlugList";
+import { createSimpleSidebar } from "../simple-layout/simple-sidebar";
 import { usePresence } from "../team/team-context";
 import { SidebarUpdateIsland } from "../updates/SidebarUpdateIsland";
 import { useWindowPage } from "../window/window-page-context";
@@ -48,7 +53,9 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
   const layout = useLayout();
   const windowPage = useWindowPage();
   /** The Tasks page shows beside the list. No row is open, so a click on a row opens its chat. */
-  const tasksOpen = () => windowPage.page() === "tasks";
+  /** The simple layout keeps the list beside every page. While a page shows, no row of the list is open. */
+  const simpleSidebar = createSimpleSidebar();
+  const tasksOpen = () => windowPage.page() === "tasks" || (simpleLayout() && simpleSidebar.pageOpen());
   const platform = usePlatform();
   const channels = useChannels();
   const { activeServer, activeServerSupportsCapability } = useServers();
@@ -215,6 +222,8 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
       onSelectPerson={(memberId) => void selectDirectMember(memberId)}
       onPreloadDirectConversation={props.peopleEnabled ? () => void DirectConversation.preload() : undefined}
       onCreateAgent={() => {
+        // The simple layout offers New agent beside every page, and the form shows on the agents page.
+        if (simpleLayout() && simpleSidebar.pageOpen()) windowPage.showAgents();
         channels.close();
         openAgentSetup();
       }}
@@ -229,10 +238,15 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
       compact={layout.leftPanelCompact()}
       onExpand={layout.expandSidebar}
       onOpenSearch={() => setGlobalSearchVisibility(true)}
+      searchButton={simpleLayout()}
+      listStart={simpleLayout() && simpleSidebar.list() === "clock" ? <SimpleClockList /> : undefined}
+      list={simpleLayout() && simpleSidebar.list() === "plug" ? <SimplePlugList /> : undefined}
+      bottomBar={simpleLayout() ? <SimpleBottomBar sidebar={simpleSidebar} /> : undefined}
       footer={
         <>
           {/* One card at a time: the community card waits until the mobile app card is dismissed. */}
-          <Show when={!platform.landingPreview && !mobileAppDismissed()}>
+          {/* The photo menu of the simple layout holds the mobile app instead. */}
+          <Show when={!platform.landingPreview && !mobileAppDismissed() && !simpleLayout()}>
             <SidebarMobileAppCard
               onOpenInstall={() => openAppSettings(null, "mobile-connect")}
               onDismiss={() => {

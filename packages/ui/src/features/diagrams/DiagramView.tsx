@@ -20,7 +20,7 @@ import {
   SelectValue,
   Workflow,
 } from "@openbot/ui";
-import { createSignal, createStore, Show } from "solid-js";
+import { createSignal, createStore, Show, untrack } from "solid-js";
 import type { AgentProfile } from "../../data";
 import { useText } from "../../text";
 import { AgentAvatar } from "../agents/AgentAvatar";
@@ -42,6 +42,11 @@ export interface DiagramViewProps {
   /** The day the routine week strips start on. Defaults to the time the view opens. */
   now?: string | undefined;
   editable?: boolean | undefined;
+  /**
+   * The simple layout: the name is a pill that reads "<name> routine", the routine details start
+   * closed and open from a "Details" button, and an agent that no routine starts offers "Connect".
+   */
+  simple?: boolean | undefined;
   /** The agent that edits the diagram from the chat panel. Without it, the panel is hidden. */
   assistant?:
     | {
@@ -111,7 +116,7 @@ const ALL = "routine-lens:all";
 export function DiagramView(props: DiagramViewProps) {
   const { t } = useText();
   const [selectedNodeId, setSelectedNodeId] = createSignal<string | null>(null);
-  const [panels, setPanels] = createStore({ inspector: true, chat: false });
+  const [panels, setPanels] = createStore({ inspector: untrack(() => !props.simple), chat: false });
   const now = () => (props.now ? new Date(props.now) : new Date());
   const routines = () =>
     props.diagram.nodes.filter((node): node is Extract<DiagramNode, { kind: "routine" }> => node.kind === "routine");
@@ -147,46 +152,78 @@ export function DiagramView(props: DiagramViewProps) {
         state.inspector = true;
       });
   };
+  /** The agent's face and the routine's name. The simple layout puts both in one pill. */
+  const heading = () => (
+    <>
+      <Show
+        when={props.owner}
+        fallback={
+          <span class="diagram-view-icon" aria-hidden="true">
+            <Workflow />
+          </span>
+        }
+      >
+        {(owner) => <AgentAvatar agent={owner()} class="diagram-view-avatar" motion="idle" />}
+      </Show>
+      <h1 class="diagram-view-title">
+        {props.simple ? t("simple.routine.title", { name: props.diagram.name }) : props.diagram.name}
+      </h1>
+    </>
+  );
   return (
-    <main class="diagram-view" aria-label={t("diagram.view.label", { name: props.diagram.name })}>
+    <main
+      class="diagram-view"
+      data-simple={props.simple ? "" : undefined}
+      aria-label={t("diagram.view.label", { name: props.diagram.name })}
+    >
       <header class="window-drag diagram-view-header">
-        <Show
-          when={props.owner}
-          fallback={
-            <span class="diagram-view-icon" aria-hidden="true">
-              <Workflow />
-            </span>
-          }
-        >
-          {(owner) => <AgentAvatar agent={owner()} class="diagram-view-avatar" motion="idle" />}
+        <Show when={props.simple} fallback={heading()}>
+          <span class="diagram-view-pill">{heading()}</span>
         </Show>
-        <h1 class="diagram-view-title">{props.diagram.name}</h1>
         <span class="diagram-view-actions">
+          <Show when={props.simple}>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              class="diagram-view-details"
+              aria-expanded={panels.inspector ? "true" : "false"}
+              onClick={() =>
+                setPanels((state) => {
+                  state.inspector = !state.inspector;
+                })
+              }
+            >
+              {t("simple.routine.details")}
+            </Button>
+          </Show>
           <Show when={props.onRunRoutine && runTarget()}>
             {(routineId) => (
-              <Button type="button" size="xs" onClick={() => runRoutine(routineId())}>
+              <Button type="button" size={props.simple ? "sm" : "xs"} onClick={() => runRoutine(routineId())}>
                 <Play aria-hidden="true" />
                 {t("diagram.node.runNow")}
               </Button>
             )}
           </Show>
-          <Button
-            type="button"
-            variant="ghost"
-            class="header-panel-toggle"
-            aria-label={t(panels.inspector ? "diagram.inspector.close" : "diagram.inspector.label")}
-            aria-expanded={panels.inspector ? "true" : "false"}
-            title={t(panels.inspector ? "diagram.inspector.close" : "diagram.inspector.label")}
-            onClick={() =>
-              setPanels((state) => {
-                state.inspector = !state.inspector;
-              })
-            }
-          >
-            <Show when={panels.inspector} fallback={<PanelRight aria-hidden="true" class="size-[14px]" />}>
-              <ChevronRight aria-hidden="true" class="size-[14px]" />
-            </Show>
-          </Button>
+          <Show when={!props.simple}>
+            <Button
+              type="button"
+              variant="ghost"
+              class="header-panel-toggle"
+              aria-label={t(panels.inspector ? "diagram.inspector.close" : "diagram.inspector.label")}
+              aria-expanded={panels.inspector ? "true" : "false"}
+              title={t(panels.inspector ? "diagram.inspector.close" : "diagram.inspector.label")}
+              onClick={() =>
+                setPanels((state) => {
+                  state.inspector = !state.inspector;
+                })
+              }
+            >
+              <Show when={panels.inspector} fallback={<PanelRight aria-hidden="true" class="size-[14px]" />}>
+                <ChevronRight aria-hidden="true" class="size-[14px]" />
+              </Show>
+            </Button>
+          </Show>
         </span>
       </header>
 
@@ -197,6 +234,7 @@ export function DiagramView(props: DiagramViewProps) {
           selectedNodeId={selectedNodeId()}
           focusRoutineId={focusRoutineId()}
           editable={props.editable}
+          simple={props.simple}
           onSelectNode={select}
           onFocusRoutine={setPicked}
           onMoveNode={props.onMoveNode}
