@@ -18,6 +18,8 @@ export interface MarketplaceProps {
   onOpenChange: (open: boolean) => void;
   /** A dialog over the window, or a page of the window that the page rail leaves. Default: dialog. */
   variant?: "dialog" | "page" | undefined;
+  /** The simple layout of the Agents tab and the page header. */
+  simple?: boolean | undefined;
 }
 
 function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string): string {
@@ -84,6 +86,9 @@ function MarketplaceWindow(props: MarketplaceProps) {
       return props.model;
     },
     nav,
+    get simple() {
+      return props.simple;
+    },
     agents: createMarketplaceListing({
       list: (query) => props.model.listAgents(query),
       homeCache: props.model.agentHomeCache,
@@ -262,7 +267,12 @@ function MarketplacePage(props: MarketplaceProps) {
     };
   });
   return (
-    <section ref={root} class="skills-marketplace skills-marketplace-page" aria-label={t("marketplace.title")}>
+    <section
+      ref={root}
+      class="skills-marketplace skills-marketplace-page"
+      data-simple={props.simple ? "" : undefined}
+      aria-label={t("marketplace.title")}
+    >
       <MarketplaceWindow {...props} />
     </section>
   );

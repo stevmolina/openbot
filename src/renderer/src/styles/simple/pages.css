@@ -1,1 +1,799 @@
-/* Simple layout: pages. Keyed on :root[data-openbot-layout="simple"]. */
+/* Simple layout: pages. Keyed on :root[data-openbot-layout="simple"].
+ *
+ * Routines, Schedule, Usage, Marketplace and Tasks. Where the page sits beside the sidebar is in
+ * sidebar.css. Each rule here restyles a class that the upstream page already has, or a class that
+ * the simple branch of that page adds. Turning the setting off leaves the upstream page untouched. */
+
+/* ------------------------------------------------------------------ routines */
+
+/* The routine's name is a pill at the top centre, as the agent's name is in the chat. */
+:root[data-openbot-layout="simple"] .diagram-view[data-simple] .diagram-view-header {
+  position: relative;
+  height: 56px;
+  justify-content: flex-end;
+  padding: 0 var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .diagram-view-pill {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  height: 30px;
+  max-width: 50%;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+  box-shadow: 0 1px 4px var(--openbot-simple-shadow);
+  padding: var(--openbot-space-1) var(--openbot-space-3) var(--openbot-space-1) 5px;
+}
+
+:root[data-openbot-layout="simple"] .diagram-view-pill .diagram-view-avatar.agent-avatar {
+  width: 20px;
+  height: 20px;
+}
+
+:root[data-openbot-layout="simple"] .diagram-view-pill .diagram-view-title {
+  font-weight: var(--openbot-weight-medium);
+}
+
+:root[data-openbot-layout="simple"] .diagram-view[data-simple] .diagram-view-actions {
+  gap: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .diagram-view-details.ui-button {
+  border-radius: var(--openbot-radius-pill);
+  padding-inline: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .diagram-view[data-simple] .diagram-view-actions .ui-button-variant-default {
+  border-radius: var(--openbot-radius-pill);
+  padding-inline: var(--openbot-space-4);
+}
+
+/* A light dotted canvas. */
+:root[data-openbot-layout="simple"] .diagram-board-viewport {
+  background-image: radial-gradient(circle at 1px 1px, var(--openbot-simple-canvas-dot) 1px, transparent 0);
+}
+
+/* The nodes are cards on the card surface with a soft lift. The states (running, failed, selected) keep their rings. */
+:root[data-openbot-layout="simple"] .diagram-node {
+  --openbot-shadow-raised: 0 2px 10px var(--openbot-simple-shadow);
+  border-radius: var(--openbot-simple-card-radius);
+  background: var(--openbot-simple-card);
+}
+
+:root[data-openbot-layout="simple"] .diagram-node[data-unreachable]:not([data-selected]) {
+  box-shadow:
+    0 0 0 1px var(--openbot-simple-card-border),
+    var(--openbot-shadow-raised);
+}
+
+/* An agent that no routine starts: a warning line with a Connect link. */
+:root[data-openbot-layout="simple"] .diagram-node-missing-trigger {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--openbot-space-2);
+  border-radius: var(--openbot-radius-md);
+  background: var(--openbot-warning-soft);
+  padding: var(--openbot-space-1-5) var(--openbot-space-2);
+  color: var(--openbot-warning-text);
+  font-size: var(--openbot-text-sm);
+}
+
+:root[data-openbot-layout="simple"] .diagram-node-connect.ui-button {
+  height: auto;
+  padding: 0;
+  color: inherit;
+  font-weight: var(--openbot-weight-semibold);
+  text-decoration: none;
+}
+
+:root[data-openbot-layout="simple"] .diagram-board-zoom .ui-button {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-lg);
+  background: var(--openbot-simple-card);
+}
+
+/* ------------------------------------------------------------------ schedule */
+
+/* The title and the controls share one row at the top of the card. window.css gives the title a
+ * fixed height and the toolbar its own padding, so this row sets them again. */
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--openbot-space-3) var(--openbot-space-4);
+  padding: var(--openbot-space-6) var(--openbot-space-8) var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-title {
+  height: auto;
+  flex: none;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-identity {
+  overflow: visible;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-title h2 {
+  font-size: var(--openbot-simple-title-size);
+  font-weight: var(--openbot-weight-semibold);
+  line-height: var(--openbot-simple-title-leading);
+}
+
+/* The sidebar bar is the way back from the page. */
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-identity .ui-icon-button {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-toolbar {
+  min-width: 0;
+  flex: 1 1 28rem;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-nav {
+  gap: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-nav .ui-icon-button {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-nav .ui-button-variant-outline {
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-range {
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] :is(.ui-sliding-tabs, .ui-sliding-tabs-pill) {
+  border-radius: var(--openbot-radius-pill);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .ui-sliding-tabs {
+  box-shadow: none;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .ui-sliding-tabs-trigger {
+  border-radius: var(--openbot-radius-pill);
+}
+
+/* The next runs go under the week at every width: the week is the page. */
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-body {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--openbot-space-6);
+  padding: var(--openbot-space-3) var(--openbot-space-8) var(--openbot-space-8);
+}
+
+/* Seven columns of day cards, down to a pane that cannot hold them. */
+@container (min-width: 600px) {
+  :root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-week {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  :root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-weekdays {
+    display: grid;
+  }
+
+  :root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-day {
+    min-height: 13rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :root[data-openbot-layout="simple"] .routine-planner[data-simple][data-view="month"] .routine-planner-day {
+    min-height: 7rem;
+  }
+
+  :root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-day[data-outside] {
+    display: grid;
+  }
+
+  :root[data-openbot-layout="simple"]
+    .routine-planner[data-simple]
+    .routine-planner-day
+    > :not(.routine-planner-day-heading) {
+    grid-column: 1;
+  }
+
+  :root[data-openbot-layout="simple"]
+    .routine-planner[data-simple][data-view="month"]
+    .routine-planner-day-button
+    > span {
+    display: none;
+  }
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-day {
+  gap: var(--openbot-space-1-5);
+  border-color: var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+  padding: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-day[data-outside] {
+  background: var(--openbot-transparent);
+}
+
+/* Today's date sits in an accent circle. */
+:root[data-openbot-layout="simple"]
+  .routine-planner[data-simple]
+  .routine-planner-day[aria-current="date"]
+  .routine-planner-day-button
+  strong {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-accent);
+  color: var(--openbot-text-on-accent);
+}
+
+/* A run is a chip, in the run-chip colour, with its time in bold. The agent's face is in the upcoming list. */
+:root[data-openbot-layout="simple"]
+  .routine-planner[data-simple]
+  .routine-planner-run.ui-button:not([data-status="paused"]) {
+  border-radius: var(--openbot-radius-lg);
+  background: var(--openbot-simple-run-chip);
+  padding: var(--openbot-space-2);
+  color: var(--openbot-simple-run-chip-text);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-run.ui-button[data-status="failed"] {
+  background: var(--openbot-danger-soft);
+  color: var(--openbot-danger-text);
+}
+
+:root[data-openbot-layout="simple"]
+  .routine-planner[data-simple]
+  .routine-planner-run[data-status="active"]
+  .routine-planner-status {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-run .routine-planner-run-time {
+  color: inherit;
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"]
+  .routine-planner[data-simple]
+  .routine-planner-run[data-status="completed"]
+  .routine-planner-run-name {
+  color: inherit;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-run .routine-planner-avatars {
+  display: none;
+}
+
+/* The upcoming runs: a label and the time zone above one list card. */
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-upcoming {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--openbot-space-2) var(--openbot-space-3);
+  border: 0;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-zone {
+  margin: 0;
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+}
+
+:root[data-openbot-layout="simple"]
+  .routine-planner[data-simple]
+  .routine-planner-upcoming
+  > :is(.routine-planner-entries, .routine-planner-note) {
+  grid-column: 1 / -1;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-upcoming > .routine-planner-entries {
+  gap: 0;
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+  padding: var(--openbot-space-1) var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry {
+  gap: var(--openbot-space-2);
+  border-bottom: 1px solid var(--openbot-simple-row-line);
+  padding-block: var(--openbot-space-1-5);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry:last-child {
+  border-bottom: 0;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry-agents {
+  order: -1;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry-main .routine-planner-status {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry-text {
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry-meta {
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------ usage */
+
+:root[data-openbot-layout="simple"] .app-window .agent-usage .agent-usage-header {
+  height: auto;
+  border-bottom: 0;
+  padding: var(--openbot-space-6) var(--openbot-space-8) var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .app-window .agent-usage .agent-usage-identity h2 {
+  color: var(--openbot-text-primary);
+  font-size: var(--openbot-simple-title-size);
+  font-weight: var(--openbot-weight-semibold);
+  line-height: var(--openbot-simple-title-leading);
+}
+
+/* The filters are control-coloured pills. */
+:root[data-openbot-layout="simple"]
+  .app-window
+  .agent-usage
+  .agent-usage-header
+  .agent-usage-controls
+  .ui-select-trigger {
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .app-window .agent-usage .agent-usage-header .agent-usage-controls .ui-icon-button {
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage-body {
+  gap: var(--openbot-space-4);
+  padding: 0 var(--openbot-space-8) var(--openbot-space-8);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage :is(.simple-usage-card, .simple-usage-panel, .simple-usage-table) {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-simple-card-radius);
+  background: var(--openbot-simple-card);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-card {
+  display: grid;
+  align-content: start;
+  gap: var(--openbot-space-2);
+  min-width: 0;
+  padding: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage :is(.simple-usage-card, .simple-usage-panel-header) h3 {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-md);
+  font-weight: var(--openbot-weight-regular);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-card p {
+  margin: 0;
+  font-size: var(--openbot-simple-title-size);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--openbot-weight-semibold);
+  line-height: var(--openbot-simple-title-leading);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-card p.simple-usage-card-note {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-xl);
+  font-weight: var(--openbot-weight-medium);
+  line-height: var(--openbot-leading-xl);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel {
+  min-width: 0;
+  padding: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--openbot-space-2);
+  margin-bottom: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel-actions .ui-select-trigger {
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .agent-usage-section-header h3 {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-md);
+  font-weight: var(--openbot-weight-regular);
+}
+
+:root[data-openbot-layout="simple"]
+  .agent-usage
+  .agent-usage-section-header
+  :is(.ui-sliding-tabs, .ui-sliding-tabs-pill) {
+  border-radius: var(--openbot-radius-pill);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .agent-usage-section-header .ui-sliding-tabs {
+  box-shadow: none;
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .agent-usage-section-header .ui-sliding-tabs-trigger {
+  border-radius: var(--openbot-radius-pill);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table {
+  overflow-x: auto;
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--openbot-text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table :is(th, td) {
+  border-bottom: 1px solid var(--openbot-simple-row-line);
+  padding: var(--openbot-space-3) var(--openbot-space-4);
+  text-align: right;
+  white-space: nowrap;
+  font-weight: var(--openbot-weight-regular);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table :is(th:first-child, :is(th, td):nth-child(2)) {
+  text-align: left;
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table thead th {
+  color: var(--openbot-text-primary);
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-table td {
+  color: var(--openbot-text-secondary);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--openbot-space-3);
+  margin-top: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-details dt {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-details dd {
+  margin: 0;
+  font-size: var(--openbot-text-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+@container (max-width: 700px) {
+  :root[data-openbot-layout="simple"] .agent-usage .simple-usage-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------------ marketplace */
+
+:root[data-openbot-layout="simple"] .app-window .window-page > .skills-marketplace-page[data-simple] {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+:root[data-openbot-layout="simple"] .skills-marketplace[data-simple] .skills-marketplace-topbar {
+  min-height: 0;
+  border-bottom: 0;
+  padding: var(--openbot-space-6) var(--openbot-space-8) 0;
+}
+
+:root[data-openbot-layout="simple"]
+  .window-page
+  .skills-marketplace[data-simple]
+  :is(.marketplace-title, .marketplace-crumb-parent) {
+  font-size: var(--openbot-simple-title-size);
+  line-height: var(--openbot-simple-title-leading);
+}
+
+:root[data-openbot-layout="simple"] .skills-marketplace[data-simple] .marketplace-frame {
+  padding: var(--openbot-space-4) var(--openbot-space-8) var(--openbot-space-8);
+}
+
+/* Filter pills (Agents, Apps, Skills, then the categories) over a wide control-coloured search bar. */
+:root[data-openbot-layout="simple"] .marketplace-view[data-simple] .marketplace-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--openbot-space-4) var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-view[data-simple] .marketplace-pills {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .ui-sliding-tabs {
+  gap: var(--openbot-space-2);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-transparent);
+  box-shadow: none;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .ui-sliding-tabs-trigger {
+  height: var(--openbot-control-md);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-4);
+  color: var(--openbot-text-secondary);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .ui-sliding-tabs-trigger[aria-selected="true"] {
+  background: var(--openbot-transparent);
+  color: var(--openbot-action-foreground);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .ui-sliding-tabs-pill {
+  top: 0;
+  height: var(--openbot-control-md);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-action);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .marketplace-pills-divider {
+  width: 1px;
+  height: 20px;
+  margin-inline: var(--openbot-space-1);
+  background: var(--openbot-border-strong);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .marketplace-category-pill.ui-button {
+  height: var(--openbot-control-md);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-4);
+  color: var(--openbot-text-secondary);
+  font-weight: var(--openbot-weight-medium);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .marketplace-category-pill.ui-button:hover:not(:disabled) {
+  background: var(--openbot-bg-control-hover);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-pills .marketplace-category-pill.ui-button[aria-pressed="true"] {
+  background: var(--openbot-action);
+  color: var(--openbot-action-foreground);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-view[data-simple] .marketplace-search {
+  height: var(--openbot-control-xl);
+  flex: none;
+  margin: 0;
+  border: 0;
+  border-radius: var(--openbot-radius-lg);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .marketplace-view[data-simple] .marketplace-tab-slot {
+  padding-top: var(--openbot-space-6);
+}
+
+/* "Most installed": four cards with a big face, the name in the agent's colour and its installs. */
+:root[data-openbot-layout="simple"] .simple-market-home {
+  display: grid;
+  gap: var(--openbot-space-6);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-section {
+  display: grid;
+  gap: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-section h3 {
+  margin: 0;
+  font-size: var(--openbot-text-xl);
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-view-all.ui-button {
+  color: var(--openbot-text-muted);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature.ui-button {
+  height: auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--openbot-space-1);
+  border-radius: var(--openbot-simple-card-radius);
+  background: var(--openbot-bg-sidebar);
+  padding: var(--openbot-space-6) var(--openbot-space-3) var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature.ui-button:hover:not(:disabled) {
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature-face {
+  display: grid;
+  width: 58px;
+  height: 58px;
+  margin-bottom: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature-name {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--simple-market-agent);
+  font-weight: var(--openbot-weight-semibold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature-installs {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-regular);
+}
+
+/* "All agents": two columns, one line of description, and a control-coloured Add button. */
+:root[data-openbot-layout="simple"] .simple-market-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--openbot-space-1) var(--openbot-space-8);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--openbot-space-3);
+  border-radius: var(--openbot-radius-lg);
+  padding: var(--openbot-space-1-5) 0;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-face {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-name {
+  margin: 0;
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-text {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The button sits above the row's hit area, so it adds and the rest of the row opens the page. */
+:root[data-openbot-layout="simple"] .simple-market-row-action {
+  position: relative;
+  z-index: 2;
+  flex: none;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-action .ui-button {
+  height: var(--openbot-control-sm);
+  border: 0;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+  padding-inline: var(--openbot-space-4);
+  color: var(--openbot-text-primary);
+  font-weight: var(--openbot-weight-medium);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-action .ui-button:hover:not(:disabled) {
+  background: var(--openbot-bg-control-hover);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-action .ui-button svg {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  :root[data-openbot-layout="simple"] .simple-market-rows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The chart is a wide, low band in its card. */
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel .ui-chart {
+  height: 220px;
+  aspect-ratio: auto;
+}
+
+:root[data-openbot-layout="simple"] .routine-planner[data-simple] .routine-planner-entry-name {
+  color: var(--openbot-text-primary);
+}
+
+:root[data-openbot-layout="simple"] .simple-market-feature-face .agent-avatar {
+  width: 58px;
+  height: 58px;
+}
+
+:root[data-openbot-layout="simple"] .simple-market-row-face .agent-avatar {
+  width: 36px;
+  height: 36px;
+}

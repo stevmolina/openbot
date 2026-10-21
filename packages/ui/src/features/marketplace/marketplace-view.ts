@@ -63,6 +63,8 @@ export interface MarketplaceScope {
   nav: MarketplaceNavigation;
   agents: MarketplaceListing<MarketplaceAgentSummary>;
   skills: MarketplaceListing<MarketplaceSkillSummary>;
+  /** The simple layout: pill filters, "Most installed" cards and a two-column list of agents. */
+  simple?: boolean | undefined;
 }
 
 export function createMarketplaceNavigation(): MarketplaceNavigation {

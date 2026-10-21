@@ -7,6 +7,7 @@ import { McpSignInDialog } from "@openbot/ui/features/settings/McpSignInDialog";
 import { McpSignInRelayDialog } from "@openbot/ui/features/settings/McpSignInPage";
 import { PluginUninstallDialog } from "@openbot/ui/features/settings/PluginUninstallDialog";
 import { createEffect, createSignal, Match, Show, Switch, untrack } from "solid-js";
+import { simpleLayout } from "../../simple-layout";
 import { createMarketplaceController, type MarketplaceControllerProps } from "./marketplace-controller";
 
 export interface MarketplaceModalProps extends MarketplaceControllerProps {
@@ -127,6 +128,7 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
         open={props.open}
         onOpenChange={props.onOpenChange}
         variant={props.variant}
+        simple={simpleLayout()}
       />
       {/* The confirmation and the connect step are beside the Marketplace: each is one decision
           over the page it was started from, not a part of that page. */}

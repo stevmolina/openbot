@@ -7,6 +7,7 @@ import { AgentGrid, AppCard, SkillGrid } from "./MarketplaceCards";
 import { type FilterGroup, MarketplaceFilter } from "./MarketplaceFilter";
 import { skillAgents } from "./MarketplaceInstallSkill";
 import { Block } from "./MarketplaceParts";
+import { SimpleAgentHome } from "./MarketplaceSimple";
 import { CATEGORY_LABELS, type MarketplaceListing } from "./marketplace-listing";
 import {
   appGroups,
@@ -276,8 +277,52 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
       }
     });
 
+  /** The simple layout's category pills: one at a time, and the lit one clears itself. */
+  const categoryPills = () => (
+    <Show when={state().tab !== "apps"}>
+      <span class="marketplace-pills-divider" aria-hidden="true" />
+      <For each={SKILL_CATEGORIES}>
+        {(category) => {
+          const active = () => (state().tab === "agents" ? state().agentCategory : state().skillCategory) === category;
+          return (
+            <Button
+              type="button"
+              variant="ghost"
+              class="marketplace-category-pill"
+              aria-pressed={active() ? "true" : "false"}
+              data-cuelume-tap="select"
+              onClick={() =>
+                nav().set((draft) => {
+                  const next = active() ? null : category;
+                  if (draft.tab === "agents") draft.agentCategory = next;
+                  else draft.skillCategory = next;
+                })
+              }
+            >
+              {t(CATEGORY_LABELS[category])}
+            </Button>
+          );
+        }}
+      </For>
+    </Show>
+  );
+  const tabList = () => (
+    <SlidingTabs.List aria-label={t("marketplace.kinds")}>
+      <For each={TABS}>
+        {(tab) => (
+          <SlidingTabs.Trigger value={tab}>
+            {t(TAB_LABEL[tab])}
+            <Show when={searching()}>
+              <span class="marketplace-count">{countLabel(tab)}</span>
+            </Show>
+          </SlidingTabs.Trigger>
+        )}
+      </For>
+    </SlidingTabs.List>
+  );
+
   return (
-    <div class="marketplace-view">
+    <div class="marketplace-view" data-simple={props.scope.simple ? "" : undefined}>
       <SlidingTabs.Root
         value={state().tab}
         onChange={(value: string) =>
@@ -287,18 +332,12 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
         }
       >
         <div class="marketplace-toolbar">
-          <SlidingTabs.List aria-label={t("marketplace.kinds")}>
-            <For each={TABS}>
-              {(tab) => (
-                <SlidingTabs.Trigger value={tab}>
-                  {t(TAB_LABEL[tab])}
-                  <Show when={searching()}>
-                    <span class="marketplace-count">{countLabel(tab)}</span>
-                  </Show>
-                </SlidingTabs.Trigger>
-              )}
-            </For>
-          </SlidingTabs.List>
+          <Show when={props.scope.simple} fallback={tabList()}>
+            <div class="marketplace-pills">
+              {tabList()}
+              {categoryPills()}
+            </div>
+          </Show>
           <label class="search-field marketplace-search">
             <Search aria-hidden="true" />
             <Input
@@ -337,7 +376,9 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
                 />
               }
             >
-              <AgentGrid scope={props.scope} items={agents()} />
+              <Show when={props.scope.simple} fallback={<AgentGrid scope={props.scope} items={agents()} />}>
+                <SimpleAgentHome scope={props.scope} items={agents()} narrowed={searching() || agentsFiltered()} />
+              </Show>
             </ListingPanel>
           </SlidingTabs.Content>
           <SlidingTabs.Content value="apps">

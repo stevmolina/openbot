@@ -59,6 +59,8 @@ export interface DiagramNodeCardProps {
   onOutputPort: () => void;
   onInputPort: () => void;
   onRunRoutine?: (() => void) | undefined;
+  /** The simple layout: joins this agent to a routine. Shown on an agent that no routine starts. */
+  onConnectTrigger?: (() => void) | undefined;
 }
 
 export function DiagramNodeCard(props: DiagramNodeCardProps) {
@@ -223,10 +225,31 @@ export function DiagramNodeCard(props: DiagramNodeCardProps) {
               <Show
                 when={!props.unreachable}
                 fallback={
-                  <span class="diagram-node-status" data-status="unreachable">
-                    <TriangleAlert aria-hidden="true" />
-                    {t("diagram.node.unreachable")}
-                  </span>
+                  <Show
+                    when={props.onConnectTrigger}
+                    fallback={
+                      <span class="diagram-node-status" data-status="unreachable">
+                        <TriangleAlert aria-hidden="true" />
+                        {t("diagram.node.unreachable")}
+                      </span>
+                    }
+                  >
+                    {(connect) => (
+                      <span class="diagram-node-missing-trigger" data-status="unreachable">
+                        {t("simple.routine.noTrigger")}
+                        <Button
+                          type="button"
+                          variant="link"
+                          size="xs"
+                          class="diagram-node-connect"
+                          data-diagram-control=""
+                          onClick={() => connect()()}
+                        >
+                          {t("simple.routine.connect")}
+                        </Button>
+                      </span>
+                    )}
+                  </Show>
                 }
               >
                 <Show when={props.stepRun}>

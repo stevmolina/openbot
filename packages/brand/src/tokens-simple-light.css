@@ -27,6 +27,10 @@
   --openbot-simple-bar-radius: 18px;
   --openbot-simple-row-radius: 10px;
   --openbot-simple-bar-photo: #c8c6c0;
+  /* Pages: the big title of Schedule, Usage and Marketplace, and the radius of their cards. */
+  --openbot-simple-title-size: 28px;
+  --openbot-simple-title-leading: 34px;
+  --openbot-simple-card-radius: 18px;
   --openbot-simple-bar-photo-ring: #1a1a1a;
   --openbot-simple-bar-photo-text: #ffffff;
 
