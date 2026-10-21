@@ -3,6 +3,7 @@ import type { AgentModelId, AgentReasoningEffort } from "@openbot/contracts/ipc"
 import { isAgentTaskActive } from "@openbot/team-client/agent-tasks";
 import { reasoningLabel } from "@openbot/ui/components/ProviderModelPicker";
 import { ConversationHeader as SharedConversationHeader } from "@openbot/ui/features/conversation/ConversationHeader";
+import { simpleLayout } from "../../simple-layout";
 import { useConversationViewScope } from "./conversation-scope";
 
 const loadAgentSettingsPanel = () => import("./AgentSettingsPanel");
@@ -52,7 +53,12 @@ export function ConversationHeader() {
     <SharedConversationHeader
       agent={props.agent}
       onSettingsIntent={() => void loadAgentSettingsPanel()}
-      onOpenSettings={() => setActiveRightPanel("settings")}
+      onOpenSettings={() => {
+        // In the simple layout the name pill is the side panel button: it opens the agent panel, or closes the panel.
+        if (simpleLayout() && sidePanelOpen()) toggleSidePanel();
+        else setActiveRightPanel("settings");
+      }}
+      titleControlsSidePanel={simpleLayout()}
       pendingModel={pendingModel()}
       modelPicker={{
         provider: settingsProvider(),

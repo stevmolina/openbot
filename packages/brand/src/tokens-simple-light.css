@@ -22,6 +22,13 @@
   --openbot-simple-canvas-dot: #dddcd8;
   --openbot-simple-shadow: rgba(20, 20, 20, 0.06);
 
+  /* Sidebar bottom bar and rows (plan 010, stage 2). */
+  --openbot-simple-bar-radius: 18px;
+  --openbot-simple-row-radius: 10px;
+  --openbot-simple-bar-photo: #c8c6c0;
+  --openbot-simple-bar-photo-ring: #1a1a1a;
+  --openbot-simple-bar-photo-text: #ffffff;
+
   color-scheme: light;
 
   /* Surfaces: warm off-white, like Grok Bot */

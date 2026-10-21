@@ -101,6 +101,14 @@ export interface SidebarProps {
   compact: boolean;
   /** A card under the chat list, such as an announcement. The compact sidebar has no room for it. */
   footer?: JSX.Element;
+  /** Shows the search as an icon button in the top row, in place of the search field. */
+  searchButton?: boolean | undefined;
+  /** Rows above the list, such as the links of a page group. */
+  listStart?: JSX.Element | undefined;
+  /** Shows in place of the list of chats. */
+  list?: JSX.Element | undefined;
+  /** A bar at the bottom of the sidebar, under the footer. It also shows in the compact sidebar. */
+  bottomBar?: JSX.Element | undefined;
   onExpand: () => void;
   /** Opens the global search. The search field and the compact search button both call it. */
   onOpenSearch: () => void;

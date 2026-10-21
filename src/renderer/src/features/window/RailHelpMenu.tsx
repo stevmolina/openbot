@@ -8,32 +8,26 @@ import { loadWhatsNewReleases } from "../updates/whats-new-releases";
 /** The newest releases that the Help menu lists, one line each. */
 const HELP_NEWS_COUNT = 3;
 
+export type HelpLinkDestination = "changelog" | "guides" | "discord" | "feedback";
+
 /**
- * The Help menu of the rail, on desktop and on the web. The first time it opens, it reads the release
- * notes in the app and lists the first note of each of the newest releases, up to `version`. The web
- * has no version: it always runs the newest release.
+ * The What's new list of a Help menu. The first `load` reads the release notes in the app and lists the
+ * first note of each of the newest releases, up to `version`. The web has no version: it always runs
+ * the newest release. The rail and the photo menu of the simple layout both use it.
  */
-export function RailHelpMenu(props: {
-  version: string | null;
-  onOpenWhatsNew: () => void;
-  onOpenLink: (destination: "changelog" | "guides" | "discord" | "feedback") => void;
-}) {
+export function createHelpNews(version: () => string | null) {
   const [news, setNews] = createSignal<readonly HelpMenuNews[]>([]);
-  const openLink = (destination: "changelog" | "guides" | "discord" | "feedback") => {
-    desktopAnalytics.track("help_link_opened", { destination });
-    props.onOpenLink(destination);
-  };
   let loading = false;
 
-  async function loadNews() {
+  async function load() {
     if (loading || news().length > 0) return;
     loading = true;
     try {
-      const version = props.version;
+      const shown = version();
       const releases = await loadWhatsNewReleases(AbortSignal.timeout(10_000));
       setNews(
         releases
-          .filter((release) => !version || compareReleaseVersions(release.version, version) <= 0)
+          .filter((release) => !shown || compareReleaseVersions(release.version, shown) <= 0)
           .sort((a, b) => compareReleaseVersions(b.version, a.version))
           .flatMap((release) => {
             const note = release.groups[0]?.items[0];
@@ -48,11 +42,29 @@ export function RailHelpMenu(props: {
     }
   }
 
+  return { news, load };
+}
+
+/** Records the Help link, then opens it. */
+export function trackHelpLink(destination: HelpLinkDestination, open: (destination: HelpLinkDestination) => void) {
+  desktopAnalytics.track("help_link_opened", { destination });
+  open(destination);
+}
+
+/** The Help menu of the rail, on desktop and on the web. */
+export function RailHelpMenu(props: {
+  version: string | null;
+  onOpenWhatsNew: () => void;
+  onOpenLink: (destination: HelpLinkDestination) => void;
+}) {
+  const help = createHelpNews(() => props.version);
+  const openLink = (destination: HelpLinkDestination) => trackHelpLink(destination, props.onOpenLink);
+
   return (
     <HelpMenu
-      news={news()}
+      news={help.news()}
       triggerClass="window-rail-button"
-      onOpen={() => void loadNews()}
+      onOpen={() => void help.load()}
       onOpenWhatsNew={props.onOpenWhatsNew}
       onOpenChangelog={() => openLink("changelog")}
       onOpenGuides={() => openLink("guides")}

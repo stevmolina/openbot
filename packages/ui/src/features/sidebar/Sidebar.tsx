@@ -15,15 +15,24 @@ export function Sidebar(props: SidebarProps) {
       <SidebarFrame compact={props.compact}>
         <SidebarTopbar />
 
-        <SidebarSearch />
+        {/* The compact sidebar has no room for the top row button, so it keeps its own search button. */}
+        <Show when={!props.searchButton || props.compact}>
+          <SidebarSearch />
+        </Show>
 
         <Show when={props.onViewChange && !props.compact}>
           <SidebarViewSwitch />
         </Show>
 
-        <SidebarNav />
+        {props.listStart}
+
+        <Show when={!props.list} fallback={props.list}>
+          <SidebarNav />
+        </Show>
 
         <Show when={!props.compact}>{props.footer}</Show>
+
+        {props.bottomBar}
 
         <SidebarDialogs />
       </SidebarFrame>
