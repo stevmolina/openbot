@@ -179,6 +179,10 @@ if (commandLineUserDataDirectory) {
       ),
     ),
   );
+} else if (app.getName() !== "OpenBot") {
+  // A renamed fork build, such as OpenBot Light, keeps its data apart from the official app.
+  // `setName` below hides the packaged name, so the folder is fixed here, before it runs.
+  app.setPath("userData", join(app.getPath("appData"), app.getName()));
 }
 app.setName("OpenBot");
 app.enableSandbox();
