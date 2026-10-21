@@ -1,0 +1,74 @@
+/*
+ * The simple light theme of this fork (plan 010). It overrides the dark base in tokens.css only
+ * while the renderer sets data-openbot-theme="simple-light" on the root, so the dark values stay
+ * untouched and an upstream merge of tokens.css stays a clean merge. Colour literals may only live
+ * in @openbot/brand, so the simple layout keeps its own values here too.
+ */
+:root[data-openbot-theme="simple-light"] {
+  /* Simple layout values that have no upstream token. */
+  --openbot-simple-bubble-agent: #f0efec;
+  --openbot-simple-bubble-user: #1a1a1a;
+  --openbot-simple-bubble-user-text: #ffffff;
+  --openbot-simple-send: #e5484d;
+  --openbot-simple-card: #ffffff;
+  --openbot-simple-card-border: #e6e5e1;
+  --openbot-simple-row-line: #efeeea;
+  --openbot-simple-bar: #e8e7e3;
+  --openbot-simple-bar-active: #ffffff;
+  --openbot-simple-dot-on: #22b45e;
+  --openbot-simple-dot-attention: #f59e0b;
+  --openbot-simple-run-chip: #fde2ef;
+  --openbot-simple-run-chip-text: #9d1458;
+  --openbot-simple-canvas-dot: #dddcd8;
+  --openbot-simple-shadow: rgba(20, 20, 20, 0.06);
+
+  color-scheme: light;
+
+  /* Surfaces: warm off-white, like Grok Bot */
+  --openbot-bg-canvas: #fcfcfb;
+  --openbot-bg-canvas-clear: rgba(252, 252, 251, 0);
+  --openbot-bg-sidebar: #f3f2ef;
+  --openbot-bg-surface: #ffffff;
+  --openbot-bg-surface-raised: #ffffff;
+  --openbot-bg-control: #ecebe7;
+  --openbot-bg-control-hover: #e6e5e1;
+  --openbot-bg-control-active: #e0dfdb;
+  --openbot-tabs-bar-bg: #e8e7e3;
+  --openbot-tabs-pill-bg: #ffffff;
+  --openbot-bg-overlay: rgba(252, 252, 251, 0.92);
+  --openbot-bg-glass: rgba(255, 255, 255, 0.86);
+  --openbot-bg-grouped: #ffffff;
+  --openbot-border-grouped: #ecebe7;
+  --openbot-text-grouped-secondary: #8a8984;
+
+  /* Lines */
+  --openbot-border: #ecebe7;
+  --openbot-border-strong: #e3e2df;
+  --openbot-image-outline: rgba(20, 20, 20, 0.08);
+
+  /* Text */
+  --openbot-text-primary: #1a1a1a;
+  --openbot-text-secondary: #3d3d3a;
+  --openbot-text-muted: #7b7a76;
+  --openbot-text-dim: #8a8984;
+  --openbot-text-readable: rgba(20, 20, 20, 0.6);
+  --openbot-text-placeholder: #9c9b97;
+
+  /* Accent and status */
+  --openbot-accent: #2f7cf6;
+  --openbot-accent-hover: #1f6fe8;
+  --openbot-accent-text: #1f6fe8;
+  --openbot-accent-soft: rgba(47, 124, 246, 0.12);
+  --openbot-accent-strong: rgba(47, 124, 246, 0.26);
+  --openbot-success-text: #1b7a46;
+  --openbot-success-soft: #e8f6ee;
+  --openbot-warning-text: #9a5b00;
+  --openbot-warning-soft: #fff4e0;
+  --openbot-danger: #e5484d;
+  --openbot-danger-text: #c6282f;
+  --openbot-danger-soft: rgba(229, 72, 77, 0.12);
+
+  /* Buttons that were light-on-dark become dark-on-light */
+  --openbot-action: #1a1a1a;
+  --openbot-action-foreground: #ffffff;
+}

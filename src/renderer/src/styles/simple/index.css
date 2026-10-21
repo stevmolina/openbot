@@ -1,0 +1,10 @@
+/*
+ * The simple layout of this fork (plan 010). Every rule here is keyed on the root attributes that
+ * `simple-layout.ts` sets, so turning the setting off shows the upstream layout. One file per area
+ * keeps upstream merges and parallel work apart.
+ */
+@import "./theme.css";
+@import "./sidebar.css";
+@import "./chat.css";
+@import "./agent-panel.css";
+@import "./pages.css";

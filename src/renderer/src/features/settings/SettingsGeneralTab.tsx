@@ -24,6 +24,7 @@ import { Show } from "solid-js";
 import { useI18n } from "../../i18n-context";
 import { useInterfaceSizeChoice } from "../../interface-size";
 import { useLogoColorChoice } from "../../logo-color";
+import { setSimpleLayout, simpleLayout } from "../../simple-layout";
 
 const interfaceSizeOptions = [...APP_INTERFACE_SIZES];
 const linkTargetOptions: GeneralSettingsValue["externalLinkTarget"][] = ["Default browser", "OpenBot"];
@@ -71,6 +72,13 @@ export function SettingsGeneralTab(props: SettingsGeneralTabProps) {
               <LanguageSelect value={i18n.language()} onChange={i18n.changeLanguage} mount={props.selectMount} />
             </ItemActions>
           </Item>
+          <SwitchField
+            data-settings-row="simple.setting.title"
+            checked={simpleLayout()}
+            onChange={setSimpleLayout}
+            label={i18n.t("simple.setting.title")}
+            description={i18n.t("simple.setting.description")}
+          />
           <Item data-settings-row="settings.interfaceSize.title" class="settings-modal-row">
             <ItemContent>
               <ItemTitle>{i18n.t("settings.interfaceSize.title")}</ItemTitle>

@@ -1,0 +1,5 @@
+/* Simple layout: theme. Keyed on :root[data-openbot-layout="simple"]. */
+
+:root[data-openbot-theme="simple-light"] {
+  color-scheme: light;
+}

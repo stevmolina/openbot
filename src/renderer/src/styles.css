@@ -2,6 +2,7 @@
 @import "@fontsource-variable/inter/wght-italic.css";
 @import "tailwindcss";
 @import "@openbot/brand/tokens.css";
+@import "@openbot/brand/tokens-simple-light.css";
 @import "@openbot/brand/logo.css";
 @import "@openbot/ui/styles.css";
 @import "@openbot/ui/features/account/otp-input.css";
@@ -71,6 +72,7 @@
 @import "@openbot/ui/features/billing/billing.css";
 @import "@openbot/ui/styles/reference-chip.css";
 @import "@openbot/ui/skill-preview.css";
+@import "./styles/simple/index.css";
 
 @source "../../../packages/ui/src";
 

@@ -10,6 +10,7 @@
     "./logo.css": "./src/logo.css",
     "./tokens.css": "./src/tokens.css",
     "./tokens-native.css": "./src/tokens-native.css",
+    "./tokens-simple-light.css": "./src/tokens-simple-light.css",
     "./article-gradient": "./src/article-gradient.ts",
     "./file-reference": "./src/file-reference.ts",
     "./app-logo-shape": "./src/app-logo-shape.ts",
