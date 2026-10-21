@@ -15,6 +15,7 @@ export interface ConversationPort {
     | "deleteTable"
     | "listMemories"
     | "listRoutines"
+    | "routineCalendar"
     | "listTables"
     | "markConversationRead"
     | "readConversationPage"

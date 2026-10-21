@@ -511,6 +511,7 @@ export function ConversationPanels(panelProps: { onOpenUsage?: ((trigger: HTMLBu
                   : undefined
               }
               onOpenUsage={panelProps.onOpenUsage}
+              onOpenBrowser={props.browserEnabled !== false ? () => openSidePanelPane("browser") : undefined}
               onPublish={canPublish() ? () => publishAgent.open(agent().id) : undefined}
               agent={agent()}
               runtimeSettings={{
