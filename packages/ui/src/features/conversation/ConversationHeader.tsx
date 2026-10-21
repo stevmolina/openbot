@@ -18,6 +18,8 @@ export interface ConversationHeaderProps {
   onOpenSettings: () => void;
   remoteControl?: ConversationHeaderRemoteControl | undefined;
   sidePanel: SidePanelToggleProps;
+  /** The agent's name opens and closes the side panel, so it says so to a screen reader. */
+  titleControlsSidePanel?: boolean | undefined;
 }
 
 export interface ConversationHeaderPendingModel {
@@ -46,7 +48,12 @@ export function ConversationHeader(props: ConversationHeaderProps) {
               size="sm"
               type="button"
               class="conversation-title no-drag"
-              aria-label={t("conversation.header.settings")}
+              aria-label={
+                props.titleControlsSidePanel
+                  ? t(props.sidePanel.open ? "conversation.sidePanel.close" : "conversation.sidePanel.open")
+                  : t("conversation.header.settings")
+              }
+              aria-expanded={props.titleControlsSidePanel ? (props.sidePanel.open ? "true" : "false") : undefined}
               onPointerEnter={props.onSettingsIntent}
               onFocus={props.onSettingsIntent}
               onClick={props.onOpenSettings}
