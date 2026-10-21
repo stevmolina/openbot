@@ -80,6 +80,11 @@ export interface RoutineCalendarProps {
   onBack?: () => void;
   /** The host whose routines show, after the title. */
   hostName?: string;
+  /**
+   * The simple layout: the time zone moves to the upcoming list, the host name leaves the title,
+   * and each next run shows only when it happens.
+   */
+  simple?: boolean | undefined;
 }
 
 interface CalendarEntry {
@@ -249,7 +254,12 @@ export function RoutineCalendar(props: RoutineCalendarProps) {
   });
 
   return (
-    <section class="routine-planner" aria-labelledby="routine-planner-heading" data-view={state.view}>
+    <section
+      class="routine-planner"
+      aria-labelledby="routine-planner-heading"
+      data-view={state.view}
+      data-simple={props.simple ? "" : undefined}
+    >
       <header class="routine-planner-header">
         <div class="routine-planner-title">
           <div class="routine-planner-identity">
@@ -267,17 +277,15 @@ export function RoutineCalendar(props: RoutineCalendarProps) {
             </Show>
             <h2 id="routine-planner-heading" ref={heading} tabindex={-1}>
               {t("routine.calendar.title")}
-              <Show when={props.hostName}>
-                {(host) => (
-                  <>
-                    {" "}
-                    <span aria-hidden="true">/</span> <span>{host()}</span>
-                  </>
-                )}
+              <Show when={props.hostName && !props.simple}>
+                {" "}
+                <span aria-hidden="true">/</span> <span>{props.hostName}</span>
               </Show>
             </h2>
           </div>
-          <p>{t("routine.calendar.timeZone", { zone: props.timeZone.replaceAll("_", " ") })}</p>
+          <Show when={!props.simple}>
+            <p>{t("routine.calendar.timeZone", { zone: props.timeZone.replaceAll("_", " ") })}</p>
+          </Show>
         </div>
         <div class="routine-planner-toolbar">
           <div class="routine-planner-nav">
@@ -469,6 +477,13 @@ export function RoutineCalendar(props: RoutineCalendarProps) {
 
             <aside class="routine-planner-upcoming" aria-labelledby="routine-planner-upcoming-heading">
               <h3 id="routine-planner-upcoming-heading">{t("routine.calendar.upcoming")}</h3>
+              <Show when={props.simple}>
+                <p class="routine-planner-zone">
+                  {t("simple.schedule.zoneTime", {
+                    zone: (props.timeZone.split("/").at(-1) ?? props.timeZone).replaceAll("_", " "),
+                  })}
+                </p>
+              </Show>
               <Show
                 when={upcoming().length > 0}
                 fallback={<p class="routine-planner-note">{t("routine.calendar.upcomingEmpty")}</p>}
@@ -479,6 +494,7 @@ export function RoutineCalendar(props: RoutineCalendarProps) {
                       <RoutineCalendarEntry
                         entry={entry}
                         when={upcomingWhen(entry.run.at)}
+                        simple={props.simple}
                         statusText={statusText}
                         onOpenRoutine={props.onOpenRoutine}
                         onOpenAgent={props.onOpenAgent}
@@ -548,6 +564,8 @@ function RoutineCalendarDay(props: RoutineCalendarDayProps) {
 interface RoutineCalendarEntryProps {
   entry: CalendarEntry;
   when: string;
+  /** The simple layout shows only when the run happens, not its recurrence and status. */
+  simple?: boolean | undefined;
   statusText: (status: RoutineCalendarStatus) => string;
   onOpenRoutine: (routineId: string) => void;
   onOpenAgent: (agentId: string) => void;
@@ -569,11 +587,13 @@ function RoutineCalendarEntry(props: RoutineCalendarEntryProps) {
         <span class="routine-planner-entry-text">
           <span class="routine-planner-entry-name">{props.entry.routine.name}</span>
           <span class="routine-planner-entry-meta">
-            {t("routine.calendar.entryMeta", {
-              when: props.when,
-              schedule: routineScheduleSummary(props.entry.routine.schedule, false, text),
-              status: props.statusText(props.entry.run.status),
-            })}
+            {props.simple
+              ? props.when
+              : t("routine.calendar.entryMeta", {
+                  when: props.when,
+                  schedule: routineScheduleSummary(props.entry.routine.schedule, false, text),
+                  status: props.statusText(props.entry.run.status),
+                })}
           </span>
         </span>
       </Button>

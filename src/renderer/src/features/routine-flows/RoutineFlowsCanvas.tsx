@@ -22,6 +22,7 @@ import { DiagramView } from "@openbot/ui/features/diagrams/DiagramView";
 import type { DiagramPoint } from "@openbot/ui/features/diagrams/diagram-model";
 import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createStore, onSettled, Show } from "solid-js";
+import { simpleLayout } from "../../simple-layout";
 import { createRoutineFlowAssistant } from "./routine-flow-assistant";
 import { agentIdOfNode, isRoutineStartEdge, routineFlowDiagram, routineIdOfNode } from "./routine-flow-diagram";
 import type { RoutineFlowsHost } from "./routine-flows-port";
@@ -272,6 +273,7 @@ export function RoutineFlowsCanvas(props: RoutineFlowsCanvasProps) {
               diagram={current()}
               agents={props.agents}
               owner={props.agent}
+              simple={simpleLayout()}
               assistant={assistantOf(props.agent)}
               connectsWithinRoutine
               onMoveNode={(nodeId, position) => {
