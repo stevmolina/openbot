@@ -1,1 +1,316 @@
 /* Simple layout: agent-panel. Keyed on :root[data-openbot-layout="simple"]. */
+
+/* The panel: the canvas colour with a thin line on its left, like Grok Bot. */
+:root[data-openbot-layout="simple"] #settings-side-panel {
+  border-left-color: var(--openbot-simple-card-border);
+  background: var(--openbot-bg-canvas);
+}
+
+/* The body fills the panel, so the face editor that opens under the face is not cut off where a
+   short page ends. */
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-panel-content {
+  flex: 1 1 auto;
+  padding: var(--openbot-space-3) var(--openbot-space-4) var(--openbot-space-6);
+}
+
+/* Every card of the panel and of its pages: the card colour, a light line, a soft radius. */
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset,
+:root[data-openbot-layout="simple"] .simple-agent-card {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+}
+
+/* A switch row, such as Computer Use or Notifications: the same card. */
+:root[data-openbot-layout="simple"] #settings-side-panel .agent-settings-notifications {
+  min-height: 0;
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+}
+
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset > * + * {
+  border-top-color: var(--openbot-simple-row-line);
+}
+
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset > :first-child,
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset > :first-child > button {
+  border-top-left-radius: calc(var(--openbot-radius-card) - 1px);
+  border-top-right-radius: calc(var(--openbot-radius-card) - 1px);
+}
+
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset > :last-child,
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-link-group-inset > :last-child > button {
+  border-bottom-left-radius: calc(var(--openbot-radius-card) - 1px);
+  border-bottom-right-radius: calc(var(--openbot-radius-card) - 1px);
+}
+
+:root[data-openbot-layout="simple"] #settings-side-panel .settings-instructions-input {
+  border-color: var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+}
+
+/*
+ * The panel marks its page with data-simple-page. The simple pages reuse the default root page and
+ * show only their part of it, so every setting keeps one control and one save path:
+ * - root: share and close, the face, then the tabs.
+ * - runtime ("Runs on"): the Brain group and Backup models.
+ * - more ("More settings"): the rest of the root page and the application rows.
+ */
+:root[data-openbot-layout="simple"] #settings-side-panel:has([data-simple-page="root"]) > .settings-panel-header {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] [data-simple-page="root"] {
+  gap: 0;
+}
+
+:root[data-openbot-layout="simple"]
+  [data-simple-page="root"]
+  > :not(.simple-agent-panel-actions, .agent-settings-avatar-picker, .simple-agent-panel, .agent-settings-save-error) {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"]
+  [data-simple-page="runtime"]
+  > :not(.settings-link-section:has(> .agent-settings-runtime-rows), .settings-link-group, .agent-settings-save-error) {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"]
+  [data-simple-page="more"]
+  > :is(
+    .agent-settings-avatar-picker,
+    .settings-field:not(:has(textarea)),
+    .settings-link-section:has(> .agent-settings-runtime-rows)
+  ) {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Share and close: two round buttons at the top right. */
+:root[data-openbot-layout="simple"] .simple-agent-panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-round {
+  width: 30px;
+  height: 30px;
+  border-color: var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+  color: var(--openbot-text-secondary);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-round svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* The face, the name and the title, centred. */
+:root[data-openbot-layout="simple"] [data-simple-page="root"] > .agent-settings-avatar-picker,
+:root[data-openbot-layout="simple"] [data-simple-page="root"] .agent-settings-avatar {
+  width: 72px;
+  height: 72px;
+}
+
+:root[data-openbot-layout="simple"] [data-simple-page="root"] > .agent-settings-avatar-picker {
+  margin: var(--openbot-space-1) auto var(--openbot-space-2);
+}
+
+:root[data-openbot-layout="simple"] [data-simple-page="root"] .agent-settings-avatar .agent-avatar {
+  --agent-avatar-optical-offset: calc(72px * -0.14);
+  width: 72px;
+  height: 72px;
+}
+
+/* The pencil shows only while the pointer or the focus is on the face. */
+:root[data-openbot-layout="simple"] [data-simple-page="root"] .agent-settings-avatar-badge {
+  opacity: 0;
+  transition: opacity var(--openbot-duration-fast) ease;
+}
+
+:root[data-openbot-layout="simple"]
+  [data-simple-page="root"]
+  .agent-settings-avatar:is(:hover, :focus-visible, [data-expanded])
+  .agent-settings-avatar-badge {
+  opacity: 1;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-hero {
+  display: grid;
+  justify-items: center;
+  gap: var(--openbot-space-0-5);
+  margin: 0 0 var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-name,
+:root[data-openbot-layout="simple"] .simple-agent-panel-title {
+  width: 100%;
+}
+
+/* The name and the title read as text until they have focus. */
+:root[data-openbot-layout="simple"] .simple-agent-inline-input {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  border-color: transparent;
+  border-radius: var(--openbot-radius-md);
+  background: transparent;
+  box-shadow: none;
+  padding: var(--openbot-space-0-5) var(--openbot-space-2);
+  text-align: center;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-inline-input:hover {
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-inline-input:focus {
+  border-color: var(--openbot-simple-card-border);
+  background: var(--openbot-simple-card);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-name-input {
+  color: var(--openbot-text-primary);
+  font-size: var(--openbot-text-2xl);
+  font-weight: var(--openbot-weight-medium);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-title-input {
+  color: var(--openbot-text-dim);
+  font-size: var(--openbot-text-md);
+}
+
+/* Details, Library and Computer: centred pills without a bar. */
+:root[data-openbot-layout="simple"] .simple-agent-panel-tabs {
+  display: grid;
+  gap: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-tab-list {
+  justify-self: center;
+  background: transparent;
+  box-shadow: none;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-tab-list .ui-sliding-tabs-pill {
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-tab-list .ui-sliding-tabs-trigger {
+  border-radius: var(--openbot-radius-pill);
+  font-weight: var(--openbot-weight-regular);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-panel-tab {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--openbot-space-4);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-section {
+  display: grid;
+  gap: var(--openbot-space-1-5);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 var(--openbot-space-1);
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-section-link,
+:root[data-openbot-layout="simple"] .simple-agent-more {
+  height: auto;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-regular);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-section-link:hover,
+:root[data-openbot-layout="simple"] .simple-agent-more:hover {
+  background: transparent;
+  color: var(--openbot-text-primary);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card {
+  display: grid;
+  padding: var(--openbot-space-1) 0;
+}
+
+/* One line of a card: what it is on the left, its state on the right. */
+:root[data-openbot-layout="simple"] .simple-agent-card-row {
+  display: grid;
+  width: 100%;
+  height: auto;
+  min-height: 36px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--openbot-space-3);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: var(--openbot-space-1-5) var(--openbot-space-3);
+  color: var(--openbot-text-primary);
+  font-size: var(--openbot-text-md);
+  font-weight: var(--openbot-weight-regular);
+  text-align: left;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card-row:hover {
+  background: var(--openbot-bg-control);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card-row + .simple-agent-card-row {
+  border-top: 1px solid var(--openbot-simple-row-line);
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card-row-main {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card-row-side {
+  display: inline-flex;
+  max-width: 140px;
+  align-items: center;
+  gap: var(--openbot-space-0-5);
+  overflow: hidden;
+  color: var(--openbot-text-dim);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-card-row-side svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-empty {
+  margin: var(--openbot-space-2) var(--openbot-space-4) 0;
+  text-align: center;
+}
+
+:root[data-openbot-layout="simple"] .simple-agent-more {
+  align-self: center;
+  margin-top: var(--openbot-space-2);
+}
