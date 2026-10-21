@@ -3,3 +3,51 @@
 :root[data-openbot-theme="simple-light"] {
   color-scheme: light;
 }
+
+/* The frame around the card and the top row: the sidebar colour in place of the dark mix. */
+:root[data-openbot-theme="simple-light"] .app-window {
+  --window-frame: var(--openbot-bg-sidebar);
+}
+
+/* Mermaid draws its dark theme (the theme is set in mermaid-diagram.ts) and returns an image, so
+ * the page cannot recolour the diagram. Inverting the lightness and turning the hue back gives the
+ * same diagram in light colours. */
+:root[data-openbot-theme="simple-light"] .message-preview-diagram {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* The dark theme uses the primary text colour on a filled accent or danger control. On the
+ * light theme the primary text is ink, so these controls name the text colour that sits on a fill. */
+:root[data-openbot-theme="simple-light"]
+  .settings-modal
+  :where(.ui-button-variant-default, .ui-button-variant-destructive),
+:root[data-openbot-theme="simple-light"]
+  .settings-modal
+  :where(.ui-button-variant-destructive):hover:not(:disabled):not([data-disabled]),
+:root[data-openbot-theme="simple-light"] .ui-button.provider-picker-connect,
+:root[data-openbot-theme="simple-light"] :where(.z-badge-variant-default),
+:root[data-openbot-theme="simple-light"] .ui-checkbox-input:checked + .ui-checkbox-visual {
+  color: var(--openbot-text-on-accent);
+}
+
+:root[data-openbot-theme="simple-light"] .settings-modal .ui-switch-thumb[data-checked],
+:root[data-openbot-theme="simple-light"] .agent-skills-modal .ui-switch-thumb[data-checked] {
+  background: var(--openbot-text-on-accent);
+}
+
+/* An off switch needs a track that stands out from the settings card, with a light thumb. */
+:root[data-openbot-theme="simple-light"] .ui-switch:not([data-checked]) {
+  background: var(--openbot-simple-switch-off);
+}
+
+:root[data-openbot-theme="simple-light"] .ui-switch-thumb:not([data-checked]) {
+  background: var(--openbot-text-on-accent);
+}
+
+/* Dialogs use the card surface, and lift off the scrim with a soft shadow. */
+:root[data-openbot-theme="simple-light"] .ui-dialog-content:not([data-dialog-surface="unstyled"]) {
+  background: var(--openbot-bg-surface);
+  box-shadow:
+    0 0 0 1px var(--openbot-dialog-ring),
+    0 16px 48px var(--openbot-shadow-dialog);
+}
