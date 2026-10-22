@@ -8,6 +8,7 @@ import { SkillGradient } from "@openbot/ui/skill-gradient";
 import { errorReference, type UserErrorDetails } from "@openbot/user-errors";
 import type { JSX } from "@solidjs/web";
 import { createSignal, Show } from "solid-js";
+import { skillArtwork } from "../features/marketplace/skill-artwork";
 import { currentText, useText } from "../text";
 
 export function skillExamplePrompt(
@@ -28,7 +29,8 @@ export function skillInstructions(
 
 export function SkillPreview(props: {
   onOpenUrl: (url: string) => Promise<void>;
-  skill: Pick<MarketplaceSkillDetail, "name" | "description" | "iconUrl" | "instructions" | "examplePrompt">;
+  skill: Pick<MarketplaceSkillDetail, "name" | "description" | "iconUrl" | "instructions" | "examplePrompt"> &
+    Partial<Pick<MarketplaceSkillDetail, "id" | "category">>;
   onTry?: (() => void) | undefined;
   unavailableReason?: string;
   /** The creator line under the name, where the page that shows the preview names one. */
@@ -41,6 +43,7 @@ export function SkillPreview(props: {
   const [iconTint, setIconTint] = createSignal<{ url: string; color: string } | null>(null);
   const [failedIcon, setFailedIcon] = createSignal<string | null>(null);
   const iconUrl = () => (props.skill.iconUrl && failedIcon() !== props.skill.iconUrl ? props.skill.iconUrl : null);
+  const artwork = () => skillArtwork(props.skill);
   const readIconTint = (image: HTMLImageElement, url: string) => {
     try {
       const canvas = document.createElement("canvas");
@@ -84,16 +87,29 @@ export function SkillPreview(props: {
   return (
     <section class="skill-preview t-stagger is-shown" aria-label={t("skill.preview.label", { name: props.skill.name })}>
       <header class="skill-preview-heading t-stagger-line t-stagger-line--1">
-        <span class="agent-skill-icon" aria-hidden="true">
-          <Show when={iconUrl()} fallback={<Puzzle />} keyed>
-            {(url) => (
-              <img
-                src={url}
-                alt=""
-                onLoad={(event) => readIconTint(event.currentTarget, url)}
-                onError={() => setFailedIcon(url)}
-              />
-            )}
+        <span
+          class="agent-skill-icon"
+          data-skill-artwork={artwork() ? "" : undefined}
+          style={artwork()?.style}
+          aria-hidden="true"
+        >
+          <Show
+            when={artwork()}
+            keyed
+            fallback={
+              <Show when={iconUrl()} fallback={<Puzzle />} keyed>
+                {(url) => (
+                  <img
+                    src={url}
+                    alt=""
+                    onLoad={(event) => readIconTint(event.currentTarget, url)}
+                    onError={() => setFailedIcon(url)}
+                  />
+                )}
+              </Show>
+            }
+          >
+            {(art) => <art.Icon class="skill-artwork-glyph" />}
           </Show>
         </span>
         <div class="skill-preview-name">
@@ -114,11 +130,24 @@ export function SkillPreview(props: {
               name={props.skill.name}
               class="skill-preview-chip"
               style={{
-                "--skill-logo-color": iconTint()?.url === iconUrl() ? iconTint()?.color : "var(--openbot-accent-text)",
+                "--skill-logo-color": artwork()
+                  ? "var(--skill-art-color)"
+                  : iconTint()?.url === iconUrl()
+                    ? iconTint()?.color
+                    : "var(--openbot-accent-text)",
+                ...artwork()?.style,
               }}
               icon={
-                <Show when={iconUrl()} fallback={<Puzzle />} keyed>
-                  {(url) => <img src={url} alt="" onError={() => setFailedIcon(url)} />}
+                <Show
+                  when={artwork()}
+                  keyed
+                  fallback={
+                    <Show when={iconUrl()} fallback={<Puzzle />} keyed>
+                      {(url) => <img src={url} alt="" onError={() => setFailedIcon(url)} />}
+                    </Show>
+                  }
+                >
+                  {(art) => <art.Icon class="skill-artwork-glyph" />}
                 </Show>
               }
             />{" "}

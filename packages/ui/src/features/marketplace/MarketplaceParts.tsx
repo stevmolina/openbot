@@ -19,6 +19,7 @@ import { createSignal, For, Match, Show, Switch } from "solid-js";
 import { CONNECTOR_LISTINGS } from "../connectors/connector-catalog";
 import { LogoTile } from "../settings/IntegrationLayout";
 import type { MarketplaceApp } from "./marketplace-model";
+import { type SkillArtworkSubject, skillArtwork } from "./skill-artwork";
 
 /** The top of an agent or skill page. The window moves the focus to the title when the page opens. */
 export function PageHead(props: { media: JSX.Element; title: string; description: string; actions?: JSX.Element }) {
@@ -149,33 +150,61 @@ export function MenuCheck(props: { on: boolean }) {
   );
 }
 
-/** A skill's own icon, or a spark when it has none or the icon does not load. "row" is the tile of a list row. */
-export function SkillMark(props: { skill: Pick<MarketplaceSkillSummary, "iconUrl">; size: "sm" | "row" | "md" }) {
+/**
+ * A skill's icon on its tile: the own line icon of a first-party skill, else the image of the
+ * listing, or a spark when it has none or the image does not load. "row" is the tile of a list row.
+ */
+export function SkillMark(props: {
+  skill: Pick<MarketplaceSkillSummary, "iconUrl"> & SkillArtworkSubject;
+  size: "sm" | "row" | "md";
+}) {
   const [failed, setFailed] = createSignal<string | null>(null);
   const url = () => (props.skill.iconUrl && props.skill.iconUrl !== failed() ? props.skill.iconUrl : null);
+  const artwork = () => skillArtwork(props.skill);
   return (
-    <span class="marketplace-skill-mark" data-size={props.size} data-kind={url() ? "icon" : "none"} aria-hidden="true">
-      <SkillIcon url={url()} onError={setFailed} />
+    <span
+      class="marketplace-skill-mark"
+      data-size={props.size}
+      data-kind={artwork() ? "artwork" : url() ? "icon" : "none"}
+      data-skill-artwork={artwork() ? "" : undefined}
+      style={artwork()?.style}
+      aria-hidden="true"
+    >
+      <Show when={artwork()} keyed fallback={<SkillIcon url={url()} onError={setFailed} />}>
+        {(art) => <art.Icon class="skill-artwork-glyph" />}
+      </Show>
     </span>
   );
 }
 
-/** A skill's icon, or the sparkles when it has none or the icon does not load. */
-export function SkillIcon(props: { url: string | null | undefined; onError?: (url: string) => void }) {
+/** A skill's icon, or the sparkles when it has none or the icon does not load. A first-party skill draws its own. */
+export function SkillIcon(props: {
+  url: string | null | undefined;
+  skill?: SkillArtworkSubject | undefined;
+  onError?: (url: string) => void;
+}) {
   const [failed, setFailed] = createSignal<string | null>(null);
   const url = () => (props.url && props.url !== failed() ? props.url : null);
   return (
-    <Show when={url()} fallback={<Sparkles />} keyed>
-      {(src) => (
-        <img
-          src={src}
-          alt=""
-          onError={() => {
-            setFailed(src);
-            props.onError?.(src);
-          }}
-        />
-      )}
+    <Show
+      when={skillArtwork(props.skill)}
+      keyed
+      fallback={
+        <Show when={url()} fallback={<Sparkles />} keyed>
+          {(src) => (
+            <img
+              src={src}
+              alt=""
+              onError={() => {
+                setFailed(src);
+                props.onError?.(src);
+              }}
+            />
+          )}
+        </Show>
+      }
+    >
+      {(art) => <art.Icon class="skill-artwork-glyph" />}
     </Show>
   );
 }

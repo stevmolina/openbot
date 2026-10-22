@@ -7,7 +7,7 @@ import { MarketplaceAppPage } from "./MarketplaceAppPage";
 import { MarketplaceBrowse } from "./MarketplaceBrowse";
 import { MarketplaceSkillPage } from "./MarketplaceSkillPage";
 import { createMarketplaceListing } from "./marketplace-listing";
-import type { MarketplaceModel } from "./marketplace-model";
+import { type MarketplaceModel, skillDisplayName } from "./marketplace-model";
 import type {
   MarketplaceCustomApps,
   MarketplaceNavigation,
@@ -37,8 +37,9 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
     case "browse":
       return fallback;
     case "agent":
-    case "skill":
       return view.listing.name;
+    case "skill":
+      return skillDisplayName(view.listing.name);
     case "app":
       return scope.model.apps().find((app) => app.id === view.id)?.name ?? fallback;
     case "custom-apps":

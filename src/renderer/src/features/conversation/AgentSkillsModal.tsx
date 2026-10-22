@@ -527,7 +527,10 @@ export function AgentSkillsModal(props: AgentSkillsModalProps) {
                                             class="agent-skill-open"
                                             onClick={() => void openDetail(skill())}
                                           >
-                                            <SkillGlyph iconUrl={catalog()[skill().skillId]?.iconUrl ?? null} />
+                                            <SkillGlyph
+                                              iconUrl={catalog()[skill().skillId]?.iconUrl ?? null}
+                                              skill={{ id: skill().skillId }}
+                                            />
                                             <div class="agent-skill-copy">
                                               <div class="agent-skill-title">
                                                 <strong>{skill().name}</strong>
