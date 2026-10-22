@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
 import {
@@ -184,7 +185,10 @@ if (commandLineUserDataDirectory) {
 // `openbot://` to it. `setName` below hides the packaged name, so it is read here, before it runs.
 const renamedPackagedBuild = app.isPackaged && app.getName() !== "OpenBot";
 if (renamedPackagedBuild && !commandLineUserDataDirectory) {
-  app.setPath("userData", join(app.getPath("appData"), app.getName()));
+  // `setPath` expects the folder to exist, and a first launch has none yet.
+  const renamedUserData = join(app.getPath("appData"), app.getName());
+  mkdirSync(renamedUserData, { recursive: true });
+  app.setPath("userData", renamedUserData);
 }
 app.setName("OpenBot");
 app.enableSandbox();

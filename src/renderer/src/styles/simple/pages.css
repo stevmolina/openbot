@@ -436,6 +436,21 @@
   margin-bottom: var(--openbot-space-2);
 }
 
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--openbot-space-2) var(--openbot-space-4);
+  margin-top: var(--openbot-space-2);
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+}
+
+:root[data-openbot-layout="simple"] .agent-usage .simple-usage-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--openbot-space-2);
+}
+
 :root[data-openbot-layout="simple"] .agent-usage .simple-usage-panel-actions {
   display: flex;
   align-items: center;

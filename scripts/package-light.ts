@@ -53,9 +53,12 @@ const configPath = join(root, ".openbot-build", "electron-builder.light.yml");
 mkdirSync(join(root, ".openbot-build"), { recursive: true });
 writeFileSync(configPath, stringify(config));
 
-run("bunx", ["electron-builder", "--dir", "--mac", "--arm64", "--config", configPath]);
+// The voice, remote desktop and Computer Use runtimes are prepared for this machine's architecture,
+// so the app is built for the same one.
+if (process.arch !== "arm64" && process.arch !== "x64") throw new Error(`Unsupported architecture ${process.arch}.`);
+run("bunx", ["electron-builder", "--dir", "--mac", `--${process.arch}`, "--config", configPath]);
 
-const appPath = join(root, "dist-light", "mac-arm64", `${PRODUCT_NAME}.app`);
+const appPath = join(root, "dist-light", process.arch === "arm64" ? "mac-arm64" : "mac", `${PRODUCT_NAME}.app`);
 if (!existsSync(appPath)) throw new Error(`No app at ${appPath}`);
 // Without update metadata the updater reports "unsupported" and never checks.
 if (existsSync(join(appPath, "Contents", "Resources", "app-update.yml"))) {

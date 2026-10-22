@@ -262,13 +262,14 @@ export function DiagramBoard(props: DiagramBoardProps) {
     });
   };
   /**
-   * "Connect" on an agent that no routine starts: it joins the routine in focus, or the only routine,
-   * as drawing the connection from that routine's port does. Otherwise it says what to do.
+   * "Connect" on an agent that no routine starts: it joins the routine in focus, or the only routine.
+   * The connection is drawn from the agent that routine starts, as a drag between two agents is,
+   * because a routine node is not a source that the host accepts. Otherwise it says what to do.
    */
   const connectToTrigger = (nodeId: string) => {
     const routineIds = props.diagram.nodes.flatMap((node) => (node.kind === "routine" ? [node.id] : []));
     const from = props.focusRoutineId ?? (routineIds.length === 1 ? routineIds[0] : undefined);
-    if (from) tryConnect(from, nodeId);
+    if (from) tryConnect(props.diagram.edges.find((edge) => edge.from === from)?.to ?? from, nodeId);
     else announce(t(routineIds.length === 0 ? "simple.routine.connectNone" : "simple.routine.connectPick"), "danger");
   };
   const startConnection = (from: string) => {

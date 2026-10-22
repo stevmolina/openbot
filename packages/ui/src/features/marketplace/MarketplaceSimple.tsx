@@ -75,7 +75,7 @@ function AgentRow(props: { scope: MarketplaceScope; listing: MarketplaceAgentSum
 
 /**
  * The Agents tab of the simple layout: the most installed agents as cards, then every agent in a
- * two-column list. A search or a filter shows its matches in the list alone.
+ * two-column list, the featured ones too. A search or a filter shows its matches in the list alone.
  */
 export function SimpleAgentHome(props: {
   scope: MarketplaceScope;
@@ -90,8 +90,8 @@ export function SimpleAgentHome(props: {
   const expanded = () => props.expanded;
   const featured = () =>
     props.narrowed ? [] : [...props.items].sort((a, b) => b.installs - a.installs).slice(0, FEATURED_LIMIT);
-  const rest = () => props.items.filter((item) => !featured().includes(item));
-  const shown = () => (props.narrowed || expanded() ? rest() : rest().slice(0, LIST_LIMIT));
+  // The cards have no Add button, so a featured agent stays in the list, where it can be added.
+  const shown = () => (props.narrowed || expanded() ? props.items : props.items.slice(0, LIST_LIMIT));
   return (
     <div class="simple-market-home">
       <Show when={featured().length > 0}>
@@ -102,11 +102,11 @@ export function SimpleAgentHome(props: {
           </div>
         </section>
       </Show>
-      <Show when={rest().length > 0}>
+      <Show when={props.items.length > 0}>
         <section class="simple-market-section" aria-labelledby="simple-market-list-heading">
           <div class="simple-market-section-head">
             <h3 id="simple-market-list-heading">{t("simple.market.allAgents")}</h3>
-            <Show when={!props.narrowed && rest().length > LIST_LIMIT}>
+            <Show when={!props.narrowed && props.items.length > LIST_LIMIT}>
               <Button
                 type="button"
                 variant="ghost"

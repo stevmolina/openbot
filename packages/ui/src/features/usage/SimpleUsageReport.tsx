@@ -5,6 +5,7 @@ import type { JSX } from "@solidjs/web";
 import { createMemo, createStore, For, onSettled, Show } from "solid-js";
 import { useText } from "../../text";
 import { UsageChart } from "./UsageChart";
+import { UsageProviderMark } from "./UsageProviderMark";
 import {
   type UsageAgentLabel,
   type UsageMetric,
@@ -14,6 +15,7 @@ import {
   usageNumber,
   usageProviderName,
   usageProviders,
+  usageSeriesColor,
 } from "./usage-format";
 
 /** The numbers that the cards leave out, one step down in "More numbers". */
@@ -63,6 +65,8 @@ export function SimpleUsageReport(props: {
     usageProviders(props.result.models)
       .filter((provider) => provider.cost === null)
       .map((provider) => usageProviderName(provider.provider));
+  /** The chart draws one area per provider, so with several the dots below it name them. */
+  const legendProviders = () => usageProviders(props.result.models);
   const messages = () => totals().userMessages + totals().assistantMessages;
   const agents = createMemo(() =>
     [...props.result.agents].sort((a, b) =>
@@ -82,6 +86,13 @@ export function SimpleUsageReport(props: {
       ? t("usage.unavailable")
       : format.percent(total ? amount / total : 0, { maximumFractionDigits: 0 });
   };
+  /** The heading follows the tab that is open. */
+  const breakdownHeading = () =>
+    state.breakdown === "model"
+      ? t("simple.usage.byModel")
+      : state.breakdown === "day"
+        ? t("simple.usage.byDay")
+        : t("simple.usage.byAgent");
   let dailyTable: HTMLTableElement | undefined;
   const showDailyData = () => {
     setState((draft) => {
@@ -166,6 +177,23 @@ export function SimpleUsageReport(props: {
           </div>
         </div>
         <UsageChart result={props.result} metric={props.metric} />
+        <Show when={legendProviders().length > 1}>
+          <div class="simple-usage-legend">
+            <For each={legendProviders()}>
+              {(provider) => (
+                <span>
+                  <span
+                    class="agent-usage-series-dot"
+                    style={{ background: usageSeriesColor(provider.provider) }}
+                    aria-hidden="true"
+                  />
+                  <UsageProviderMark provider={provider.provider} />
+                  {usageProviderName(provider.provider)}
+                </span>
+              )}
+            </For>
+          </div>
+        </Show>
       </section>
       <SlidingTabs.Root
         value={state.breakdown}
@@ -176,7 +204,7 @@ export function SimpleUsageReport(props: {
         }
       >
         <div class="agent-usage-section-header">
-          <h3>{t("simple.usage.byAgent")}</h3>
+          <h3>{breakdownHeading()}</h3>
           <SlidingTabs.List aria-label={t("usage.breakdown.label")}>
             <SlidingTabs.Trigger value="agent">{t("usage.breakdown.agent")}</SlidingTabs.Trigger>
             <SlidingTabs.Trigger value="model">{t("usage.breakdown.model")}</SlidingTabs.Trigger>

@@ -32,7 +32,7 @@
   --openbot-simple-title-leading: 34px;
   --openbot-simple-card-radius: 18px;
   --openbot-simple-bar-photo-ring: #1a1a1a;
-  --openbot-simple-bar-photo-text: #ffffff;
+  --openbot-simple-bar-photo-text: #1a1a1a;
 
   color-scheme: light;
 
@@ -61,8 +61,8 @@
   /* Text */
   --openbot-text-primary: #1a1a1a;
   --openbot-text-secondary: #3d3d3a;
-  --openbot-text-muted: #7b7a76;
-  --openbot-text-dim: #8a8984;
+  --openbot-text-muted: #6e6d69;
+  --openbot-text-dim: #747370;
   --openbot-text-readable: rgba(20, 20, 20, 0.6);
   --openbot-text-placeholder: #9c9b97;
 

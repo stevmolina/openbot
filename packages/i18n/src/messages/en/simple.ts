@@ -46,6 +46,8 @@ export const messages = defineMessages("simple", {
   "simple.usage.tokensPerDay": "Tokens per day",
   "simple.usage.costPerDay": "Cost per day",
   "simple.usage.byAgent": "By agent",
+  "simple.usage.byModel": "By model",
+  "simple.usage.byDay": "By day",
   "simple.usage.runsOn": "Runs on",
   "simple.usage.moreNumbers": "More numbers",
   "simple.market.mostInstalled": "Most installed",

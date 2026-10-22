@@ -44,12 +44,14 @@ export function SimpleClockList() {
     if (!serverId) return;
     const source = desktopScheduleSource();
     let current = true;
+    let generation = 0;
     const read = () => {
+      const request = ++generation;
       const now = Date.now();
       source
         .calendar({ from: new Date(now).toISOString(), to: new Date(now + UPCOMING_WINDOW_MS).toISOString() }, serverId)
         .then((calendar) => {
-          if (current) setUpcoming(upcomingRuns(calendar, Date.now()));
+          if (current && request === generation) setUpcoming(upcomingRuns(calendar, Date.now()));
         })
         .catch(() => {
           // The row shows no count while the calendar does not answer.
