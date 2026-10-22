@@ -31,6 +31,16 @@ export interface PickerModel {
   variants: { id: string; name: string }[];
 }
 
+/**
+ * Whether a model's description earns its line. Text that the app wrote when it found the model, or
+ * text that every model of the provider shares, does not tell the models apart, so it stays hidden.
+ */
+export function hasSpecificDescription(model: PickerModel, peers: readonly PickerModel[]): boolean {
+  const value = model.description.trim();
+  if (!value || /\bdiscovered from\b/i.test(value)) return false;
+  return peers.length < 2 || peers.some((peer) => peer.description.trim() !== value);
+}
+
 export interface PickerModelGroup {
   name: string;
   models: PickerModel[];
