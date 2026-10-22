@@ -46,20 +46,45 @@
   transform: scale(0.97);
 }
 
-/* A filled field with no border, in the menu item shape. */
-.provider-model-search {
-  height: var(--openbot-control-md);
-  flex-shrink: 0;
+/* The filter of a long model list: a small filled field with no border, in the menu item shape. */
+.provider-model-filter-row {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
   margin-bottom: var(--ui-menu-padding);
+}
+
+.provider-model-filter-icon {
+  position: absolute;
+  top: 50%;
+  left: var(--ui-menu-inset);
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
+  pointer-events: none;
+  stroke-width: var(--openbot-icon-stroke);
+  translate: 0 -50%;
+}
+
+.provider-model-filter-row .provider-model-filter {
+  width: 100%;
+  height: var(--openbot-control-sm);
+  margin: 0;
   border-color: transparent;
   border-radius: var(--ui-menu-item-radius);
   background: var(--ui-menu-item-hover);
-  padding-inline: var(--ui-menu-inset);
+  padding-right: var(--ui-menu-inset);
+  padding-left: calc(var(--ui-menu-inset) + var(--openbot-icon-sm) + var(--openbot-space-2));
   font-size: var(--openbot-text-md);
 }
 
-.provider-model-search:focus-visible {
+.provider-model-filter-row .provider-model-filter:focus-visible {
   border-color: var(--ui-menu-edge);
+}
+
+.provider-model-filter-row .provider-model-filter::-webkit-search-cancel-button {
+  cursor: pointer;
 }
 
 .provider-model-scroll {

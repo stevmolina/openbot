@@ -1391,24 +1391,20 @@ body,
   color: var(--openbot-text-placeholder);
 }
 
-.provider-picker-option-selected,
-.provider-model-option-selected {
+.provider-picker-option-selected {
   border-color: var(--openbot-border-focus);
   background: var(--openbot-accent-soft);
   color: var(--openbot-text-primary);
 }
 
-.provider-picker-option,
-.provider-model-option {
+.provider-picker-option {
   border-color: var(--openbot-border);
   background: var(--openbot-bg-control);
   color: var(--openbot-text-secondary);
 }
 
 .provider-picker-option:hover:not(.provider-picker-option-unavailable),
-.provider-picker-option:focus-within,
-.provider-model-option:hover,
-.provider-model-option:focus-visible {
+.provider-picker-option:focus-within {
   background: var(--openbot-bg-control-hover);
   color: var(--openbot-text-primary);
 }

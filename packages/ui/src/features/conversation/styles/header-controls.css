@@ -92,8 +92,7 @@
 }
 
 .provider-model-trigger:focus-visible,
-.provider-model-rail-button:focus-visible,
-.provider-model-option:focus-visible {
+.provider-model-rail-button:focus-visible {
   outline: 1px solid var(--openbot-accent);
   outline-offset: 1px;
 }
@@ -281,14 +280,15 @@
 }
 
 .provider-model-popover {
-  --provider-model-rail-bg: color-mix(in srgb, var(--openbot-text-primary) 3%, var(--ui-menu-bg));
-  --provider-model-segment-radius: calc(var(--ui-menu-item-radius) - var(--openbot-space-0-5));
+  /* The rail is the muted side. The open entry is a raised card on it, in the color of the list. */
+  --provider-model-rail-bg: var(--openbot-bg-sidebar);
+  --provider-model-card-edge: color-mix(in srgb, var(--openbot-text-primary) 6%, transparent);
   position: relative;
   z-index: var(--openbot-layer-dropdown);
   display: flex;
-  width: min(560px, calc(100vw - 24px));
+  width: min(540px, calc(100vw - 24px));
   /* One height for every provider, so the panel does not jump when the rail moves. */
-  height: min(460px, calc(100dvh - 100px), var(--kb-popper-content-available-height, 460px));
+  height: min(420px, calc(100dvh - 100px), var(--kb-popper-content-available-height, 420px));
   min-height: 260px;
   flex-direction: column;
   overflow: hidden;
@@ -304,38 +304,6 @@
 /* The copy that ContentExitMotion leaves in the place of the closed popover plays the exit. */
 .provider-model-popover:not([data-expanded]) {
   animation: ui-menu-out var(--ui-menu-duration) var(--ui-menu-ease) both;
-}
-
-/* One search for the models of every provider, above the rail and the list. */
-.provider-model-search-row {
-  position: relative;
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  border-bottom: 1px solid var(--openbot-border);
-  padding: var(--ui-menu-padding);
-}
-
-.provider-model-search-icon {
-  position: absolute;
-  top: 50%;
-  left: calc(var(--ui-menu-padding) + var(--ui-menu-inset));
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  color: var(--openbot-text-muted);
-  pointer-events: none;
-  stroke-width: var(--openbot-icon-stroke);
-  translate: 0 -50%;
-}
-
-.provider-model-search-row .provider-model-search {
-  width: 100%;
-  margin: 0;
-  padding-left: calc(var(--ui-menu-inset) + var(--openbot-icon-sm) + var(--openbot-space-2));
-}
-
-.provider-model-search-row .provider-model-search::-webkit-search-cancel-button {
-  cursor: pointer;
 }
 
 .provider-model-layout {
@@ -354,7 +322,6 @@
   gap: var(--openbot-space-0-5);
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-right: 1px solid var(--openbot-border);
   background: var(--provider-model-rail-bg);
   padding: var(--ui-menu-padding);
 }
@@ -364,15 +331,6 @@
   flex-direction: column;
   align-items: stretch;
   gap: var(--openbot-space-0-5);
-}
-
-/* The heading over the providers that are not ready yet. */
-.provider-model-rail-heading {
-  padding: var(--openbot-space-2) var(--openbot-space-2) var(--openbot-space-1);
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  font-weight: var(--openbot-weight-medium);
-  line-height: 16px;
 }
 
 /* Opens the provider settings, to add or connect a provider. */
@@ -427,8 +385,8 @@
   position: relative;
   display: flex;
   width: 100%;
-  height: 36px;
-  flex: 0 0 36px;
+  height: var(--openbot-control-lg);
+  flex: 0 0 var(--openbot-control-lg);
   align-items: center;
   justify-content: flex-start;
   gap: var(--openbot-space-2);
@@ -437,8 +395,8 @@
   background: transparent;
   padding: 0 var(--openbot-space-2);
   color: var(--openbot-text-secondary);
-  font-size: var(--openbot-text-md);
-  font-weight: var(--openbot-weight-medium);
+  font-size: var(--openbot-text-lg);
+  font-weight: var(--openbot-weight-regular);
   text-align: left;
   cursor: pointer;
   box-shadow: none;
@@ -484,6 +442,15 @@
   animation: provider-model-dot-pulse 1.2s ease-in-out infinite;
 }
 
+/* The entry of the agent's model, while another entry is open. */
+.provider-model-rail-current {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-accent);
+}
+
 @keyframes provider-model-dot-pulse {
   50% {
     opacity: 0.35;
@@ -495,10 +462,14 @@
   color: var(--openbot-text-primary);
 }
 
-.provider-model-rail .provider-model-rail-button-selected {
-  background: color-mix(in srgb, var(--openbot-text-primary) 8%, transparent);
-  box-shadow: inset 0 0 0 1px var(--ui-menu-edge);
+.provider-model-rail .provider-model-rail-button-selected,
+.provider-model-rail .provider-model-rail-button-selected:hover {
+  background: var(--openbot-bg-surface-raised);
+  box-shadow:
+    0 1px 3px var(--openbot-shadow-popover-ambient),
+    0 0 0 1px var(--provider-model-card-edge);
   color: var(--openbot-text-primary);
+  font-weight: var(--openbot-weight-semibold);
 }
 
 .provider-model-rail-button .provider-model-mark {
@@ -569,65 +540,12 @@
   display: none;
 }
 
-.provider-model-heading {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: var(--openbot-space-2);
-  /* The right inset lives on the text, not the row, so the action button can line its right edge up
-   * with the search field and the model rows below it. */
-  padding: var(--openbot-space-1) 0 var(--openbot-space-1) var(--ui-menu-inset);
+/* While the recent list shows, the provider panels wait behind it. */
+.provider-model-layout[data-results] .provider-model-panel:not(.provider-model-results) {
+  display: none;
 }
 
-/* The name and the version share one line. The version is the part that gives way. */
-.provider-model-heading-text {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  align-items: baseline;
-  gap: var(--openbot-space-2);
-  padding-right: 4px;
-}
-
-.provider-model-heading-text strong {
-  flex: 0 0 auto;
-}
-
-.provider-model-heading-text span {
-  min-width: 0;
-}
-
-/* The icons are raw lucide exports with no intrinsic size, and only the icon-only button sizes
- * carry a rule, so an icon beside a label needs one here to match every other button. */
-.provider-model-heading .ui-button,
-.provider-model-empty .ui-button-variant-outline {
-  border-color: transparent;
-  border-radius: var(--ui-menu-item-radius);
-  background: var(--ui-menu-item-hover);
-  box-shadow: none;
-  color: var(--openbot-text-primary);
-}
-
-.provider-model-heading .ui-button:hover,
-.provider-model-empty .ui-button-variant-outline:hover {
-  background: color-mix(in srgb, var(--openbot-text-primary) 10%, transparent);
-}
-
-.provider-model-heading .ui-button svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  stroke-width: var(--openbot-icon-stroke);
-}
-
-.provider-model-heading strong,
-.provider-model-heading span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The runtime status: a filled block with no border, as the search field. */
+/* The runtime status: a filled block with no border. */
 .provider-model-empty {
   display: grid;
   justify-items: start;
@@ -642,233 +560,227 @@
   line-height: 18px;
 }
 
-.provider-model-heading strong {
+.provider-model-empty .ui-button-variant-outline,
+.provider-model-add-custom.ui-button {
+  border-color: transparent;
+  border-radius: var(--ui-menu-item-radius);
+  background: var(--ui-menu-item-hover);
+  box-shadow: none;
   color: var(--openbot-text-primary);
-  font-size: var(--openbot-text-lg);
-  font-weight: 620;
-  line-height: 20px;
 }
 
-.provider-model-heading span {
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  line-height: 16px;
+.provider-model-empty .ui-button-variant-outline:hover,
+.provider-model-add-custom.ui-button:hover {
+  background: color-mix(in srgb, var(--openbot-text-primary) 10%, transparent);
 }
 
 .provider-model-empty > .ui-progress {
   justify-self: stretch;
 }
 
+/* Adds a custom endpoint, below the Custom list, where the settings that do it are not near. */
+.provider-model-add-custom.ui-button {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: var(--ui-menu-padding);
+}
+
+/* The icons are raw lucide exports with no intrinsic size, so an icon beside a label needs one here. */
+.provider-model-add-custom svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
 .provider-model-list {
   display: grid;
-  gap: 0;
+  gap: 1px;
 }
 
-.provider-model-effort {
-  flex-shrink: 0;
+/* A model row is one line: the name, and on the chosen model its fast mode, its effort and a check. */
+.provider-model-row {
   display: flex;
-  /* The effort segments go to a line of their own when they do not fit beside the label. */
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--openbot-space-1) 12px;
-  /* The separator runs to both edges of the panel, as in the menus. */
-  margin: var(--ui-menu-padding) calc(var(--ui-menu-padding) * -1) 0;
-  border-top: 1px solid var(--openbot-border);
-  padding: var(--ui-menu-padding) var(--ui-menu-padding) 0 calc(var(--ui-menu-padding) + var(--ui-menu-inset));
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  line-height: 17px;
-}
-
-/* The effort and auto-approve rows are one group under one separator. */
-.provider-model-effort + .provider-model-effort {
-  margin-top: 0;
-  border-top: 0;
-  padding-top: var(--openbot-space-1);
-}
-
-/* Each row is as high as the effort control, so the switch and the segments have room. */
-.provider-model-effort > :first-child {
-  display: flex;
-  min-height: var(--openbot-control-sm);
-  align-items: center;
-}
-
-.provider-model-effort-select {
-  width: 128px;
-}
-
-/* Effort as segments, in the SlidingTabs look and timing. */
-.provider-model-effort-segments {
-  --provider-model-effort-duration: 250ms;
-  --provider-model-effort-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  position: relative;
-  display: flex;
-  /* On a line of their own, the segments can shrink. A long label then ends in an ellipsis. */
-  flex: 1 1 auto;
   min-width: 0;
-  gap: var(--openbot-space-0-5);
-  border-radius: var(--ui-menu-item-radius);
-  background: color-mix(in srgb, var(--openbot-text-primary) 3%, transparent);
-  padding: var(--openbot-space-0-5);
-}
-
-.provider-model-effort-segment {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.provider-model-effort-segment-control {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  height: calc(var(--openbot-control-sm) - 2 * var(--openbot-space-0-5));
+  height: var(--openbot-control-lg);
   align-items: center;
-  justify-content: center;
-  border-radius: var(--provider-model-segment-radius);
-  padding-inline: var(--openbot-space-2);
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  font-weight: var(--openbot-weight-medium);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: color var(--provider-model-effort-duration) var(--provider-model-effort-ease);
-}
-
-.provider-model-effort-segment-control label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: inherit;
-}
-
-.provider-model-effort-segment-control:hover:not([data-disabled]),
-.provider-model-effort-segment-control[data-checked] {
-  color: var(--openbot-text-primary);
-}
-
-.provider-model-effort-segment:has(:focus-visible) .provider-model-effort-segment-control {
-  box-shadow: 0 0 0 1px var(--openbot-text-muted);
-}
-
-.provider-model-effort-segment-control[data-disabled] {
-  opacity: 0.5;
-  cursor: default;
-}
-
-/* The chosen segment's background. EffortSegments places it, and it slides to a new choice. */
-.provider-model-effort-pill {
-  position: absolute;
-  top: var(--openbot-space-0-5);
-  left: 0;
-  z-index: 0;
-  width: 0;
-  height: calc(var(--openbot-control-sm) - 2 * var(--openbot-space-0-5));
-  border-radius: var(--provider-model-segment-radius);
-  background: color-mix(in srgb, var(--openbot-text-primary) 9%, transparent);
-  pointer-events: none;
-  transition:
-    transform var(--provider-model-effort-duration) var(--provider-model-effort-ease),
-    width var(--provider-model-effort-duration) var(--provider-model-effort-ease);
-}
-
-.provider-model-effort-pill[data-initializing] {
-  transition: none;
-}
-
-.provider-model-effort-segments:has([data-disabled]) .provider-model-effort-pill {
-  opacity: 0.5;
-}
-
-.provider-model-effort-select .ui-select-trigger {
-  border-color: transparent;
+  gap: var(--openbot-space-1);
   border-radius: var(--ui-menu-item-radius);
-  background: var(--ui-menu-item-hover);
-  box-shadow: none;
+  transition: background-color var(--openbot-duration-hover) ease;
 }
 
-.provider-model-effort-select .ui-select-trigger:is(:hover, [data-expanded]) {
-  background: color-mix(in srgb, var(--openbot-text-primary) 10%, transparent);
-}
-
-.provider-model-effort-content {
-  border-radius: var(--ui-menu-radius);
-  background: var(--ui-menu-bg);
-  box-shadow: var(--ui-menu-panel-shadow);
-  animation: ui-menu-in var(--ui-menu-duration) var(--ui-menu-ease) both;
-}
-
-.provider-model-effort-content .ui-select-listbox {
-  padding: var(--ui-menu-padding);
-}
-
-.provider-model-effort-content .ui-select-item {
-  border-radius: var(--ui-menu-item-radius);
-  padding-block: var(--openbot-space-1-5);
-  padding-left: var(--ui-menu-inset);
-  font-size: var(--openbot-text-md);
-}
-
-.provider-model-effort-content .ui-select-item[data-highlighted] {
+.provider-model-row:hover:not(.provider-model-row-disabled),
+.provider-model-row-selected {
   background: var(--ui-menu-item-hover);
 }
 
-/* A model row is one line. The selected row has a quiet background and a check on the right. */
+.provider-model-row:has(> .provider-model-option:focus-visible) {
+  outline: 1px solid var(--openbot-accent);
+  outline-offset: -1px;
+}
+
 .provider-model-option {
-  position: relative;
   display: flex;
-  width: 100%;
+  min-width: 0;
+  height: 100%;
+  flex: 1 1 auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: var(--openbot-space-2);
   border: 0;
-  border-radius: var(--ui-menu-item-radius);
+  border-radius: inherit;
+  outline: 0;
   background: transparent;
-  padding: var(--openbot-space-1) var(--ui-menu-inset);
+  padding: 0 var(--ui-menu-inset);
   color: var(--openbot-text-primary);
+  font-size: var(--openbot-text-lg);
+  font-weight: var(--openbot-weight-regular);
   cursor: pointer;
   text-align: left;
-  transition:
-    background-color var(--openbot-duration-hover) ease,
-    color var(--openbot-duration-hover) ease;
 }
 
-.provider-model-option.provider-model-option-selected,
-.provider-model-option:hover:not(:disabled),
-.provider-model-option:focus-visible {
-  background: var(--ui-menu-item-hover);
+/* The row draws the hover, the choice and the focus ring, so the button under it stays clear. */
+.provider-model-row > .provider-model-option:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  background: transparent;
+  box-shadow: none;
+  color: var(--openbot-text-primary);
 }
 
-.provider-model-option:disabled {
+.provider-model-row > .provider-model-option:disabled {
   color: var(--openbot-text-dim);
   cursor: not-allowed;
 }
 
 .provider-model-option-name {
-  display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 7px;
-}
-
-.provider-model-option-name > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: var(--openbot-text-md);
   line-height: 18px;
 }
 
-/* The default and Free badges are quiet text, with no pill. */
-.provider-model-option-name small {
+/* The default, Free and provider tags are quiet text, with no pill. */
+.provider-model-option-tag {
   flex: 0 0 auto;
   color: var(--openbot-text-muted);
   font-size: var(--openbot-text-sm);
   font-weight: var(--openbot-weight-regular);
   line-height: 15px;
+  white-space: nowrap;
+}
+
+.provider-model-option:disabled .provider-model-option-tag {
+  color: var(--openbot-text-dim);
+}
+
+.provider-model-row-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--openbot-space-1);
+  padding-right: var(--openbot-space-2);
+}
+
+/* The effort of the chosen model: the level in the accent color, which opens the levels of the model. */
+.provider-model-effort-chip {
+  display: inline-flex;
+  max-width: 132px;
+  height: var(--openbot-control-xs);
+  align-items: center;
+  gap: var(--openbot-space-0-5);
+  border: 0;
+  border-radius: var(--openbot-radius-sm);
+  background: var(--openbot-accent-soft);
+  padding: 0 var(--openbot-space-1) 0 var(--openbot-space-2);
+  color: var(--openbot-accent-text);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--openbot-duration-hover) ease;
+}
+
+.provider-model-effort-chip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.provider-model-effort-chip svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+  flex: 0 0 auto;
+  opacity: 0.75;
+  stroke-width: 2;
+}
+
+.provider-model-effort-chip:hover:not(:disabled),
+.provider-model-effort-chip[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--openbot-accent) 24%, transparent);
+}
+
+/* Fast mode: a lightning bolt in the accent color when it is on, and dim when it is off. */
+.provider-model-fast {
+  display: grid;
+  width: var(--openbot-control-sm);
+  height: var(--openbot-control-sm);
+  place-items: center;
+  border: 0;
+  border-radius: var(--openbot-radius-sm);
+  background: transparent;
+  color: var(--openbot-text-dim);
+  cursor: pointer;
+  transition:
+    background-color var(--openbot-duration-hover) ease,
+    color var(--openbot-duration-hover) ease;
+}
+
+.provider-model-fast svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
+.provider-model-fast:hover:not(:disabled) {
+  background: var(--ui-menu-item-hover);
+  color: var(--openbot-text-muted);
+}
+
+.provider-model-fast[aria-pressed="true"] {
+  color: var(--openbot-accent-text);
+}
+
+.provider-model-fast[aria-pressed="true"] svg {
+  fill: currentColor;
+}
+
+.provider-model-fast[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--openbot-accent-soft);
+  color: var(--openbot-accent-text);
+}
+
+:is(.provider-model-fast, .provider-model-effort-chip):focus-visible {
+  outline: 1px solid var(--openbot-accent);
+  outline-offset: 1px;
+}
+
+:is(.provider-model-fast, .provider-model-effort-chip):disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* The effort menu: the chosen level is in the accent color, with a check at the end. */
+.ui-action-menu.provider-model-effort-menu {
+  min-width: 160px;
+}
+
+.ui-action-menu.provider-model-effort-menu [role="menuitemradio"][data-checked] {
+  color: var(--openbot-accent-text);
+  font-weight: var(--openbot-weight-semibold);
+}
+
+.ui-action-menu.provider-model-effort-menu [role="menuitemradio"][data-checked] > svg.ui-menu-trailing {
+  color: var(--openbot-accent-text);
+  stroke-width: 2;
 }
 
 /* The tick of the selected row, at its right edge. */
@@ -876,6 +788,7 @@
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
   flex: 0 0 auto;
+  margin-left: var(--openbot-space-1);
   fill: none;
   stroke: var(--openbot-text-secondary);
   stroke-linecap: round;
@@ -883,50 +796,31 @@
   stroke-width: 2;
 }
 
-/* While the list across providers shows, the provider panels wait behind it. */
-.provider-model-layout[data-results] .provider-model-panel:not(.provider-model-results) {
-  display: none;
-}
-
-/* A model row: the name and its badges, and one quiet line under them. */
-.provider-model-option-text {
-  display: grid;
-  min-width: 0;
-  flex: 1 1 auto;
-  gap: 1px;
-}
-
-.provider-model-option-description {
-  overflow: hidden;
-  color: var(--openbot-text-muted);
-  font-size: var(--openbot-text-sm);
-  line-height: 16px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.provider-model-option:disabled .provider-model-option-description {
-  color: var(--openbot-text-dim);
-}
-
-/* A row of a list across providers carries the mark of its provider before the name. */
-.provider-model-result-option {
+/* A row of the recent list: the mark of its provider, the name and the provider, in one line. */
+.provider-model-option.provider-model-result-option {
+  height: var(--openbot-control-lg);
   justify-content: flex-start;
-  gap: var(--openbot-space-2);
+  border-radius: var(--ui-menu-item-radius);
+  padding-right: var(--openbot-space-3);
+  transition: background-color var(--openbot-duration-hover) ease;
+}
+
+.provider-model-option.provider-model-result-option:is(:hover:not(:disabled), :focus-visible),
+.provider-model-option.provider-model-result-option.provider-model-option-selected {
+  background: var(--ui-menu-item-hover);
+}
+
+.provider-model-option.provider-model-result-option:focus-visible {
+  outline: 1px solid var(--openbot-accent);
+  outline-offset: -1px;
 }
 
 .provider-model-option.provider-model-result-option > .provider-model-mark {
   flex: 0 0 auto;
 }
 
-.provider-model-result-group {
-  display: flex;
-  align-items: center;
-  gap: var(--openbot-space-1-5);
-}
-
-.provider-model-result-group:not(:first-child) {
-  margin-top: var(--openbot-space-1);
+.provider-model-option.provider-model-result-option > .provider-model-check {
+  margin-left: auto;
 }
 
 /* A provider to connect: its mark, what is missing, and the one action that fixes it. */
@@ -936,6 +830,12 @@
   padding: var(--openbot-space-6) var(--openbot-space-4);
   color: var(--openbot-text-secondary);
   text-align: center;
+}
+
+/* With no models under it, it stands alone in the middle of the list area. */
+.provider-model-panel:not(:has(.provider-model-row)) > .provider-model-empty.provider-model-connect {
+  margin-block: auto;
+  background: transparent;
 }
 
 .provider-model-empty.provider-model-connect > .provider-model-mark {
@@ -981,14 +881,14 @@
   font-size: var(--openbot-text-sm);
 }
 
-/* A narrow window keeps the marks of the rail and drops the names; the panel heading names the tab. */
+/* A narrow window keeps the marks of the rail and drops the names; their tooltips name the entries. */
 @media (max-width: 640px) {
   .provider-model-rail {
     width: 52px;
     flex-basis: 52px;
   }
 
-  .provider-model-rail :is(.provider-model-rail-name, .provider-model-rail-heading, .provider-model-rail-dot) {
+  .provider-model-rail :is(.provider-model-rail-name, .provider-model-rail-dot, .provider-model-rail-current) {
     display: none;
   }
 
@@ -1014,15 +914,15 @@
   .provider-model-chevron,
   .provider-model-trigger,
   .provider-model-rail-button,
+  .provider-model-row,
   .provider-model-option,
-  .provider-model-effort-segment-control,
-  .provider-model-effort-pill {
+  .provider-model-fast,
+  .provider-model-effort-chip {
     transition: none;
   }
 
   .provider-model-popover,
-  .provider-model-popover:not([data-expanded]),
-  .provider-model-effort-content {
+  .provider-model-popover:not([data-expanded]) {
     animation: none;
   }
 

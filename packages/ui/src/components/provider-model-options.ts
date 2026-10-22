@@ -159,7 +159,7 @@ export function groupPickerModels(models: PickerModel[], search: string): Picker
   const groups = new Map<string, PickerModelGroup>();
   const tiers = new Map<string, number>();
   for (const model of models) {
-    if (!`${model.service} ${model.name}`.toLowerCase().includes(query)) continue;
+    if (!`${model.service} ${model.name} ${model.id}`.toLowerCase().includes(query)) continue;
     const name = model.provider === "acp" ? groupLabel(model.service) : model.service;
     const group = groups.get(model.service) ?? { name, models: [] };
     group.models.push(model);
