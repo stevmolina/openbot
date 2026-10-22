@@ -118,6 +118,14 @@ export function SettingsDynamicIslandTab(props: SettingsDynamicIslandTabProps) {
             description={i18n.t("settings.notch.idle.description")}
           />
           <SwitchField
+            data-settings-row="settings.notch.activity.title"
+            checked={props.value.macBookNotchActivity}
+            disabled={!props.value.macBookNotch}
+            onChange={(checked) => props.onUpdateSetting("macBookNotchActivity", checked)}
+            label={i18n.t("settings.notch.activity.title")}
+            description={i18n.t("settings.notch.activity.description")}
+          />
+          <SwitchField
             data-settings-row="settings.notch.displays.title"
             checked={props.value.macBookNotchAdditionalDisplays}
             disabled={!props.value.macBookNotch}

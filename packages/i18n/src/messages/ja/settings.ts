@@ -76,9 +76,13 @@ export const messages = {
   "settings.soundTheme.pressHint": "キースイッチ",
   "settings.notch.title": "動作",
   "settings.notch.show.title": "MacBook のノッチに状況を表示する",
-  "settings.notch.show.description": "エージェントの動作と対応が必要な項目を各ディスプレイの上部に表示します。",
+  "settings.notch.show.description":
+    "エージェントからの質問や承認依頼など、対応が必要なときだけ各ディスプレイの上部にアイランドを表示します。",
   "settings.notch.idle.title": "待機中のアイランドを表示する",
-  "settings.notch.idle.description": "表示する状況がないときに OpenBot のロゴとあいさつを表示します。",
+  "settings.notch.idle.description": "対応が必要な項目がないときも、OpenBot のロゴとあいさつを常に表示します。",
+  "settings.notch.activity.title": "エージェントの動作を表示する",
+  "settings.notch.activity.description":
+    "エージェントの実行中もアイランドを表示します。完了した返信は常に数秒間表示されます。",
   "settings.notch.displays.title": "追加のディスプレイにも表示する",
   "settings.notch.displays.description": "接続された外部ディスプレイにも Dynamic Island を表示します。",
   "settings.notch.haptics.title": "触覚フィードバック",

@@ -24,7 +24,10 @@ export interface GeneralSettingsValue {
   notificationPreview: boolean;
   macBookNotch: boolean;
   macBookNotchHaptics: boolean;
+  /** Show the idle island (logo and greeting) when nothing needs the user. */
   macBookNotchIdle: boolean;
+  /** Show the island while agents run. Off: it appears only for items that need the user. */
+  macBookNotchActivity: boolean;
   macBookNotchAdditionalDisplays: boolean;
   /** The compact Dynamic Island size, as percents of the default. */
   macBookNotchWidthPercent: number;
@@ -62,7 +65,8 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralSettingsValue = {
   notificationPreview: true,
   macBookNotch: true,
   macBookNotchHaptics: true,
-  macBookNotchIdle: true,
+  macBookNotchIdle: false,
+  macBookNotchActivity: false,
   macBookNotchAdditionalDisplays: true,
   macBookNotchWidthPercent: 100,
   macBookNotchHeightPercent: 100,

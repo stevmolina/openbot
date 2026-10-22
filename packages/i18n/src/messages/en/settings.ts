@@ -80,9 +80,13 @@ export const messages = defineMessages("settings", {
   "settings.soundTheme.pressHint": "Key switches",
   "settings.notch.title": "Behavior",
   "settings.notch.show.title": "Show status in the MacBook notch",
-  "settings.notch.show.description": "Show agent activity and items that need attention at the top of each display.",
+  "settings.notch.show.description":
+    "Show the island at the top of each display only when something needs you, such as an agent question or an approval.",
   "settings.notch.idle.title": "Show idle island",
-  "settings.notch.idle.description": "Show the OpenBot logo and greeting when no status is active.",
+  "settings.notch.idle.description": "Always show the OpenBot logo and greeting, even when nothing needs you.",
+  "settings.notch.activity.title": "Show agent activity",
+  "settings.notch.activity.description":
+    "Also show the island while agents run. A finished reply always shows for a few seconds.",
   "settings.notch.displays.title": "Show on additional displays",
   "settings.notch.displays.description": "Show Dynamic Island on connected external displays.",
   "settings.notch.haptics.title": "Haptic feedback",

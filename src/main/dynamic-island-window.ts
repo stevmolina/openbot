@@ -7,9 +7,12 @@ import type {
 } from "@openbot/contracts/ipc";
 import {
   DEFAULT_DYNAMIC_ISLAND_PREFERENCE,
+  DYNAMIC_ISLAND_NOTICE_MS,
   dynamicIslandCompactHeight,
+  effectiveDynamicIslandPresentation,
   IDLE_DYNAMIC_ISLAND_PRESENTATION,
   IPC_ENDPOINTS,
+  isDynamicIslandVisible,
 } from "@openbot/contracts/ipc";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger, type Logger, toLogValue } from "@openbot/logging";
@@ -31,6 +34,10 @@ const DYNAMIC_ISLAND_COMPACT_WINDOW_HOVER_ROOM = 18;
 // dropping to the compact height on the same tick guillotines the still-tall island - the lower
 // half disappears at once while the top morphs. Hold the tall window until the shell has landed.
 const DYNAMIC_ISLAND_COLLAPSE_SETTLE_MS = 700;
+// A finished-turn notice that the pointer is on waits this long before it checks again.
+const DYNAMIC_ISLAND_NOTICE_RETRY_MS = 2_000;
+// The most notice ids that main remembers as already shown. A user sees far fewer in a session.
+const DYNAMIC_ISLAND_NOTICE_MEMORY = 200;
 
 const MACBOOK_NOTCH_REFERENCE = {
   displayWidth: 1512,
@@ -64,7 +71,13 @@ export interface DynamicIslandWindowControllerOptions {
 export class DynamicIslandWindowController {
   readonly #options: DynamicIslandWindowControllerOptions;
   #preference: DynamicIslandPreference = { ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE };
+  /** What the app asked the island to show. The windows get `#effectivePresentation()`. */
   #presentation = IDLE_DYNAMIC_ISLAND_PRESENTATION;
+  /** The last presentation that the windows were sent, so a change that is hidden sends nothing. */
+  #sentPresentation: DynamicIslandPresentation = IDLE_DYNAMIC_ISLAND_PRESENTATION;
+  /** Unread replies whose notice already showed and hid. The same reply does not show twice. */
+  readonly #expiredNotices = new Set<string>();
+  #noticeTimer: { messageId: string; timer: ReturnType<typeof setTimeout> } | undefined;
   readonly #windows = new Map<number, BrowserWindow>();
   readonly #interactiveDisplays = new Set<number>();
   /** One run per critical action, shared by the overlays and IPC retries that send it again. */
@@ -88,8 +101,9 @@ export class DynamicIslandWindowController {
     return { ...this.#preference };
   }
 
+  /** What the island draws now: the app's presentation, less what the user chose not to see. */
   get presentation(): DynamicIslandPresentation {
-    return this.#presentation;
+    return this.#effectivePresentation();
   }
 
   /** The notch of the built-in display, or null when there is no built-in display or it has no notch. */
@@ -119,6 +133,8 @@ export class DynamicIslandWindowController {
         this.#preference = savedPreference;
         yield* this.reconcileWindow();
         this.publishPreference();
+        this.#sendPresentation();
+        this.#applyVisibility();
         return { ...savedPreference };
       }),
     );
@@ -132,8 +148,80 @@ export class DynamicIslandWindowController {
   publish(presentation: DynamicIslandPresentation): void {
     if (isDeepStrictEqual(this.#presentation, presentation)) return;
     this.#presentation = presentation;
+    this.#watchNotice();
+    this.#sendPresentation();
+    this.#applyVisibility();
+  }
+
+  #effectivePresentation(): DynamicIslandPresentation {
+    const presentation = this.#presentation;
+    return effectiveDynamicIslandPresentation(
+      presentation,
+      this.#preference,
+      presentation.mode === "message" && this.#expiredNotices.has(presentation.message.messageId),
+    );
+  }
+
+  /** Sends the windows what they draw, unless it is what they already have. */
+  #sendPresentation(): void {
+    const effective = this.#effectivePresentation();
+    if (isDeepStrictEqual(this.#sentPresentation, effective)) return;
+    this.#sentPresentation = effective;
     for (const window of this.#windows.values()) {
-      sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.presentation, presentation);
+      sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.presentation, effective);
+    }
+  }
+
+  /**
+   * An unread reply is a notice, not a state: it hides by itself after a few seconds. The timer
+   * follows the reply that is current, and waits while the pointer is on the island.
+   */
+  #watchNotice(): void {
+    const presentation = this.#presentation;
+    const messageId = presentation.mode === "message" ? presentation.message.messageId : undefined;
+    if (this.#noticeTimer && this.#noticeTimer.messageId !== messageId) this.#clearNoticeTimer();
+    if (messageId === undefined || this.#noticeTimer || this.#expiredNotices.has(messageId)) return;
+    this.#startNoticeTimer(messageId, DYNAMIC_ISLAND_NOTICE_MS);
+  }
+
+  #startNoticeTimer(messageId: string, delay: number): void {
+    const timer = setTimeout(() => {
+      this.#noticeTimer = undefined;
+      if (this.#destroyed) return;
+      if (this.#interactiveDisplays.size > 0) {
+        this.#startNoticeTimer(messageId, DYNAMIC_ISLAND_NOTICE_RETRY_MS);
+        return;
+      }
+      if (this.#expiredNotices.size >= DYNAMIC_ISLAND_NOTICE_MEMORY) this.#expiredNotices.clear();
+      this.#expiredNotices.add(messageId);
+      this.#sendPresentation();
+      this.#applyVisibility();
+    }, delay);
+    this.#noticeTimer = { messageId, timer };
+  }
+
+  #clearNoticeTimer(): void {
+    if (!this.#noticeTimer) return;
+    clearTimeout(this.#noticeTimer.timer);
+    this.#noticeTimer = undefined;
+  }
+
+  /**
+   * Shows the island windows only while there is something to draw. A hidden window is not on the
+   * screen, so it does not cover the notch, take a click or a hover, or fight another notch app.
+   * A window that the pointer is on stays until the pointer leaves, because the renderer holds the
+   * item the user is reading until then.
+   */
+  #applyVisibility(): void {
+    const visible = isDynamicIslandVisible(this.#effectivePresentation(), this.#preference);
+    for (const [displayId, window] of this.#windows) {
+      if (window.isDestroyed()) continue;
+      if (visible) {
+        if (!window.isVisible()) window.showInactive();
+        continue;
+      }
+      if (this.#interactiveDisplays.has(displayId) || this.#collapseTimers.has(displayId)) continue;
+      if (window.isVisible()) window.hide();
     }
   }
 
@@ -156,12 +244,18 @@ export class DynamicIslandWindowController {
     const wantsKeyboard = interactive && keyboard;
     window.setFocusable(wantsKeyboard);
     if (wantsKeyboard && !window.isFocused()) window.focus();
-    if (interactive || !bounds) return;
+    if (interactive) return;
+    if (!bounds) {
+      this.#applyVisibility();
+      return;
+    }
     this.#collapseTimers.set(
       displayId,
       setTimeout(() => {
         this.#collapseTimers.delete(displayId);
         if (this.#interactiveDisplays.has(displayId) || window.isDestroyed()) return;
+        // The collapse has landed, so a window with nothing to draw can hide now.
+        this.#applyVisibility();
         // The display can be rearranged while the island animates shut, and reconciliation will
         // have moved the still-tall window to the new geometry. Ask where the window belongs now
         // rather than replaying the rectangle captured when the pointer left.
@@ -298,7 +392,6 @@ export class DynamicIslandWindowController {
             this.#rememberNotchSize(display.id, notchSize);
           }
         }
-        current.showInactive();
         continue;
       }
       yield* this.#createDisplayWindow(display, bounds).pipe(
@@ -312,6 +405,7 @@ export class DynamicIslandWindowController {
         ),
       );
     }
+    this.#applyVisibility();
   }).bind(this);
 
   /** A window that cannot be created or loaded fails here, so that the other displays still get theirs. */
@@ -340,7 +434,7 @@ export class DynamicIslandWindowController {
     window.webContents.on("did-finish-load", () => {
       if (this.#windows.get(display.id) !== window || window.isDestroyed()) return;
       const currentDisplay = this.#options.getDisplays().find((candidate) => candidate.id === display.id) ?? display;
-      sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.presentation, this.#presentation);
+      sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.presentation, this.#effectivePresentation());
       sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.preference, this.#preference);
       const notchSize = notchSizeForDisplay(currentDisplay);
       if (sendToRenderer(window, IPC_ENDPOINTS.dynamicIsland.geometry, notchSize ?? null)) {
@@ -349,7 +443,8 @@ export class DynamicIslandWindowController {
     });
     window.once("ready-to-show", () => {
       if (this.#windows.get(display.id) !== window || window.isDestroyed()) return;
-      window.showInactive();
+      // The window stays hidden until there is something to draw.
+      this.#applyVisibility();
     });
     window.on("blur", () => this.setInteractive(window.webContents.id, false));
     window.on("closed", () => {
@@ -376,6 +471,9 @@ export class DynamicIslandWindowController {
 
   destroy(): void {
     this.#destroyed = true;
+    // Disabling the island keeps the notice timer running, so a reply expires after its few
+    // seconds even while no window shows it. Only the end of the app cancels it.
+    this.#clearNoticeTimer();
     this.destroyWindows();
   }
 

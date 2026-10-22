@@ -79,9 +79,13 @@ export const messages = {
   "settings.notch.title": "Comportamiento",
   "settings.notch.show.title": "Mostrar el estado en la muesca del MacBook",
   "settings.notch.show.description":
-    "Mostrar la actividad de los agentes y los elementos que necesitan atención en la parte superior de cada pantalla.",
+    "Mostrar la isla en la parte superior de cada pantalla solo cuando algo necesita tu atención, como una pregunta o una aprobación de un agente.",
   "settings.notch.idle.title": "Mostrar la isla inactiva",
-  "settings.notch.idle.description": "Mostrar el logotipo de OpenBot y el saludo cuando no hay un estado activo.",
+  "settings.notch.idle.description":
+    "Mostrar siempre el logotipo de OpenBot y el saludo, incluso cuando nada necesita tu atención.",
+  "settings.notch.activity.title": "Mostrar la actividad de los agentes",
+  "settings.notch.activity.description":
+    "Mostrar también la isla mientras los agentes trabajan. Una respuesta terminada siempre aparece unos segundos.",
   "settings.notch.displays.title": "Mostrar en pantallas adicionales",
   "settings.notch.displays.description": "Mostrar Dynamic Island en las pantallas externas conectadas.",
   "settings.notch.haptics.title": "Respuesta háptica",
