@@ -834,10 +834,16 @@ class McpOAuthClientProvider implements OAuthClientProvider {
    * What OpenBot registers itself as. `redirect_uris` holds the one address this run receives on,
    * so an authorization server will not send a grant anywhere else.
    *
-   * No `token_endpoint_auth_method`, and no `scope` unless a sign-in app names one: the SDK takes
-   * the scope the server's own protected-resource metadata asks for, and picks an authentication
-   * method the server said it supports. Naming either here would be OpenBot guessing in front of
-   * an answer it already has.
+   * No `scope` unless a sign-in app names one: the SDK takes the scope the server's own
+   * protected-resource metadata asks for. Naming one here would be OpenBot guessing in front of an
+   * answer it already has.
+   *
+   * No `token_endpoint_auth_method` either, with one exception: a server whose metadata accepts
+   * only public clients (`none`, no secret-based method). A registration that names no method
+   * leaves the server to default one, and Composio defaults to `client_secret_basic`: it hands out
+   * a secret its own token endpoint metadata does not accept. The SDK then trades the grant
+   * without that secret and is refused with `invalid_client`. OpenBot is a public client that
+   * proves the grant with PKCE, so it asks for the method the server said it supports.
    */
   get clientMetadata(): OAuthClientMetadata {
     const scope = this.#record().app?.scope;
@@ -848,6 +854,9 @@ class McpOAuthClientProvider implements OAuthClientProvider {
       redirect_uris: [this.#options.redirectUrl],
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
+      ...(acceptsOnlyPublicClients(this.#discoveryState?.authorizationServerMetadata)
+        ? { token_endpoint_auth_method: "none" }
+        : {}),
       ...(scope ? { scope } : {}),
     };
   }
@@ -1309,6 +1318,12 @@ function withAppScope(authorizationUrl: URL, app: McpOAuthApp | undefined): URL 
   if (app.scope.split(/\s+/).includes("offline_access") && !url.searchParams.has("prompt"))
     url.searchParams.set("prompt", "consent");
   return url;
+}
+
+/** Whether the server lists `none` as its only way for a client to authenticate at the token endpoint. */
+function acceptsOnlyPublicClients(metadata: OAuthDiscoveryState["authorizationServerMetadata"]): boolean {
+  const methods = metadata?.token_endpoint_auth_methods_supported;
+  return Boolean(methods?.includes("none")) && methods?.every((method) => method === "none") === true;
 }
 
 /**
