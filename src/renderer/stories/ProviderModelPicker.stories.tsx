@@ -93,6 +93,11 @@ export const Interactive: Story = {
         }
         onChange={(model, provider) =>
           setChoice((state) => {
+            // As the app does: an effort that the new model cannot use becomes its default.
+            const option = STORY_MODELS.find((candidate) => candidate.provider === provider && candidate.id === model);
+            if (option && !option.supportedReasoningEfforts.includes(state.reasoningEffort)) {
+              state.reasoningEffort = option.defaultReasoningEffort;
+            }
             state.value = model;
             state.provider = provider;
           })
