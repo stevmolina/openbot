@@ -471,6 +471,9 @@ export class DynamicIslandWindowController {
 
   destroy(): void {
     this.#destroyed = true;
+    // Disabling the island keeps the notice timer running, so a reply expires after its few
+    // seconds even while no window shows it. Only the end of the app cancels it.
+    this.#clearNoticeTimer();
     this.destroyWindows();
   }
 
@@ -486,7 +489,6 @@ export class DynamicIslandWindowController {
   }
 
   private destroyWindows(): void {
-    this.#clearNoticeTimer();
     for (const displayId of [...this.#collapseTimers.keys()]) this.#cancelCollapse(displayId);
     const windows = [...this.#windows.values()];
     this.#windows.clear();
