@@ -35,7 +35,7 @@ import {
 } from "@openbot/ui/features/settings/McpSignInPage";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
-import { createEffect, createMemo, createStore, For, onCleanup, Show } from "solid-js";
+import { createEffect, createMemo, createStore, For, onCleanup, onSettled, Show } from "solid-js";
 import { type McpPanelSignInApp, McpSignInAppSection } from "./McpSignInAppSection";
 import {
   emptyMcpConfig,
@@ -112,6 +112,8 @@ export interface ServerMcpPanelProps {
   signInRequest?: string | null | undefined;
   /** Called once the panel started the requested sign-in, so it does not start again. */
   onSignInRequestHandled?: (() => void) | undefined;
+  /** Opens the form for a new server when the panel mounts: the user pressed Add custom app. */
+  startAdding?: boolean | undefined;
 }
 
 export interface McpPanelSignIn {
@@ -233,6 +235,10 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
   // gate that shows the panel drops it while the section stays on MCP. Without this the header would
   // name a form that is gone, and its save bar would call back into a panel that no longer exists.
   onCleanup(() => props.onDetailChange?.(null));
+  // After mount, because opening the form reports it to the owner, and a component body refuses writes.
+  onSettled(() => {
+    if (props.startAdding && props.canManage) openForm(null);
+  });
 
   async function run(key: string, action: () => Promise<void>): Promise<boolean> {
     if (state.busy !== null) return false;

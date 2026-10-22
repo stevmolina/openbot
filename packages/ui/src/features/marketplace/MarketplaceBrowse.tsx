@@ -1,5 +1,5 @@
 import { SKILL_CATEGORIES, type SkillCategory } from "@openbot/contracts/ipc";
-import { Button, Input, Search, Skeleton, SlidingTabs, Text } from "@openbot/ui";
+import { Blocks, Button, Input, Plus, Search, Skeleton, SlidingTabs, Text } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
 import { createEffect, createSignal, For, Show } from "solid-js";
@@ -398,6 +398,32 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
           </SlidingTabs.Content>
           <SlidingTabs.Content value="apps">
             <div class="marketplace-stack">
+              {/* A connector, a catalog app and an MCP server are all apps. A custom app is an MCP
+                  server that the user adds by its address or its command. */}
+              <Show when={props.scope.customApps}>
+                <div class="marketplace-apps-actions">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    data-cuelume-tap="navigate"
+                    onClick={() => nav().go({ kind: "custom-apps", adding: true })}
+                  >
+                    <Plus aria-hidden="true" />
+                    {t("marketplace.app.addCustom")}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    data-cuelume-tap="navigate"
+                    onClick={() => nav().go({ kind: "custom-apps", adding: false })}
+                  >
+                    <Blocks aria-hidden="true" />
+                    {t("marketplace.app.manageCustom")}
+                  </Button>
+                </div>
+              </Show>
               <Show when={state().missingApp}>
                 <div class="marketplace-empty" role="alert">
                   <Text as="p" variant="body-sm" tone="muted">

@@ -73,7 +73,6 @@ export const messages = {
   "connector.hub.onHost": "Su {host}",
   "connector.hub.notSetUp": "Non configurato",
   "connector.hub.available": "Disponibile",
-  "connector.hub.localOnly": "Solo il tuo computer",
   "connector.hub.open": "Apri {name}",
   "connector.hub.setUp": "Configura",
   "connector.hub.usedBy": "Usato da {names}",

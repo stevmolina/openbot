@@ -5,6 +5,7 @@ import type {
   SkillCategory,
 } from "@openbot/contracts/ipc";
 import { errorReference } from "@openbot/user-errors";
+import type { JSX } from "@solidjs/web";
 import { createStore, onCleanup, onSettled, untrack } from "solid-js";
 import type { MarketplaceListing } from "./marketplace-listing";
 import type { MarketplaceApp, MarketplaceModel } from "./marketplace-model";
@@ -13,7 +14,15 @@ export type MarketplaceView =
   | { kind: "browse" }
   | { kind: "agent"; listing: MarketplaceAgentSummary }
   | { kind: "skill"; listing: MarketplaceSkillSummary }
-  | { kind: "app"; id: string };
+  | { kind: "app"; id: string }
+  /** The custom apps of the host: its MCP servers, to add, edit, test and sign in to. `adding` opens the add form. */
+  | { kind: "custom-apps"; adding: boolean };
+
+/**
+ * The custom apps page. The app fills it, because the MCP server list and its forms call the host.
+ * `back` returns to the view that opened the page.
+ */
+export type MarketplaceCustomApps = (page: { adding: boolean; back: () => void }) => JSX.Element;
 
 export type MarketplaceTab = "agents" | "apps" | "skills";
 
@@ -65,6 +74,8 @@ export interface MarketplaceScope {
   skills: MarketplaceListing<MarketplaceSkillSummary>;
   /** The simple layout: pill filters, "Most installed" cards and a two-column list of agents. */
   simple?: boolean | undefined;
+  /** Absent when this user cannot add a custom app on this server. */
+  customApps?: MarketplaceCustomApps | undefined;
 }
 
 export function createMarketplaceNavigation(): MarketplaceNavigation {

@@ -59,9 +59,10 @@ export function messagingConnectText(t: AppTranslate, platform: WebMessagingInst
       tabClosed: t("sitePage.connect.failure.tabClosed", { name }),
       failed: t("sitePage.connect.failure.failed", { name }),
     } satisfies Record<FailureKind, string>,
+    // The connectors are apps: Marketplace › Apps, then the page of the app.
     restartHint: t("sitePage.connect.restartHint", {
-      serverSettings: t("server.rail.settings"),
-      connectors: t("server.settings.connectorsTitle"),
+      serverSettings: t("app.rail.marketplace"),
+      connectors: t("marketplace.tab.apps"),
       name,
       connect,
     }),

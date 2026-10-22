@@ -3,6 +3,7 @@ import type {
   MarketplaceAgentSummary,
   MarketplaceSkillQuery,
   MarketplaceSkillSummary,
+  McpSignInState,
 } from "@openbot/contracts/ipc";
 import { CONNECTOR_LISTINGS } from "@openbot/ui/features/connectors/connector-catalog";
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
@@ -15,6 +16,7 @@ import { currentText } from "@openbot/ui/text";
 import { createSignal, createStore, onSettled, untrack } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { ServerMcpPage } from "../src/features/servers/ServerMcpPage";
 import {
   STORY_AGENT_SUMMARIES,
   STORY_MARKETPLACE_AGENT_DETAILS,
@@ -25,6 +27,7 @@ import {
   STORY_MCP_SERVERS,
 } from "../src/preview/fixtures";
 import { STORY_CONNECTOR_DETAILS, storyConnectorSet } from "./connector-fixtures";
+import { createStoryMcpOptions, STORY_CUSTOM_APP_SERVERS } from "./mcp-story-options";
 
 function page<T extends { name: string; description: string; category?: string | undefined }>(
   items: readonly T[],
@@ -59,11 +62,19 @@ interface StoryProps {
   empty?: boolean;
   /** Opens the window on this page, as a link or a click would. */
   start?: (nav: MarketplaceNavigation) => void;
+  /** The custom apps page signs in through this joined server's browser. Absent: this computer. */
+  remoteHostName?: string;
+  /** The sign-in state of the custom apps, by row id. */
+  signIns?: Record<string, McpSignInState>;
 }
 
 /** The real window on fixtures. Each action changes the fixture state, so the states can be tried. */
 function MarketplaceStory(props: StoryProps) {
-  const { member, empty, start } = untrack(() => ({ ...props }));
+  const { member, empty, start, remoteHostName, signIns } = untrack(() => ({ ...props }));
+  // A member manages no MCP servers, so the Apps tab shows no custom apps page.
+  const mcp = member
+    ? undefined
+    : createStoryMcpOptions({ servers: STORY_CUSTOM_APP_SERVERS, remoteHostName, initial: signIns });
   const agents = empty ? [] : STORY_MARKETPLACE_AGENTS;
   const skills = empty ? [] : STORY_MARKETPLACE_SKILLS;
   const firstSkill = STORY_MARKETPLACE_SKILLS[0];
@@ -184,7 +195,15 @@ function MarketplaceStory(props: StoryProps) {
   const nav = createMarketplaceNavigation();
   // A write in the component body is refused, so the start page opens once the window is up.
   onSettled(() => start?.(nav));
-  return <Marketplace model={model} nav={nav} open={open()} onOpenChange={setOpen} />;
+  return (
+    <Marketplace
+      model={model}
+      nav={nav}
+      open={open()}
+      onOpenChange={setOpen}
+      customApps={mcp ? (page) => <ServerMcpPage options={mcp} adding={page.adding} /> : undefined}
+    />
+  );
 }
 
 const meta = {
@@ -235,6 +254,39 @@ export const CustomServer = at((nav) => {
   tab("apps")(nav);
   nav.go({ kind: "app", id: `custom:${STORY_MCP_SERVERS[0]?.id ?? ""}` });
 });
+
+/** Apps › Custom apps: the MCP servers, with Test, Sign in, Edit, Remove and the on switch of each. */
+export const CustomApps = at((nav) => {
+  tab("apps")(nav);
+  nav.go({ kind: "custom-apps", adding: false });
+});
+
+/**
+ * Add custom app opens the form. Paste `https://mcp.granola.ai/mcp` into Command to launch: the
+ * form moves to Streamable HTTP. Save tests the server, which asks for a sign-in, signs in, and saves.
+ */
+export const AddCustomApp = at((nav) => {
+  tab("apps")(nav);
+  nav.go({ kind: "custom-apps", adding: true });
+});
+
+/** Granola refused its saved sign-in: the row asks for a new one with no test. */
+export const CustomAppSignInNeeded = at(
+  (nav) => {
+    tab("apps")(nav);
+    nav.go({ kind: "custom-apps", adding: false });
+  },
+  { signIns: { "mcp-granola": { mcpServerId: "mcp-granola", signedIn: false, needsSignIn: true } } },
+);
+
+/** A joined server's custom apps. Sign in shows the server's page from the host's browser. */
+export const CustomAppsOnJoinedServer = at(
+  (nav) => {
+    tab("apps")(nav);
+    nav.go({ kind: "custom-apps", adding: false });
+  },
+  { remoteHostName: "Studio" },
+);
 
 export const Skills = at(tab("skills"));
 

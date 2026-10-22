@@ -71,12 +71,13 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
   const platform = usePlatform();
   const connectors = useConnectors();
   const { activeServer, activeServerSupportsCapability, joinServerOpen } = useServers();
-  const { serverSettingsOpen, openServerSettings, openMcpSignIn, serverSettingsTargetId, serverSettingsMcpSignIns } =
+  const { serverSettingsOpen, openServerSettings, requestMcpSignIn, mcpTargetId, serverSettingsMcpSignIns } =
     useServerSettings();
   const {
     appSettingsOpen,
     skillsMarketplaceOpen,
     setSkillsMarketplaceOpen,
+    openApps,
     setPendingPluginSlug,
     setPendingPluginConnect,
     agentAutoApproves,
@@ -426,15 +427,18 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
           setPendingPluginSlug(request.appId);
           setSkillsMarketplaceOpen(true);
         }}
-        // The server settings sign in as their MCP panel does: on this computer, or through a host that
+        // Apps › Custom apps signs in as its MCP list does: on this computer, or through a host that
         // relays its sign-in page.
         onOpenMcpSignIn={(() => {
           const server = activeServer();
           if (!server || (server.kind === "remote" && !remoteMcpSignIn(server))) return undefined;
-          return (mcpServerId: string, trigger: HTMLElement | null) => openMcpSignIn(server.id, mcpServerId, trigger);
+          return (mcpServerId: string) => {
+            requestMcpSignIn(server.id, mcpServerId);
+            openApps("custom-apps");
+          };
         })()}
         mcpSignedIn={(mcpServerId) =>
-          serverSettingsTargetId() === activeServer()?.id && serverSettingsMcpSignIns()[mcpServerId]?.signedIn === true
+          mcpTargetId() === activeServer()?.id && serverSettingsMcpSignIns()[mcpServerId]?.signedIn === true
         }
         onOpenUsage={(trigger) => usage.openUsage(activeServer()?.id ?? "local", trigger, activeAgent()?.id)}
         agentStatus={

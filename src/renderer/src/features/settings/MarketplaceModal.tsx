@@ -1,6 +1,10 @@
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
 import type { MarketplaceApp } from "@openbot/ui/features/marketplace/marketplace-model";
-import { createMarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
+import {
+  createMarketplaceNavigation,
+  type MarketplaceCustomApps,
+  type MarketplaceNavigation,
+} from "@openbot/ui/features/marketplace/marketplace-view";
 import { McpKeyDialog } from "@openbot/ui/features/settings/McpKeyDialog";
 import { McpLocalDialog } from "@openbot/ui/features/settings/McpLocalDialog";
 import { McpSignInDialog } from "@openbot/ui/features/settings/McpSignInDialog";
@@ -8,6 +12,7 @@ import { McpSignInRelayDialog } from "@openbot/ui/features/settings/McpSignInPag
 import { PluginUninstallDialog } from "@openbot/ui/features/settings/PluginUninstallDialog";
 import { createEffect, createSignal, Match, Show, Switch, untrack } from "solid-js";
 import { simpleLayout } from "../../simple-layout";
+import { type ServerMcpOptions, ServerMcpPage } from "../servers/ServerMcpPage";
 import { createMarketplaceController, type MarketplaceControllerProps } from "./marketplace-controller";
 
 export interface MarketplaceModalProps extends MarketplaceControllerProps {
@@ -29,12 +34,25 @@ export interface MarketplaceModalProps extends MarketplaceControllerProps {
   onInitialPluginSlugConsumed?: (() => void) | undefined;
   /** A dialog, or a page of the desktop window. */
   variant?: "dialog" | "page" | undefined;
+  /**
+   * Where the user is. The owner keeps it when another part of the window opens the Apps tab or the
+   * custom apps page. Absent: the Marketplace keeps its own.
+   */
+  nav?: MarketplaceNavigation | undefined;
+  /** The MCP servers of the host, for the custom apps page. Absent when this account cannot manage them. */
+  customApps?: ServerMcpOptions | undefined;
 }
 
 /** The Marketplace on this computer's or a joined server's data, with the dialogs it opens. */
 export function MarketplaceModal(props: MarketplaceModalProps) {
-  const nav = createMarketplaceNavigation();
+  const nav = props.nav ?? createMarketplaceNavigation();
   const controller = createMarketplaceController(props);
+  /** Apps › Custom apps. Each change there reads the apps again, so the cards show it. */
+  const customApps: MarketplaceCustomApps = (page) => (
+    <Show when={props.customApps}>
+      {(options) => <ServerMcpPage options={options()} adding={page.adding} onChanged={controller.reloadApps} />}
+    </Show>
+  );
   /**
    * A Connect press from a chat card. It runs when the listing is in the apps and their states are
    * read, so an installed app is not installed again.
@@ -102,7 +120,7 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
     },
   );
   // Slack, Discord and Telegram change with no event from main, so each available connector is
-  // followed while the window is open, as in Settings › Connectors.
+  // followed while the window is open.
   createEffect(
     () => (props.open ? props.connectors?.available() : undefined),
     (controllers) => {
@@ -129,6 +147,7 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
         onOpenChange={props.onOpenChange}
         variant={props.variant}
         simple={simpleLayout()}
+        customApps={props.customApps ? customApps : undefined}
       />
       {/* The confirmation and the connect step are beside the Marketplace: each is one decision
           over the page it was started from, not a part of that page. */}

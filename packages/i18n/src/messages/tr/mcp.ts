@@ -102,7 +102,6 @@ export const messages = {
   "mcp.panel.removeDescription": "Araçları artık bu sunucunun ajanlarına sunulmaz. Yapılandırma tutulmaz.",
   "mcp.panel.removeConfirm": "MCP sunucusunu kaldır",
   "mcp.panel.actionsFor": "{name} için eylemler",
-  "mcp.panel.testUnavailable": "Bu sunucu burada test edilemez.",
   "mcp.panel.signIn": "Oturum aç",
   "mcp.panel.signOut": "Oturumu kapat",
   "mcp.panel.cancelSignIn": "Oturum açmayı iptal et",

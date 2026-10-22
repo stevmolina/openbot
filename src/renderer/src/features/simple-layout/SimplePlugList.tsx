@@ -1,12 +1,9 @@
 import { ProviderLogo } from "@openbot/brand";
-import { Button, Link, MotionTooltip, Store } from "@openbot/ui";
+import { Button, MotionTooltip, Plug, Store } from "@openbot/ui";
 import { AccountUsageDetails } from "@openbot/ui/features/account/AccountUsageDetails";
 import { type AccountUsageProviderRow, accountUsageRowKey } from "@openbot/ui/features/account/account-usage-view";
 import { useText } from "@openbot/ui/text";
 import { For, Show } from "solid-js";
-import { useConnectors } from "../connectors/connectors-context";
-import { useServerSettings } from "../servers/server-settings";
-import { useServers } from "../servers/servers-context";
 import { useSettings } from "../settings/settings-context";
 import { usePlanLimitRows } from "../usage/plan-limit-rows";
 import { useWindowPage } from "../window/window-page-context";
@@ -64,39 +61,36 @@ function ProviderRow(props: { row: AccountUsageProviderRow; onOpen: (button: HTM
 }
 
 /**
- * The plug list: the Marketplace, the connectors of the server, then one row per AI provider account,
- * the accounts that the rail showed as usage rings.
+ * The plug list: the Marketplace, its Apps area, then one row per AI provider account, the accounts
+ * that the rail showed as usage rings. The connectors and the MCP servers are apps, so they are in
+ * the Apps area, not in the server settings.
  */
 export function SimplePlugList() {
   const { t } = useText();
   const windowPage = useWindowPage();
-  const { setSkillsMarketplaceOpen } = useSettings();
-  const { activeServer } = useServers();
-  const { openServerSettings } = useServerSettings();
-  const connectors = useConnectors();
+  const { setSkillsMarketplaceOpen, marketplaceNav, openApps } = useSettings();
   const providerRows = usePlanLimitRows();
-  const connectorCount = () => connectors.active.available().length;
+  const marketplaceOpen = () => windowPage.page() === "marketplace";
+  const appsOpen = () => marketplaceOpen() && marketplaceNav.state.tab === "apps";
 
   return (
     <div class="simple-sidebar-links simple-sidebar-list">
       <SimpleSidebarLink
         label={t("app.rail.marketplace")}
         icon={<Store />}
-        current={windowPage.page() === "marketplace"}
-        onClick={() => setSkillsMarketplaceOpen(true)}
+        current={marketplaceOpen() && !appsOpen()}
+        onClick={() => {
+          // The Marketplace row starts on the first tab, also while the Apps tab is open.
+          marketplaceNav.reset();
+          setSkillsMarketplaceOpen(true);
+        }}
       />
-      {/* The server settings hold the connectors, and show their section only while one is available. */}
-      <Show when={connectorCount() > 0 ? activeServer() : undefined}>
-        {(server) => (
-          <SimpleSidebarLink
-            label={t("server.settings.connectorsTitle")}
-            icon={<Link />}
-            meta={String(connectorCount())}
-            current={windowPage.page() === "server-settings"}
-            onClick={(button) => openServerSettings(server().id, button, "connectors")}
-          />
-        )}
-      </Show>
+      <SimpleSidebarLink
+        label={t("marketplace.tab.apps")}
+        icon={<Plug />}
+        current={appsOpen()}
+        onClick={() => openApps()}
+      />
       <Show when={providerRows().length > 0}>
         <h2 class="simple-sidebar-group">{t("simple.plug.providers")}</h2>
         {/* A status update builds new rows. The key keeps each row, and its open hover card, mounted. */}

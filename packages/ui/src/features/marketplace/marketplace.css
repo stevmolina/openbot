@@ -653,6 +653,14 @@ body:has(.skills-marketplace) :is(.integration-dialog-backdrop, .integration-wiz
   gap: var(--openbot-space-2);
 }
 
+/* Add custom app and Manage custom apps, above the app groups. */
+.marketplace-apps-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--openbot-space-2);
+}
+
 /* ---------------------------------------------------------------- narrow */
 
 @media (max-width: 860px) {

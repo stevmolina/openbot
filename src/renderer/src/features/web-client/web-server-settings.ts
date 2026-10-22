@@ -170,15 +170,13 @@ export function createWebServerSettings(options: {
 
   function open(trigger: HTMLElement | null): void {
     request += 1;
-    mcpRequest += 1;
     restoreTarget = trigger;
     previousPresence = "";
+    // The MCP list belongs to Apps › Custom apps, not to the settings page, so opening the page keeps it.
     setState((draft) => {
       draft.open = true;
       draft.members = [];
       draft.invites = [];
-      draft.mcp = [];
-      draft.mcpError = null;
       draft.error = null;
     });
     void refresh();

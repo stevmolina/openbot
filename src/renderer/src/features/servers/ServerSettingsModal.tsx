@@ -19,7 +19,6 @@ import {
   AlertIcon,
   AlertTitle,
   ArrowLeftRight,
-  Blocks,
   Button,
   CalendarClock,
   ChevronRight,
@@ -27,7 +26,6 @@ import {
   Globe2,
   HardDrive,
   Monitor,
-  Plug,
   RefreshCw,
   Settings,
   ShieldCheck,
@@ -51,15 +49,11 @@ import {
 import { useText } from "@openbot/ui/text";
 import { createEffect, createSignal, onCleanup, Show, untrack } from "solid-js";
 import { actionToast } from "../../action-toast";
-import { ConnectorsPanel, type ConnectorsPanelDetail } from "../connectors/ConnectorsPanel";
-import type { ConnectorRegistry } from "../connectors/connector-registry";
 import { type ServerStorageOptions, ServerStoragePanel } from "../files/ServerStoragePanel";
 import { type HostProviderSettings, HostProviderSettingsPanel } from "../settings/ProviderSettingsSection";
-import type { McpServerConfig, McpTestResult } from "./mcp-servers";
 import { ServerDesktopPanel } from "./ServerDesktopPanel";
 import { createServerGeneralSection } from "./ServerGeneralSection";
 import { type ServerImportDetail, type ServerImportOptions, ServerImportPanel } from "./ServerImportPanel";
-import { type McpPanelDetail, type McpPanelSignIn, ServerMcpPanel } from "./ServerMcpPanel";
 import { createServerMembersSection } from "./ServerMembersSection";
 import type { ServerMemoryLimitOptions } from "./ServerMemoryLimitSetting";
 import { createServerRolesSection, type ServerAgentAccessOptions } from "./ServerRolesSection";
@@ -114,34 +108,6 @@ export interface ServerSettingsModalProps {
   /** Asks the host to read the grant again, so the owner who gave it sees the warning go. */
   onRecheckScreenRecording: () => Promise<void>;
   /**
-   * The MCP section appears only when a caller supplies these. A caller that cannot manage MCP
-   * servers - a remote host without the capability, or a `member` account - passes nothing, and
-   * then neither the tab nor the panel exists.
-   */
-  mcpServers?: McpServerConfig[] | undefined;
-  /** Why the MCP list is empty, when the read failed rather than found nothing. */
-  mcpLoadError?: string | null;
-  /**
-   * What the managed runtime under a STDIO server is doing, when there is anything to say. The
-   * caller decides: it describes this computer, and this dialog also opens for a remote server.
-   */
-  mcpToolRuntimeNote?: string | null;
-  onRetryMcpServers?: () => void;
-  onSaveMcpServer?: (config: McpServerConfig) => Promise<void>;
-  onRemoveMcpServer?: (id: string) => Promise<void>;
-  onSetMcpServerEnabled?: (id: string, enabled: boolean) => Promise<void>;
-  onTestMcpServer?: (config: McpServerConfig) => Promise<McpTestResult>;
-  /** Browser sign-in for http MCP servers. Only the server on this computer gets it. */
-  mcpSignIn?: McpPanelSignIn | undefined;
-  /** An MCP row to sign in to when the list holds it: the user pressed Sign in on an agent's card. */
-  mcpSignInRequest?: string | null | undefined;
-  onMcpSignInRequestHandled?: (() => void) | undefined;
-  /**
-   * Fired when the MCP section becomes visible. The list is read then, not when the dialog opens,
-   * because most visits to this dialog never reach that section.
-   */
-  onMcpSectionShown?: () => void;
-  /**
    * The Storage section appears only when a caller supplies this: a remote host without
    * `storage-v1` passes nothing. Every member reads it; `canManage` adds Clear and Delete.
    */
@@ -171,11 +137,6 @@ export interface ServerSettingsModalProps {
    * host with `instance-transfer-v1` where the user is an owner or admin.
    */
   instanceTransfer?: ServerTransferOptions | undefined;
-  /**
-   * The connectors of this server. The Connectors section appears only when the server can run one
-   * of them for this account.
-   */
-  connectors?: ConnectorRegistry | undefined;
   /**
    * The Updates section appears only when a caller supplies this: a remote host with
    * `host-update-v1` that this member administers.
@@ -220,15 +181,13 @@ export type ServerSettingsSection =
   | "members"
   | "roles"
   | "desktop"
-  | "mcp"
   | "storage"
   | "sites"
   | "providers"
   | "updates"
   | "import"
   | "transfer"
-  | "routines"
-  | "connectors";
+  | "routines";
 type Section = ServerSettingsSection;
 
 const sections = {
@@ -236,7 +195,6 @@ const sections = {
   members: { title: "server.settings.membersTitle", description: "server.settings.membersDescription" },
   roles: { title: "server.settings.rolesTitle", description: "server.settings.rolesDescription" },
   desktop: { title: "server.settings.desktopTitle", description: "server.settings.desktopDescription" },
-  mcp: { title: "server.settings.mcpTitle", description: "server.settings.mcpDescription" },
   storage: { title: "server.settings.storageTitle", description: "server.settings.storageDescription" },
   sites: { title: "server.settings.hostedSitesTitle", description: "server.settings.hostedSitesDescription" },
   providers: { title: "server.settings.providersTitle", description: "server.settings.providersDescription" },
@@ -244,23 +202,16 @@ const sections = {
   import: { title: "server.settings.importTitle", description: "server.settings.importDescription" },
   transfer: { title: "server.settings.transferTitle", description: "server.settings.transferDescription" },
   routines: { title: "server.settings.routinesTitle", description: "server.settings.routinesDescription" },
-  connectors: { title: "server.settings.connectorsTitle", description: "server.settings.connectorsDescription" },
 } as const satisfies Record<Section, { title: AppTextKey; description: AppTextKey }>;
 
 export function ServerSettingsModal(props: ServerSettingsModalProps) {
   const { t, errorMessage } = useText();
   const [section, setSection] = createSignal<Section>("general");
-  /** Set while the MCP panel shows a form, so the header reads `MCP › Connect to a custom MCP`. */
-  const [mcpDetail, setMcpDetail] = createSignal<McpPanelDetail | null>(null);
-  /** Set while an integration page is open, so the header reads `Connectors › GitHub`. */
-  const [connectorDetail, setConnectorDetail] = createSignal<ConnectorsPanelDetail | null>(null);
   /** Set while a provider page is open, so the header reads `Providers › Codex`. */
   const [providerDetail, setProviderDetail] = createSignal<ProviderSettingsDetail | null>(null);
   /** Set while an import source is open, so the header reads `Import › Hermes Agent`. */
   const [importDetail, setImportDetail] = createSignal<ServerImportDetail | null>(null);
   const crumbDetail = () => {
-    if (section() === "mcp") return mcpDetail();
-    if (section() === "connectors") return connectorDetail();
     if (section() === "import") return importDetail();
     if (section() === "roles") return roles.crumb();
     return section() === "providers" ? providerDetail() : null;
@@ -279,11 +230,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
   const local = () => props.server.kind === "local";
   const remoteDesktopSection = () => props.remoteDesktopSupported !== false && props.platform === "darwin";
   const configured = () => (local() ? Boolean(props.hostStatus?.configured) : true);
-  /**
-   * The role check without `configured()`. MCP servers belong to this machine and are spawned
-   * by the agents on it, so they are manageable before the user publishes a Team API host at all.
-   */
-  const canManageMcp = () => serverRoleCanAdminister(props.server);
   const actionsAvailable = () => local() || props.server.state === "online";
   const availableInitialSection = (): Section | null =>
     props.initialSection === "updates" && !props.hostUpdate ? null : (props.initialSection ?? null);
@@ -369,10 +315,9 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
       setToastHeight(0);
     });
   }
-  // Both save bars dock in the same place, so the toast has to lift for either one. It is
+  // The save bar docks where the toast is, so the toast has to lift for it. It is
   // `position: absolute` over the footer: without this it covers the bar and swallows its clicks.
-  const saveBarDocked = () =>
-    (section() === "general" && general.identityDirty()) || (section() === "mcp" && Boolean(mcpDetail()?.saveBar()));
+  const saveBarDocked = () => section() === "general" && general.identityDirty();
 
   createEffect(
     () => ({
@@ -418,17 +363,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
     },
   );
 
-  /** The latch keeps a section the user is already in from being reported again on every change. */
-  let mcpSectionVisible = false;
-  createEffect(
-    () => props.open && section() === "mcp" && Boolean(props.mcpServers),
-    (visible) => {
-      if (visible === mcpSectionVisible) return;
-      mcpSectionVisible = visible;
-      if (visible) untrack(() => props.onMcpSectionShown?.());
-    },
-  );
-
   const sectionTabsProps = {
     get value() {
       return section();
@@ -441,15 +375,13 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         value === "members" ||
         value === "roles" ||
         value === "desktop" ||
-        value === "mcp" ||
         value === "storage" ||
         value === "sites" ||
         value === "providers" ||
         value === "updates" ||
         value === "import" ||
         value === "transfer" ||
-        value === "routines" ||
-        value === "connectors"
+        value === "routines"
       )
         setSection(value);
     },
@@ -511,53 +443,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
         }
         footer={
           <>
-            {/* The MCP form's save bar belongs to the dialog, not to the panel: the footer sits
-                outside the scroll area, so the bar stays on screen and spans the whole panel. It
-                appears only once the form holds a change, the way the General tab's bar does. */}
-            <Show when={section() === "mcp" ? mcpDetail() : null}>
-              {(detail) => (
-                <SaveBarDock value={detail().saveBar()}>
-                  {(bar) => (
-                    <section class="settings-modal-save-bar" aria-label={t("server.settings.unsavedMcpChanges")}>
-                      <Show
-                        when={bar().failed}
-                        fallback={
-                          <Text variant="caption" tone="muted">
-                            {bar().message}
-                          </Text>
-                        }
-                      >
-                        <Text variant="caption" tone="danger" role="alert">
-                          {bar().message}
-                        </Text>
-                      </Show>
-                      <div class="settings-modal-save-actions">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          disabled={bar().resetDisabled}
-                          onClick={detail().reset}
-                        >
-                          {t("server.settings.reset")}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="default"
-                          loading={bar().saving}
-                          loadingLabel={t("common.saving")}
-                          disabled={bar().saveDisabled}
-                          onClick={detail().save}
-                        >
-                          {t("common.save")}
-                        </Button>
-                      </div>
-                    </section>
-                  )}
-                </SaveBarDock>
-              )}
-            </Show>
             {/* `true` while the identity form is dirty: the dock only needs to know that there is
                 something to show, so the bar's own markup stays as it was. */}
             <SaveBarDock value={section() === "general" && general.identityDirty() ? true : null}>
@@ -615,12 +500,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
                 <span>{t(sections.desktop.title)}</span>
               </Tabs.Trigger>
             </Show>
-            <Show when={props.mcpServers}>
-              <Tabs.Trigger class="settings-modal-nav-item" value="mcp">
-                <Blocks aria-hidden="true" />
-                <span>{t(sections.mcp.title)}</span>
-              </Tabs.Trigger>
-            </Show>
             <Show when={props.storage}>
               <Tabs.Trigger class="settings-modal-nav-item" value="storage">
                 <HardDrive aria-hidden="true" />
@@ -663,12 +542,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
                 <span>{t(sections.routines.title)}</span>
               </Tabs.Trigger>
             </Show>
-            <Show when={(props.connectors?.available().length ?? 0) > 0}>
-              <Tabs.Trigger class="settings-modal-nav-item" value="connectors">
-                <Plug aria-hidden="true" />
-                <span>{t(sections.connectors.title)}</span>
-              </Tabs.Trigger>
-            </Show>
           </Tabs.List>
         }
       >
@@ -687,31 +560,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
           <Tabs.Content value="desktop" class="settings-modal-tab-panel server-settings-panel" data-tab="desktop">
             <ServerDesktopPanel server={props.server} platform={props.platform} hostStatus={props.hostStatus} />
           </Tabs.Content>
-        </Show>
-        <Show when={props.mcpServers}>
-          {(servers) => (
-            <Tabs.Content value="mcp" class="settings-modal-tab-panel server-settings-panel" data-tab="mcp">
-              <ServerMcpPanel
-                servers={servers()}
-                canManage={canManageMcp()}
-                menuMount={modalElement()}
-                loadError={props.mcpLoadError}
-                toolRuntimeNote={props.mcpToolRuntimeNote}
-                onRetryLoad={props.onRetryMcpServers}
-                onDetailChange={setMcpDetail}
-                onSave={(config) => props.onSaveMcpServer?.(config) ?? Promise.resolve()}
-                onRemove={(id) => props.onRemoveMcpServer?.(id) ?? Promise.resolve()}
-                onSetEnabled={(id, enabled) => props.onSetMcpServerEnabled?.(id, enabled) ?? Promise.resolve()}
-                onTest={(config) =>
-                  props.onTestMcpServer?.(config) ??
-                  Promise.resolve({ toolCount: 0, error: t("mcp.panel.testUnavailable") })
-                }
-                signIn={props.mcpSignIn}
-                signInRequest={props.mcpSignInRequest}
-                onSignInRequestHandled={props.onMcpSignInRequestHandled}
-              />
-            </Tabs.Content>
-          )}
         </Show>
         {/* Mounted only while selected, so the host is measured when the section opens. */}
         <Show when={props.storage}>
@@ -815,21 +663,6 @@ export function ServerSettingsModal(props: ServerSettingsModalProps) {
                 run={run}
                 menuMount={modalElement}
                 showCopyError={host.showCopyError}
-              />
-            </Tabs.Content>
-          )}
-        </Show>
-        <Show when={props.connectors?.available().length ? props.connectors : undefined}>
-          {(connectors) => (
-            <Tabs.Content
-              value="connectors"
-              class="settings-modal-tab-panel server-settings-panel"
-              data-tab="connectors"
-            >
-              <ConnectorsPanel
-                connectors={connectors()}
-                hostName={local() ? undefined : props.server.name}
-                onDetailChange={setConnectorDetail}
               />
             </Tabs.Content>
           )}
