@@ -484,6 +484,11 @@ export const Compact: Story = {
   args: { compact: true },
 };
 
+/** The top row shows a collapse button when the host passes `onCollapse`. */
+export const CollapseButton: Story = {
+  args: { onCollapse: fn() },
+};
+
 export const LongServerName: Story = {
   args: { serverName: "Synthetify production workspace with a long name" },
   decorators: [(Story) => <div style={{ width: "240px", height: "100vh" }}>{Story()}</div>],

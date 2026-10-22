@@ -110,6 +110,8 @@ export interface SidebarProps {
   /** A bar at the bottom of the sidebar, under the footer. It also shows in the compact sidebar. */
   bottomBar?: JSX.Element | undefined;
   onExpand: () => void;
+  /** Collapses the sidebar to its compact rail. Without it, the top row has no collapse button. */
+  onCollapse?: (() => void) | undefined;
   /** Opens the global search. The search field and the compact search button both call it. */
   onOpenSearch: () => void;
   onOpenMarketplace: () => void;

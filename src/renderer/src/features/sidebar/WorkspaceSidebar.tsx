@@ -237,6 +237,7 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
       onRestoreAgent={hideAllowed() ? (agentId) => void setAgentHiddenByUser(agentId, false) : undefined}
       compact={layout.leftPanelCompact()}
       onExpand={layout.expandSidebar}
+      onCollapse={simpleLayout() ? () => layout.setSidebarCollapsed(true) : undefined}
       onOpenSearch={() => setGlobalSearchVisibility(true)}
       searchButton={simpleLayout()}
       listStart={simpleLayout() && simpleSidebar.list() === "clock" ? <SimpleClockList /> : undefined}
