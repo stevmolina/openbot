@@ -6,7 +6,13 @@ import { isBoolean, isDynamicRecord, isNumber, isString } from "./runtime-values
 export interface DynamicIslandPreference {
   enabled: boolean;
   hapticsEnabled: boolean;
+  /** Show the idle island (logo and greeting) when nothing needs the user. Off by default. */
   idleVisible: boolean;
+  /**
+   * Show the island while agents run. Off by default: the island then appears only for items that
+   * need the user, and for a short notice when an agent finishes.
+   */
+  activityVisible: boolean;
   additionalDisplaysEnabled: boolean;
   /** The compact island width, as a percent of its default width. The physical notch never shrinks. */
   widthPercent: number;
@@ -54,7 +60,8 @@ export type SetDynamicIslandPreferenceInput = DynamicIslandPreference;
 export const DEFAULT_DYNAMIC_ISLAND_PREFERENCE = {
   enabled: true,
   hapticsEnabled: true,
-  idleVisible: true,
+  idleVisible: false,
+  activityVisible: false,
   additionalDisplaysEnabled: true,
   widthPercent: 100,
   heightPercent: 100,
@@ -204,12 +211,44 @@ export type DynamicIslandGeometry = DynamicIslandNotchSize | null;
 
 export const IDLE_DYNAMIC_ISLAND_PRESENTATION: DynamicIslandPresentation = { serverId: "local", mode: "idle" };
 
+/** How long a finished-turn notice stays on the island before it hides by itself. */
+export const DYNAMIC_ISLAND_NOTICE_MS = 8_000;
+
+/**
+ * Returns what the island window draws for a presentation. An item that needs the user (a
+ * question, an approval, a browser takeover, a failure) always shows. Agent activity shows only
+ * when the user turned it on. An unread reply is a notice that hides once `noticeExpired` says so.
+ * Everything else is idle, and the idle island shows only when the user turned it on.
+ */
+export function effectiveDynamicIslandPresentation(
+  presentation: DynamicIslandPresentation,
+  preference: Pick<DynamicIslandPreference, "activityVisible">,
+  noticeExpired: boolean,
+): DynamicIslandPresentation {
+  if (presentation.mode === "working" && !preference.activityVisible) {
+    return { serverId: presentation.serverId, mode: "idle" };
+  }
+  if (presentation.mode === "message" && noticeExpired) {
+    return { serverId: presentation.serverId, mode: "idle" };
+  }
+  return presentation;
+}
+
+/** Returns whether the island window shows anything for an effective presentation. */
+export function isDynamicIslandVisible(
+  presentation: DynamicIslandPresentation,
+  preference: Pick<DynamicIslandPreference, "enabled" | "idleVisible">,
+): boolean {
+  return preference.enabled && (presentation.mode !== "idle" || preference.idleVisible);
+}
+
 export function isDynamicIslandPreference(value: unknown): value is DynamicIslandPreference {
   return (
     isDynamicRecord(value) &&
     isBoolean(value.enabled) &&
     isBoolean(value.hapticsEnabled) &&
     isBoolean(value.idleVisible) &&
+    isBoolean(value.activityVisible) &&
     isBoolean(value.additionalDisplaysEnabled) &&
     isDynamicIslandSizePercent(value.widthPercent, DYNAMIC_ISLAND_SIZE_LIMITS.widthPercent) &&
     isDynamicIslandSizePercent(value.heightPercent, DYNAMIC_ISLAND_SIZE_LIMITS.heightPercent) &&

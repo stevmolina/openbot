@@ -78,9 +78,13 @@ export const messages = {
   "settings.soundTheme.pressHint": "Przełączniki klawiszy",
   "settings.notch.title": "Działanie",
   "settings.notch.show.title": "Pokazuj status w wycięciu MacBooka",
-  "settings.notch.show.description": "Pokazuj aktywność agentów i elementy wymagające uwagi u góry każdego ekranu.",
+  "settings.notch.show.description":
+    "Pokazuj wyspę u góry każdego ekranu tylko wtedy, gdy coś wymaga Twojej uwagi, na przykład pytanie agenta lub prośba o zatwierdzenie.",
   "settings.notch.idle.title": "Pokazuj bezczynną wyspę",
-  "settings.notch.idle.description": "Pokazuj logo OpenBot i powitanie, gdy żaden status nie jest aktywny.",
+  "settings.notch.idle.description": "Zawsze pokazuj logo OpenBot i powitanie, także gdy nic nie wymaga Twojej uwagi.",
+  "settings.notch.activity.title": "Pokazuj aktywność agentów",
+  "settings.notch.activity.description":
+    "Pokazuj wyspę także podczas pracy agentów. Gotowa odpowiedź zawsze pojawia się na kilka sekund.",
   "settings.notch.displays.title": "Pokazuj na dodatkowych ekranach",
   "settings.notch.displays.description": "Pokazuj Dynamic Island na podłączonych ekranach zewnętrznych.",
   "settings.notch.haptics.title": "Reakcja haptyczna",

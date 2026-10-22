@@ -76,9 +76,14 @@ export const messages = {
   "settings.soundTheme.pressHint": "Klavye tuşları",
   "settings.notch.title": "Davranış",
   "settings.notch.show.title": "Durumu MacBook çentiğinde göster",
-  "settings.notch.show.description": "Ajan etkinliğini ve dikkat gerektiren öğeleri her ekranın üst kısmında gösterin.",
+  "settings.notch.show.description":
+    "Adayı yalnızca bir şey ilginizi gerektirdiğinde, örneğin bir ajan sorusu veya onayı olduğunda her ekranın üst kısmında gösterin.",
   "settings.notch.idle.title": "Boştaki adayı göster",
-  "settings.notch.idle.description": "Hiçbir durum etkin olmadığında OpenBot logosunu ve selamlamasını gösterin.",
+  "settings.notch.idle.description":
+    "Hiçbir şey ilginizi gerektirmese bile OpenBot logosunu ve selamlamasını her zaman gösterin.",
+  "settings.notch.activity.title": "Ajan etkinliğini göster",
+  "settings.notch.activity.description":
+    "Ajanlar çalışırken de adayı gösterin. Tamamlanan bir yanıt her zaman birkaç saniye görünür.",
   "settings.notch.displays.title": "Ek ekranlarda göster",
   "settings.notch.displays.description": "Bağlı harici ekranlarda Dynamic Island'ı gösterin.",
   "settings.notch.haptics.title": "Dokunsal geri bildirim",

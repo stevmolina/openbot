@@ -85,9 +85,13 @@ export const messages = {
   "settings.notch.title": "Comportement",
   "settings.notch.show.title": "Afficher l’état dans l’encoche du MacBook",
   "settings.notch.show.description":
-    "Afficher l’activité des agents et les éléments nécessitant votre attention en haut de chaque écran.",
+    "Afficher l’îlot en haut de chaque écran uniquement lorsque quelque chose demande votre attention, comme une question ou une approbation d’un agent.",
   "settings.notch.idle.title": "Afficher l’îlot au repos",
-  "settings.notch.idle.description": "Afficher le logo OpenBot et un message d’accueil lorsqu’aucun état n’est actif.",
+  "settings.notch.idle.description":
+    "Afficher toujours le logo OpenBot et un message d’accueil, même lorsque rien ne demande votre attention.",
+  "settings.notch.activity.title": "Afficher l’activité des agents",
+  "settings.notch.activity.description":
+    "Afficher aussi l’îlot pendant que les agents travaillent. Une réponse terminée s’affiche toujours quelques secondes.",
   "settings.notch.displays.title": "Afficher sur les écrans supplémentaires",
   "settings.notch.displays.description": "Afficher l’îlot dynamique sur les écrans externes connectés.",
   "settings.notch.haptics.title": "Retour haptique",

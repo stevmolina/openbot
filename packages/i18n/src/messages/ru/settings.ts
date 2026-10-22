@@ -78,9 +78,13 @@ export const messages = {
   "settings.notch.title": "Поведение",
   "settings.notch.show.title": "Показывать статус в вырезе MacBook",
   "settings.notch.show.description":
-    "Показывать активность агентов и всё, что требует внимания, в верхней части каждого дисплея.",
+    "Показывать панель в верхней части каждого дисплея только когда что-то требует вашего внимания, например вопрос или запрос подтверждения от агента.",
   "settings.notch.idle.title": "Показывать панель в режиме ожидания",
-  "settings.notch.idle.description": "Показывать логотип OpenBot и приветствие, когда нет активного статуса.",
+  "settings.notch.idle.description":
+    "Всегда показывать логотип OpenBot и приветствие, даже когда ничего не требует вашего внимания.",
+  "settings.notch.activity.title": "Показывать активность агентов",
+  "settings.notch.activity.description":
+    "Показывать панель и пока агенты работают. Готовый ответ всегда появляется на несколько секунд.",
   "settings.notch.displays.title": "Показывать на дополнительных дисплеях",
   "settings.notch.displays.description": "Показывать Dynamic Island на подключённых внешних дисплеях.",
   "settings.notch.haptics.title": "Тактильный отклик",

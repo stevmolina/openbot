@@ -284,6 +284,7 @@ const Settings = createSimpleContext({
         previous.macBookNotch !== value.macBookNotch ||
         previous.macBookNotchHaptics !== value.macBookNotchHaptics ||
         previous.macBookNotchIdle !== value.macBookNotchIdle ||
+        previous.macBookNotchActivity !== value.macBookNotchActivity ||
         previous.macBookNotchAdditionalDisplays !== value.macBookNotchAdditionalDisplays ||
         previous.macBookNotchWidthPercent !== value.macBookNotchWidthPercent ||
         previous.macBookNotchHeightPercent !== value.macBookNotchHeightPercent ||
@@ -298,6 +299,7 @@ const Settings = createSimpleContext({
             enabled: value.macBookNotch,
             hapticsEnabled: value.macBookNotchHaptics,
             idleVisible: value.macBookNotchIdle,
+            activityVisible: value.macBookNotchActivity,
             additionalDisplaysEnabled: value.macBookNotchAdditionalDisplays,
             widthPercent: value.macBookNotchWidthPercent,
             heightPercent: value.macBookNotchHeightPercent,
@@ -311,6 +313,7 @@ const Settings = createSimpleContext({
               macBookNotch: preference.enabled,
               macBookNotchHaptics: preference.hapticsEnabled,
               macBookNotchIdle: preference.idleVisible,
+              macBookNotchActivity: preference.activityVisible,
               macBookNotchAdditionalDisplays: preference.additionalDisplaysEnabled,
               macBookNotchWidthPercent: preference.widthPercent,
               macBookNotchHeightPercent: preference.heightPercent,
@@ -326,6 +329,7 @@ const Settings = createSimpleContext({
               macBookNotch: previous.macBookNotch,
               macBookNotchHaptics: previous.macBookNotchHaptics,
               macBookNotchIdle: previous.macBookNotchIdle,
+              macBookNotchActivity: previous.macBookNotchActivity,
               macBookNotchAdditionalDisplays: previous.macBookNotchAdditionalDisplays,
               macBookNotchWidthPercent: previous.macBookNotchWidthPercent,
               macBookNotchHeightPercent: previous.macBookNotchHeightPercent,
@@ -477,6 +481,7 @@ const Settings = createSimpleContext({
               macBookNotch: preference.enabled,
               macBookNotchHaptics: preference.hapticsEnabled,
               macBookNotchIdle: preference.idleVisible,
+              macBookNotchActivity: preference.activityVisible,
               macBookNotchAdditionalDisplays: preference.additionalDisplaysEnabled,
               macBookNotchWidthPercent: preference.widthPercent,
               macBookNotchHeightPercent: preference.heightPercent,
