@@ -180,7 +180,7 @@ export function AppAction(props: {
         </Show>
       }
     >
-      {/* A custom server is turned on in Server settings › MCP, not here. The Apps tab lists only the
+      {/* A custom server is turned on in Custom apps, not here. The Apps tab lists only the
           connectors that this account can connect. */}
       <Show when={props.app.kind === "connector" || (props.app.kind === "plugin" && model().canConnectApps())}>
         <Button

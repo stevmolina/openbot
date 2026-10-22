@@ -9,7 +9,7 @@ import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { STORY_AGENT_SUMMARIES } from "./fixtures";
 
-/** Server settings > Connectors > Discord: the Slack page with `platform` "discord". */
+/** Marketplace > Apps > Discord: the Slack page with `platform` "discord". */
 const meta = {
   title: "Settings/DiscordIntegrationPanel",
   component: SlackIntegrationPanel,

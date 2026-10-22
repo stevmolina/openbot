@@ -10,6 +10,8 @@ import { type McpPanelDetail, type McpPanelSignIn, ServerMcpPanel } from "./Serv
  * the account can manage them: a remote host answers 403 to a `member` and 400 without the capability.
  */
 export interface ServerMcpOptions {
+  /** The server whose MCP servers these are. Another server opens a new page, with its own read. */
+  serverId: string;
   servers: McpServerConfig[];
   canManage: boolean;
   /** Why the list is empty, when the read failed rather than found nothing. */
@@ -55,7 +57,12 @@ export function ServerMcpPage(props: {
   };
 
   return (
-    <div ref={setPage} class="marketplace-view server-mcp-page">
+    <div
+      ref={setPage}
+      class="marketplace-view server-mcp-page"
+      // The Marketplace does not go back on Escape while the form holds a change.
+      data-marketplace-unsaved={detail()?.saveBar() ? "" : undefined}
+    >
       <Show when={detail()}>
         {(form) => (
           <div class="server-mcp-page-head">

@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/connector";
 
 export const messages = {
-  // Server settings > Connectors: the built-in GitHub connection of this computer.
+  // Marketplace > Apps: the built-in GitHub connection of this computer.
   "connector.github.title": "GitHub",
   "connector.github.description":
     "このコンピューターのすべてのエージェントが、GitHub のリポジトリ、Issue、プルリクエスト、gh と git を使えます。",
@@ -74,7 +74,7 @@ export const messages = {
   "connector.statusUnknown": "不明",
   "connector.readFailed": "OpenBot はこの接続の状態を読み取れませんでした。",
 
-  // Server settings > Connectors: the list of integrations. Each row opens its page.
+  // Marketplace > Apps: the list of integrations. Each row opens its page.
   "connector.hub.onThisComputer": "このコンピューター上",
   "connector.hub.onHost": "{host} 上",
   "connector.hub.notSetUp": "未設定",
@@ -83,7 +83,7 @@ export const messages = {
   "connector.hub.setUp": "設定",
   "connector.hub.usedBy": "{names} が使用中",
 
-  // Server settings > Connectors > Slack.
+  // Marketplace > Apps > Slack.
   "connector.slack.title": "Slack",
   "connector.slack.description":
     "Slack で @OpenBot をメンションするか、ダイレクトメッセージを送ります。Slack Orchestrator が適切なエージェントに依頼して回答します。",
@@ -159,7 +159,7 @@ export const messages = {
     other: "ワークスペース {count} 件 · Slack Orchestrator が回答します",
   },
 
-  // Server settings > Connectors > Discord. Always write "Discord server": "server" alone is an
+  // Marketplace > Apps > Discord. Always write "Discord server": "server" alone is an
   // OpenBot server.
   "connector.discord.title": "Discord",
   "connector.discord.description":
@@ -250,7 +250,7 @@ export const messages = {
   "connector.discord.accessSave": "保存",
   "connector.discord.accessHostUpdate": "ロールを選択するには、{host} の OpenBot を更新してください。",
 
-  // Server settings > Connectors > Telegram.
+  // Marketplace > Apps > Telegram.
   "connector.telegram.title": "Telegram",
   "connector.telegram.description":
     "OpenBot ボットを Telegram グループに追加するか、ボットとのダイレクトチャットを開きます。Telegram Orchestrator が適切なエージェントに依頼して回答します。",

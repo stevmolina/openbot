@@ -200,7 +200,11 @@ export function SkillsMarketplace() {
           // with its own runtime, which this window has not read.
           toolRuntimeNote: holdsToolRuntimes(server) ? mcpToolRuntimeNote(toolRuntimeStatuses().bun) : null,
           loadError: serverSettingsMcpError(),
-          onShown: () => void refreshMcpServers(),
+          // The page reads the list of its own server: the target first, so a switch cannot drop the read.
+          onShown: () => {
+            showMcpServers(server.id);
+            void refreshMcpServers();
+          },
           onRetryLoad: () => void refreshMcpServers(),
           onSave: saveMcpServer,
           onRemove: removeMcpServer,

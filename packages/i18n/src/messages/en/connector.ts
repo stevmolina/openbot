@@ -1,7 +1,7 @@
 import { defineMessages } from "../../message";
 
 export const messages = defineMessages("connector", {
-  // Server settings > Connectors: the built-in GitHub connection of this computer.
+  // Marketplace > Apps: the built-in GitHub connection of this computer.
   "connector.github.title": "GitHub",
   "connector.github.description":
     "Every agent on this computer can use your GitHub repositories, issues and pull requests, and gh and git.",
@@ -80,7 +80,7 @@ export const messages = defineMessages("connector", {
   "connector.statusUnknown": "Unknown",
   "connector.readFailed": "OpenBot could not read the state of this connection.",
 
-  // Server settings > Connectors: the list of integrations. Each row opens its page.
+  // Marketplace > Apps: the list of integrations. Each row opens its page.
   "connector.hub.onThisComputer": "On this computer",
   "connector.hub.onHost": "On {host}",
   "connector.hub.notSetUp": "Not set up",
@@ -91,7 +91,7 @@ export const messages = defineMessages("connector", {
   // {names} lists the agents, such as "Chief, Research".
   "connector.hub.usedBy": "Used by {names}",
 
-  // Server settings > Connectors > Slack: a workspace installs the one OpenBot app, and the Slack
+  // Marketplace > Apps > Slack: a workspace installs the one OpenBot app, and the Slack
   // Orchestrator agent receives each request, asks the team and answers.
   "connector.slack.title": "Slack",
   "connector.slack.description":
@@ -174,7 +174,7 @@ export const messages = defineMessages("connector", {
     other: "{count} workspaces · Slack Orchestrator answers",
   },
 
-  // Server settings > Connectors > Discord: a Discord server (a guild) adds the one OpenBot bot, and
+  // Marketplace > Apps > Discord: a Discord server (a guild) adds the one OpenBot bot, and
   // the Discord Orchestrator agent receives each request, asks the team and answers. Always write
   // "Discord server": "server" alone is an OpenBot server.
   "connector.discord.title": "Discord",
@@ -274,7 +274,7 @@ export const messages = defineMessages("connector", {
   // {host} is the joined server's name.
   "connector.discord.accessHostUpdate": "Update OpenBot on {host} to choose roles.",
 
-  // Server settings > Connectors > Telegram: each chat adds the one OpenBot bot, and the Telegram
+  // Marketplace > Apps > Telegram: each chat adds the one OpenBot bot, and the Telegram
   // Orchestrator agent receives the messages of all chats, asks the team and answers.
   "connector.telegram.title": "Telegram",
   "connector.telegram.description":

@@ -35,7 +35,7 @@ export interface IntegrationsHubRow {
 const FACES = 4;
 
 /**
- * Server settings > Connectors: one quiet row per integration. The whole row opens its page. A row
+ * Marketplace > Apps: one quiet row per integration. The whole row opens its page. A row
  * that is set up sorts into the first section with its status; the others wait below with Set up.
  * An integration that is not available here waits below with its status and no action.
  */

@@ -157,7 +157,7 @@ surface and responsive rules override earlier component rules.
 tabs, and a page for each listing. It reads a typed `MarketplaceModel` and holds no data of its
 own. The renderer's `marketplace-controller.ts` builds the model on the injected `MarketplaceCalls`,
 and `MarketplaceModal` adds the connect and uninstall dialogs. `ConnectorsProvider` creates the
-connector controllers once; a connector's app page and Server settings › Connectors show the same
+connector controllers once; a connector's app page in Marketplace › Apps shows
 `ConnectorDetailPanel` from them.
 
 `AgentSettingsPanel` owns the form draft, ordered save queue, avatar editor, and model controls.

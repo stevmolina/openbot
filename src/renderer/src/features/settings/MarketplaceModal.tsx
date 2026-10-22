@@ -51,32 +51,44 @@ export interface MarketplaceModalProps extends MarketplaceControllerProps {
   providers?: HostProviderSettings | undefined;
   /** The joined server whose providers `providers` holds. Absent: this computer. */
   providersHostName?: string | undefined;
+  /** The server of `providers`. Another server opens a new provider page. */
+  providersServerId?: string | undefined;
 }
 
 /** The Marketplace on this computer's or a joined server's data, with the dialogs it opens. */
 export function MarketplaceModal(props: MarketplaceModalProps) {
   const nav = props.nav ?? createMarketplaceNavigation();
   const controller = createMarketplaceController(props);
-  /** Apps › Custom apps. Each change there reads the apps again, so the cards show it. */
   /** The page of one AI provider: the provider page of the server settings, opened on that provider. */
   const [providerMount, setProviderMount] = createSignal<HTMLElement>();
   const providerPage: MarketplaceProviderPage = (page) => (
-    <Show when={props.providers}>
-      {(providers) => (
-        <div ref={setProviderMount} class="marketplace-provider-panel">
-          <HostProviderSettingsPanel
-            {...providers()}
-            hostName={props.providersHostName}
-            selectMount={providerMount()}
-            initialProvider={isAgentProvider(page.id) ? page.id : undefined}
-          />
-        </div>
+    // Keyed on the server: another server's providers start a new page, which reads that server's state.
+    <Show when={props.providers ? `server:${props.providersServerId ?? "local"}` : undefined} keyed>
+      {(serverKey) => (
+        <Show when={serverKey ? props.providers : undefined}>
+          {(providers) => (
+            <div ref={setProviderMount} class="marketplace-provider-panel">
+              <HostProviderSettingsPanel
+                {...providers()}
+                hostName={props.providersHostName}
+                selectMount={providerMount()}
+                initialProvider={isAgentProvider(page.id) ? page.id : undefined}
+              />
+            </div>
+          )}
+        </Show>
       )}
     </Show>
   );
+  /** Apps › Custom apps. Each change there reads the apps again, so the cards show it. */
   const customApps: MarketplaceCustomApps = (page) => (
-    <Show when={props.customApps}>
-      {(options) => <ServerMcpPage options={options()} adding={page.adding} onChanged={controller.reloadApps} />}
+    // Keyed on the server: another server opens a new page, which reads that server's list.
+    <Show when={props.customApps?.serverId} keyed>
+      {(serverId) => (
+        <Show when={props.customApps?.serverId === serverId ? props.customApps : undefined}>
+          {(options) => <ServerMcpPage options={options()} adding={page.adding} onChanged={controller.reloadApps} />}
+        </Show>
+      )}
     </Show>
   );
   /**
@@ -143,6 +155,17 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
       if (!slug) return;
       setConnectWhenReady(null);
       untrack(() => startConnect(slug));
+    },
+  );
+  // A page that the server on screen cannot show goes back to the Apps tab: the user switched to a
+  // server where this account manages no MCP servers or no providers.
+  createEffect(
+    () => {
+      const view = nav.state.stack.at(-1);
+      return (view?.kind === "custom-apps" && !props.customApps) || (view?.kind === "provider" && !props.providers);
+    },
+    (gone) => {
+      if (gone) nav.backTo(0);
     },
   );
   // Slack, Discord and Telegram change with no event from main, so each available connector is

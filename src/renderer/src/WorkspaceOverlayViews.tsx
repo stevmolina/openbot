@@ -88,7 +88,7 @@ export function MarketplaceOverlay(props: {
    * The MCP servers of `server`, for Apps › Custom apps. They show only where Server settings › MCP
    * showed them: a remote host answers 403 to a `member` and 400 without the capability.
    */
-  mcp?: Omit<ServerMcpOptions, "canManage"> | undefined;
+  mcp?: Omit<ServerMcpOptions, "canManage" | "serverId"> | undefined;
   /** The AI providers of `server`, for the page of one provider. Absent when this account cannot manage them. */
   providers?: HostProviderSettings | undefined;
 }) {
@@ -96,8 +96,9 @@ export function MarketplaceOverlay(props: {
   const manage = createMemo(() => serverCanAdminister(props.server, "skills-admin-v1"));
   const customApps = createMemo((): ServerMcpOptions | undefined => {
     const mcp = props.mcp;
-    if (!mcp || !serverCanAdminister(props.server, MCP_SERVERS_CAPABILITY)) return undefined;
-    return { ...mcp, canManage: serverRoleCanAdminister(props.server) };
+    const server = props.server;
+    if (!mcp || !serverCanAdminister(server, MCP_SERVERS_CAPABILITY)) return undefined;
+    return { ...mcp, serverId: server.id, canManage: serverRoleCanAdminister(server) };
   });
   /* What both example controls need: a managed agent whose composer is free to take another line. */
   const composerFree = createMemo(
@@ -127,6 +128,7 @@ export function MarketplaceOverlay(props: {
           customApps={customApps()}
           providers={props.providers}
           providersHostName={props.server?.kind === "remote" ? props.server.name : undefined}
+          providersServerId={props.server?.id}
           calls={props.calls}
           connectors={props.connectors}
           agents={manage() ? props.agents : []}

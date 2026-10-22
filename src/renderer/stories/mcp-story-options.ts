@@ -92,6 +92,7 @@ export function createStoryMcpOptions(input: {
       }),
   };
   return {
+    serverId: remote ? "story-remote" : "local",
     get servers() {
       return servers();
     },
