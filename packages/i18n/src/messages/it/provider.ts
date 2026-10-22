@@ -129,6 +129,8 @@ export const messages = {
   "provider.picker.recent": "Recenti",
   "provider.picker.recentModels": "Modelli usati di recente",
   "provider.picker.setUp": "Configura",
+  "provider.picker.olderModels": "Mostra modelli precedenti",
+  "provider.picker.fewerModels": "Mostra meno modelli",
   "provider.status.signInRequired": "Accesso richiesto",
   "provider.model.free": "Gratuito",
   "provider.model.default": "predefinito",

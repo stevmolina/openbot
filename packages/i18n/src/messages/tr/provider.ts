@@ -128,6 +128,8 @@ export const messages = {
   "provider.picker.recent": "Son kullanılan",
   "provider.picker.recentModels": "Son kullanılan modeller",
   "provider.picker.setUp": "Kur",
+  "provider.picker.olderModels": "Eski modelleri göster",
+  "provider.picker.fewerModels": "Daha az model göster",
   "provider.status.signInRequired": "Oturum açılmalı",
   "provider.model.free": "Ücretsiz",
   "provider.model.default": "varsayılan",

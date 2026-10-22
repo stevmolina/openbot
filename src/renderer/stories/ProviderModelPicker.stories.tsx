@@ -1,4 +1,9 @@
-import type { AgentModelId, AgentProviderId, AgentReasoningEffort } from "@openbot/contracts/ipc";
+import type {
+  AgentModelId,
+  AgentProviderId,
+  AgentReasoningEffort,
+  ClientAgentModelOption,
+} from "@openbot/contracts/ipc";
 import { ProviderModelPicker } from "@openbot/ui/components/ProviderModelPicker";
 import { createStore } from "solid-js";
 import { fn } from "storybook/test";
@@ -129,6 +134,56 @@ export const NoEffortChoice: Story = {
     value: "claude-haiku-5-5",
     reasoningEffort: "medium",
     onReasoningEffortChange: fn(),
+  },
+};
+
+/** A Claude catalog with many releases, newest first, as the Claude CLI reports it. */
+const CLAUDE_CATALOG = (
+  [
+    ["claude-opus-5-5", "Claude Opus 5.5"],
+    ["claude-sonnet-5-5", "Claude Sonnet 5.5"],
+    ["claude-haiku-5-5", "Claude Haiku 5.5"],
+    ["claude-fable-5-1", "Claude Fable 5.1"],
+    ["claude-fable-5-1[1m]", "Claude Fable 5.1 (1M context)"],
+    ["claude-sonnet-5", "Claude Sonnet 5"],
+    ["claude-opus-5", "Claude Opus 5"],
+    ["claude-fable-5", "Claude Fable 5"],
+    ["claude-opus-4-8", "Claude Opus 4.8"],
+    ["claude-opus-4-7", "Claude Opus 4.7"],
+    ["claude-opus-4-6", "Claude Opus 4.6"],
+    ["claude-sonnet-4-6", "Claude Sonnet 4.6"],
+    ["claude-haiku-4-5-20251001", "Claude Haiku 4.5"],
+  ] as const
+).map(
+  ([id, name]): ClientAgentModelOption => ({
+    provider: "claude",
+    id,
+    name,
+    description: "",
+    defaultReasoningEffort: "high",
+    supportedReasoningEfforts: ["low", "medium", "high", "xhigh", "max"],
+  }),
+);
+
+/**
+ * A long catalog shows the newest model of each family. "Show older models" at the end of the list
+ * shows the other models in their places, and "Show fewer models" hides them again.
+ */
+export const OlderModels: Story = {
+  args: {
+    provider: "claude",
+    value: "claude-opus-5-5",
+    modelOptions: [...STORY_MODELS.filter((model) => model.provider !== "claude"), ...CLAUDE_CATALOG],
+    reasoningEffort: "high",
+    onReasoningEffortChange: fn(),
+  },
+};
+
+/** The agent runs an older model: its row stays in the short list, so the choice is always in view. */
+export const OlderModelChosen: Story = {
+  args: {
+    ...OlderModels.args,
+    value: "claude-opus-4-6",
   },
 };
 
