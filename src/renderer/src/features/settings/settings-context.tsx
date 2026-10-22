@@ -3,6 +3,7 @@ import {
   agentAutoApprovalEnabled,
   type DynamicIslandGeometry,
 } from "@openbot/contracts/ipc";
+import { createMarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
 import { DEFAULT_GENERAL_SETTINGS, type GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createSignal, onSettled } from "solid-js";
@@ -62,6 +63,28 @@ const Settings = createSimpleContext({
      */
     const [preferencesLoad, setPreferencesLoad] = createSignal<"loading" | "loaded" | "failed">("loading");
     const [skillsMarketplaceOpen, setSkillsMarketplaceOpen] = createSignal(false);
+    /**
+     * Where the user is in the Marketplace: its tab and its open page. It is here and not in the
+     * Marketplace, so the sidebar can open the Apps tab or the custom apps page, and can show which one is open.
+     */
+    const marketplaceNav = createMarketplaceNavigation();
+    // A closed Marketplace starts again from the first tab, with no search and no filter, as it did
+    // when each opening made its own navigation.
+    createEffect(skillsMarketplaceOpen, (open, previous) => {
+      if (previous && !open) marketplaceNav.reset();
+    });
+    /**
+     * Opens the Apps area: the Apps tab, or the custom apps page over it. `"add-custom"` opens the
+     * form for a new custom app. A link that names an app replaces what this opened.
+     */
+    function openApps(page: "apps" | "custom-apps" | "add-custom" = "apps"): void {
+      marketplaceNav.reset();
+      marketplaceNav.set((draft) => {
+        draft.tab = "apps";
+      });
+      if (page !== "apps") marketplaceNav.go({ kind: "custom-apps", adding: page === "add-custom" });
+      setSkillsMarketplaceOpen(true);
+    }
     // Undefined until main answers. The Settings preview then draws the notch it had before.
     const [builtInDisplayGeometry, setBuiltInDisplayGeometry] = createSignal<DynamicIslandGeometry | undefined>();
     /**
@@ -529,6 +552,8 @@ const Settings = createSimpleContext({
       openHostedServerDelete,
       skillsMarketplaceOpen,
       setSkillsMarketplaceOpen,
+      marketplaceNav,
+      openApps,
       pendingPluginSlug,
       setPendingPluginSlug,
       pendingPluginConnect,

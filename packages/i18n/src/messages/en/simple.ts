@@ -20,7 +20,7 @@ export const messages = defineMessages("simple", {
   "simple.bar.account": "Account, settings and help",
   "simple.bar.chat": "Agents",
   "simple.bar.clock": "Routines, tasks and schedule",
-  "simple.bar.plug": "Marketplace and connections",
+  "simple.bar.plug": "Marketplace and apps",
   "simple.clock.upcoming": "{count} upcoming",
   "simple.plug.providers": "AI providers",
   "simple.plug.providerOn": "{name}, available",

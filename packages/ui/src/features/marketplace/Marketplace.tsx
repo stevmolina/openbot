@@ -8,7 +8,12 @@ import { MarketplaceBrowse } from "./MarketplaceBrowse";
 import { MarketplaceSkillPage } from "./MarketplaceSkillPage";
 import { createMarketplaceListing } from "./marketplace-listing";
 import type { MarketplaceModel } from "./marketplace-model";
-import type { MarketplaceNavigation, MarketplaceScope, MarketplaceView } from "./marketplace-view";
+import type {
+  MarketplaceCustomApps,
+  MarketplaceNavigation,
+  MarketplaceScope,
+  MarketplaceView,
+} from "./marketplace-view";
 
 export interface MarketplaceProps {
   model: MarketplaceModel;
@@ -20,9 +25,11 @@ export interface MarketplaceProps {
   variant?: "dialog" | "page" | undefined;
   /** The simple layout of the Agents tab and the page header. */
   simple?: boolean | undefined;
+  /** The custom apps page: add, edit, test and sign in to the MCP servers of the host. Absent: no such page. */
+  customApps?: MarketplaceCustomApps | undefined;
 }
 
-function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string): string {
+function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string, customAppsTitle: string): string {
   switch (view.kind) {
     case "browse":
       return fallback;
@@ -31,6 +38,8 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
       return view.listing.name;
     case "app":
       return scope.model.apps().find((app) => app.id === view.id)?.name ?? fallback;
+    case "custom-apps":
+      return customAppsTitle;
   }
 }
 
@@ -38,7 +47,8 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
 function Crumbs(props: { scope: MarketplaceScope; page: boolean }) {
   const { t } = useText();
   const stack = () => props.scope.nav.state.stack;
-  const title = (view: MarketplaceView) => viewTitle(props.scope, view, t("marketplace.title"));
+  const title = (view: MarketplaceView) =>
+    viewTitle(props.scope, view, t("marketplace.title"), t("marketplace.app.customApps"));
   return (
     <nav class="marketplace-crumbs" aria-label={t("marketplace.crumbs.label")}>
       <For each={stack().slice(0, -1)}>
@@ -88,6 +98,9 @@ function MarketplaceWindow(props: MarketplaceProps) {
     nav,
     get simple() {
       return props.simple;
+    },
+    get customApps() {
+      return props.customApps;
     },
     agents: createMarketplaceListing({
       list: (query) => props.model.listAgents(query),
@@ -189,6 +202,9 @@ function MarketplaceWindow(props: MarketplaceProps) {
                 </Match>
                 <Match when={view.kind === "app" && view.id} keyed>
                   {(id) => <MarketplaceAppPage scope={scope} id={id} />}
+                </Match>
+                <Match when={view.kind === "custom-apps" ? props.customApps : undefined}>
+                  {(page) => page()({ adding: view.kind === "custom-apps" && view.adding, back: nav.back })}
                 </Match>
               </Switch>
             )}

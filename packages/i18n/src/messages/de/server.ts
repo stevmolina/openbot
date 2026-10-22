@@ -210,9 +210,6 @@ export const messages = {
   "server.settings.membersDescription": "Veröffentliche diesen Server, lade Personen ein und verwalte den Zugriff.",
   "server.settings.desktopTitle": "Remotedesktop",
   "server.settings.desktopDescription": "Richte den Desktop dieses Servers ein oder verbinde dich damit.",
-  "server.settings.mcpTitle": "MCP",
-  "server.settings.mcpDescription":
-    "Verbinde MCP-Server und wähle, welche die Agenten dieses Servers verwenden dürfen.",
   "server.settings.storageTitle": "Speicher",
   "server.settings.storageDescription":
     "Sieh nach, was OpenBot auf der Festplatte dieses Servers speichert, und gib Speicherplatz frei.",
@@ -224,8 +221,6 @@ export const messages = {
   "server.settings.transferTitle": "Übertragung",
   "server.settings.transferDescription":
     "Die Agenten und Servereinstellungen dieses Servers in eine Datei übertragen oder aus einer Datei übernehmen.",
-  "server.settings.connectorsTitle": "Konnektoren",
-  "server.settings.connectorsDescription": "Verbinde Konten, die alle Agenten dieses Servers verwenden können.",
   "server.settings.routinesTitle": "Routinen",
   "server.settings.routinesDescription": "Zeige den Routinenzeitplan dieses Computers in einer Kalender-App an.",
   "server.routineFeed.title": "Kalender-Feed",

@@ -213,9 +213,6 @@ export const messages = {
   "server.settings.membersDescription": "Bu sunucuyu yayımlayın, kişileri davet edin ve erişimi yönetin.",
   "server.settings.desktopTitle": "Uzak masaüstü",
   "server.settings.desktopDescription": "Bu sunucunun masaüstünü yapılandırın veya masaüstüne bağlanın.",
-  "server.settings.mcpTitle": "MCP",
-  "server.settings.mcpDescription":
-    "MCP sunucularını bağlayın ve bu sunucunun ajanlarının hangilerini kullanabileceğini seçin.",
   "server.settings.storageTitle": "Depolama",
   "server.settings.storageDescription": "OpenBot'un bu sunucunun diskinde ne sakladığını ve boş alanı görün.",
   "server.settings.hostedSitesTitle": "Siteler",
@@ -225,8 +222,6 @@ export const messages = {
   "server.settings.transferTitle": "Aktarım",
   "server.settings.transferDescription":
     "Bu sunucunun ajanlarını ve sunucu ayarlarını bir dosyaya veya bir dosyadan taşıyın.",
-  "server.settings.connectorsTitle": "Bağlayıcılar",
-  "server.settings.connectorsDescription": "Bu sunucudaki her ajanın kullanabileceği hesapları bağlayın.",
   "server.settings.routinesTitle": "Rutinler",
   "server.settings.routinesDescription": "Bu bilgisayarın rutin programını bir takvim uygulamasında gösterin.",
   "server.routineFeed.title": "Takvim akışı",

@@ -14,7 +14,6 @@ import { desktopAnalytics } from "./analytics";
 import { appPort } from "./app-port";
 import { useAuth } from "./features/account/account-context";
 import { useAgents } from "./features/agents/agents-context";
-import type { ConnectorRegistry } from "./features/connectors/connector-registry";
 import { useConnectors } from "./features/connectors/connectors-context";
 import { conversationPort } from "./features/conversation/conversation-port";
 import { useCustomAgents } from "./features/custom-agents/custom-agents-context";
@@ -88,7 +87,6 @@ export function WorkspaceOverlays(props: AccountProps) {
     (open) => {
       if (!open) return;
       connectors.active.reload();
-      connectors.settings.reload();
     },
   );
   return (
@@ -99,7 +97,7 @@ export function WorkspaceOverlays(props: AccountProps) {
       <HostedUpsell account={props.account} />
       <LeaveServer />
       <RestartServer />
-      <ServerSettings connectors={connectors.settings} />
+      <ServerSettings />
       <AppSettings account={props.account} />
       <GlobalMessageSearch />
       <RemoteDesktop />
@@ -121,6 +119,7 @@ export function SkillsMarketplace() {
   const {
     skillsMarketplaceOpen,
     setSkillsMarketplaceOpen,
+    marketplaceNav,
     pendingPluginSlug,
     setPendingPluginSlug,
     pendingPluginConnect,
@@ -132,6 +131,43 @@ export function SkillsMarketplace() {
   const { openInstalledMarketplaceAgent } = useServerSelection();
   const connectors = useConnectors();
   const { remoteDesktopWorkspaceVisible, hideRemoteDesktopWorkspace } = useRemoteDesktop();
+  const { toolRuntimeStatuses, providerAdminServerId } = useProviders();
+  const {
+    showMcpServers,
+    serverSettingsMcp,
+    serverSettingsMcpError,
+    serverSettingsMcpSignIns,
+    serverSettingsMcpSignInRequest,
+    clearMcpSignInRequest,
+    serverSettingsMcpSignInPages,
+    serverSettingsMcpSignInRelays,
+    openMcpSignInRelay,
+    pasteMcpSignInRelay,
+    signInMcpServer,
+    cancelMcpSignIn,
+    signOutMcpServer,
+    mcpSignInApp,
+    saveMcpSignInApp,
+    removeMcpSignInApp,
+    refreshMcpServers,
+    saveMcpServer,
+    removeMcpServer,
+    setMcpServerEnabled,
+    testMcpServer,
+  } = useServerSettings();
+  // The MCP lists follow the server of the Apps area, which is the selected server.
+  createEffect(
+    () => (skillsMarketplaceOpen() ? activeServer()?.id : undefined),
+    (serverId) => {
+      if (serverId) showMcpServers(serverId);
+    },
+  );
+  /**
+   * Whether the tool runtimes the providers context holds are this server's: this computer's, or,
+   * over `providers-v1`, those of the host of the joined server on screen.
+   */
+  const holdsToolRuntimes = (server: ServerSummary) =>
+    server.kind === "local" ? providerAdminServerId() === undefined : server.id === providerAdminServerId();
   // The remote desktop covers the window card, so a link or a search that opens the page hides it.
   // The remote desktop session stays.
   createEffect(skillsMarketplaceOpen, (open) => {
@@ -156,6 +192,56 @@ export function SkillsMarketplace() {
       }}
       connectors={connectors.active}
       variant="page"
+      nav={marketplaceNav}
+      mcp={(() => {
+        const server = activeServer();
+        if (!server) return undefined;
+        return {
+          servers: serverSettingsMcp(),
+          // Only for the computer whose runtimes this window holds: another host starts its servers
+          // with its own runtime, which this window has not read.
+          toolRuntimeNote: holdsToolRuntimes(server) ? mcpToolRuntimeNote(toolRuntimeStatuses().bun) : null,
+          loadError: serverSettingsMcpError(),
+          onShown: () => void refreshMcpServers(),
+          onRetryLoad: () => void refreshMcpServers(),
+          onSave: saveMcpServer,
+          onRemove: removeMcpServer,
+          onSetEnabled: setMcpServerEnabled,
+          onTest: testMcpServer,
+          signInRequest: serverSettingsMcpSignInRequest(),
+          onSignInRequestHandled: clearMcpSignInRequest,
+          // A remote host with `sign-in-relay-v1` opens the page in this computer's browser. An older
+          // host's page shows here through the live view, which streams the active server only.
+          signIn:
+            server.kind === "local" || remoteMcpSignIn(server)
+              ? {
+                  states: serverSettingsMcpSignIns(),
+                  remote:
+                    server.kind === "remote"
+                      ? {
+                          hostName: server.name,
+                          runtime: conversationPort().browser,
+                          clipboard: serverSupportsCapability(server, "browser-view-clipboard"),
+                          pages: serverSettingsMcpSignInPages(),
+                          relay: serverSupportsCapability(server, "sign-in-relay-v1")
+                            ? {
+                                pages: serverSettingsMcpSignInRelays(),
+                                open: openMcpSignInRelay,
+                                paste: pasteMcpSignInRelay,
+                              }
+                            : undefined,
+                        }
+                      : undefined,
+                  start: signInMcpServer,
+                  cancel: cancelMcpSignIn,
+                  signOut: signOutMcpServer,
+                  app: serverSupportsCapability(server, "mcp-sign-in-app-v1")
+                    ? { load: mcpSignInApp, save: saveMcpSignInApp, remove: removeMcpSignInApp }
+                    : undefined,
+                }
+              : undefined,
+        };
+      })()}
     />
   );
 }
@@ -305,7 +391,7 @@ function RestartServer() {
  * Settings for one server, which is any server on the rail rather than the
  * active one - hence the target held by the domain instead of `activeServer()`.
  */
-function ServerSettings(props: { connectors: ConnectorRegistry }) {
+function ServerSettings() {
   const windowPage = useWindowPage();
   const usageRows = usePlanLimitRows();
   const platform = usePlatform();
@@ -316,7 +402,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
   const { agentList, agentStatus } = useAgents();
   const { setupState, saveSetup } = useSetup();
   const {
-    toolRuntimeStatuses,
     providerAdminServerId,
     providerRuntimeStatuses,
     providerAvailableVersions,
@@ -359,12 +444,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
     restart: () => restartProvider("acp"),
     cancelRestart: () => cancelProviderRestart("acp"),
   };
-  /**
-   * Whether the tool runtimes the providers context holds are this server's: this computer's, or,
-   * over `providers-v1`, those of the host of the joined server on screen.
-   */
-  const holdsToolRuntimes = (server: ServerSummary) =>
-    server.kind === "local" ? providerAdminServerId() === undefined : server.id === providerAdminServerId();
   const {
     openServerSettings,
     serverSettingsTarget,
@@ -385,26 +464,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
     removeServerMember,
     leaveServer,
     revokeServerInvite,
-    serverSettingsMcp,
-    serverSettingsMcpError,
-    serverSettingsMcpSignIns,
-    serverSettingsMcpSignInRequest,
-    clearMcpSignInRequest,
-    serverSettingsMcpSignInPages,
-    serverSettingsMcpSignInRelays,
-    openMcpSignInRelay,
-    pasteMcpSignInRelay,
-    signInMcpServer,
-    cancelMcpSignIn,
-    signOutMcpServer,
-    mcpSignInApp,
-    saveMcpSignInApp,
-    removeMcpSignInApp,
-    refreshMcpServers,
-    saveMcpServer,
-    removeMcpServer,
-    setMcpServerEnabled,
-    testMcpServer,
   } = useServerSettings();
   // The workspace belongs to the selected server. For another server, the switch comes first and
   // the agent is published for the scope it lands in; a message there opens as its agent's chat.
@@ -614,50 +673,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
           onRemoveServer={hostedServersLoaded() && !hostedServerIds().has(server().id) ? leaveServer : undefined}
           onOpenScreenRecordingSettings={() => appPort().openExternal("mac-screen-recording")}
           onRecheckScreenRecording={recheckScreenRecording}
-          mcpServers={serverSettingsMcp()}
-          // Only for the computer whose runtimes this window holds: another host starts its servers
-          // with its own runtime, which this window has not read.
-          mcpToolRuntimeNote={holdsToolRuntimes(server()) ? mcpToolRuntimeNote(toolRuntimeStatuses().bun) : null}
-          mcpLoadError={serverSettingsMcpError()}
-          onMcpSectionShown={() => void refreshMcpServers()}
-          onRetryMcpServers={() => void refreshMcpServers()}
-          onSaveMcpServer={saveMcpServer}
-          onRemoveMcpServer={removeMcpServer}
-          onSetMcpServerEnabled={setMcpServerEnabled}
-          onTestMcpServer={testMcpServer}
-          // A remote host with `sign-in-relay-v1` opens the page in this computer's browser. An older
-          // host's page shows here through the live view, which streams the active server only.
-          mcpSignInRequest={serverSettingsMcpSignInRequest()}
-          onMcpSignInRequestHandled={clearMcpSignInRequest}
-          mcpSignIn={
-            server().kind === "local" || remoteMcpSignIn(server())
-              ? {
-                  states: serverSettingsMcpSignIns(),
-                  remote:
-                    server().kind === "remote"
-                      ? {
-                          hostName: server().name,
-                          runtime: conversationPort().browser,
-                          clipboard: serverSupportsCapability(server(), "browser-view-clipboard"),
-                          pages: serverSettingsMcpSignInPages(),
-                          relay: serverSupportsCapability(server(), "sign-in-relay-v1")
-                            ? {
-                                pages: serverSettingsMcpSignInRelays(),
-                                open: openMcpSignInRelay,
-                                paste: pasteMcpSignInRelay,
-                              }
-                            : undefined,
-                        }
-                      : undefined,
-                  start: signInMcpServer,
-                  cancel: cancelMcpSignIn,
-                  signOut: signOutMcpServer,
-                  app: serverSupportsCapability(server(), "mcp-sign-in-app-v1")
-                    ? { load: mcpSignInApp, save: saveMcpSignInApp, remove: removeMcpSignInApp }
-                    : undefined,
-                }
-              : undefined
-          }
           storage={storageOptions(server())}
           providers={providerSettings(server())}
           onSwitchToManageProviders={
@@ -698,7 +713,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
                 ? {}
                 : undefined
           }
-          connectors={props.connectors}
           // The feed listens on this computer, so a calendar app on another one cannot read it.
           routineFeed={
             server().kind === "local"

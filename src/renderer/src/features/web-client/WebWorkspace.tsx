@@ -145,6 +145,7 @@ import {
   hostedUpsellRoutineCreated,
   routineMadeThisSession,
 } from "../servers/hosted-server-upsell-controller";
+import type { McpPanelSignIn } from "../servers/ServerMcpPanel";
 import type { HostMemoryLimitCalls } from "../servers/ServerMemoryLimitSetting";
 import type { HostAgentAccessCalls } from "../servers/ServerRolesSection";
 import type { ServerHostedSitesOptions, ServerSettingsSection } from "../servers/ServerSettingsModal";
@@ -1158,6 +1159,33 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
     workspace.state.capabilities.includes(SIGN_IN_RELAY_CAPABILITY) ||
     (workspace.state.capabilities.includes(MCP_SIGN_IN_CAPABILITY) &&
       workspace.state.capabilities.includes("browser-view"));
+  /** The host signs in to an http MCP server: Apps › Custom apps calls this. */
+  const webMcpSignIn = (): McpPanelSignIn => ({
+    states: serverSettings.state.mcpSignIns,
+    remote: {
+      hostName: server()?.name ?? "",
+      runtime: workspace.runtime.browser,
+      clipboard: workspace.state.capabilities.includes("browser-view-clipboard"),
+      pages: serverSettings.state.mcpSignInPages,
+      relay: workspace.state.capabilities.includes(SIGN_IN_RELAY_CAPABILITY)
+        ? {
+            pages: serverSettings.state.mcpSignInRelays,
+            paste: serverSettings.pasteMcpSignInRelay,
+            open: serverSettings.openMcpSignInRelay,
+          }
+        : undefined,
+    },
+    start: serverSettings.signInMcpServer,
+    cancel: serverSettings.cancelMcpSignIn,
+    signOut: serverSettings.signOutMcpServer,
+    app: workspace.state.capabilities.includes("mcp-sign-in-app-v1")
+      ? {
+          load: serverSettings.mcpSignInApp,
+          save: serverSettings.saveMcpSignInApp,
+          remove: serverSettings.removeMcpSignInApp,
+        }
+      : undefined,
+  });
   const browserTakeover = createMemo(() => {
     const agent = workspace.selected();
     if (!agent) return undefined;
@@ -1687,6 +1715,28 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   onOpenChange={setMarketplaceOpen}
                   calls={marketplaceCalls}
                   connectors={connectors}
+                  // Apps › Custom apps: the MCP servers of this host. MarketplaceOverlay shows them only to
+                  // an account that can manage them.
+                  mcp={{
+                    servers: serverSettings.state.mcp,
+                    loadError: serverSettings.state.mcpError,
+                    onShown: () => {
+                      void serverSettings.refreshMcp();
+                      if (mcpSignInSupported()) void serverSettings.refreshMcpSignIns().catch(() => undefined);
+                    },
+                    onRetryLoad: () => void serverSettings.refreshMcp(),
+                    onSave: async (config) => {
+                      await serverSettings.saveMcpServer(config);
+                      // A saved row can name an address the host is already signed in to.
+                      if (mcpSignInSupported()) void serverSettings.refreshMcpSignIns().catch(() => undefined);
+                    },
+                    onRemove: serverSettings.removeMcpServer,
+                    onSetEnabled: serverSettings.setMcpServerEnabled,
+                    onTest: serverSettings.testMcpServer,
+                    // A host with `sign-in-relay-v1` signs in through this browser and a pasted address.
+                    // An older host opens the page in its own browser, and the live view shows it here.
+                    signIn: mcpSignInSupported() ? webMcpSignIn() : undefined,
+                  }}
                   server={server()}
                   agents={workspace.state.agents}
                   activeAgentId={workspace.state.selectedId ?? ""}
@@ -1746,7 +1796,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                       remoteDesktopSupported={false}
                       server={target()}
                       hostStatus={null}
-                      connectors={connectors}
                       members={serverSettings.state.members}
                       invites={serverSettings.state.invites}
                       loading={serverSettings.state.loading}
@@ -1765,53 +1814,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                       onRevokeInvite={serverSettings.revokeInvite}
                       onOpenScreenRecordingSettings={unavailable}
                       onRecheckScreenRecording={unavailable}
-                      mcpServers={serverSettings.state.mcp}
-                      mcpLoadError={serverSettings.state.mcpError}
-                      onMcpSectionShown={() => {
-                        void serverSettings.refreshMcp();
-                        if (mcpSignInSupported()) void serverSettings.refreshMcpSignIns().catch(() => undefined);
-                      }}
-                      onRetryMcpServers={() => void serverSettings.refreshMcp()}
-                      onSaveMcpServer={async (config) => {
-                        await serverSettings.saveMcpServer(config);
-                        // A saved row can name an address the host is already signed in to.
-                        if (mcpSignInSupported()) void serverSettings.refreshMcpSignIns().catch(() => undefined);
-                      }}
-                      onRemoveMcpServer={serverSettings.removeMcpServer}
-                      onSetMcpServerEnabled={serverSettings.setMcpServerEnabled}
-                      onTestMcpServer={serverSettings.testMcpServer}
-                      // A host with `sign-in-relay-v1` signs in through this browser and a pasted address.
-                      // An older host opens the page in its own browser, and the live view shows it here.
-                      mcpSignIn={
-                        mcpSignInSupported()
-                          ? {
-                              states: serverSettings.state.mcpSignIns,
-                              remote: {
-                                hostName: target().name,
-                                runtime: workspace.runtime.browser,
-                                clipboard: workspace.state.capabilities.includes("browser-view-clipboard"),
-                                pages: serverSettings.state.mcpSignInPages,
-                                relay: workspace.state.capabilities.includes(SIGN_IN_RELAY_CAPABILITY)
-                                  ? {
-                                      pages: serverSettings.state.mcpSignInRelays,
-                                      paste: serverSettings.pasteMcpSignInRelay,
-                                      open: serverSettings.openMcpSignInRelay,
-                                    }
-                                  : undefined,
-                              },
-                              start: serverSettings.signInMcpServer,
-                              cancel: serverSettings.cancelMcpSignIn,
-                              signOut: serverSettings.signOutMcpServer,
-                              app: workspace.state.capabilities.includes("mcp-sign-in-app-v1")
-                                ? {
-                                    load: serverSettings.mcpSignInApp,
-                                    save: serverSettings.saveMcpSignInApp,
-                                    remove: serverSettings.removeMcpSignInApp,
-                                  }
-                                : undefined,
-                            }
-                          : undefined
-                      }
                       storage={{
                         hostName: target().name,
                         calls: storageCalls,

@@ -85,7 +85,6 @@ export const messages = defineMessages("connector", {
   "connector.hub.onHost": "On {host}",
   "connector.hub.notSetUp": "Not set up",
   "connector.hub.available": "Available",
-  "connector.hub.localOnly": "Your computer only",
   // {name} is the name of an integration, such as Slack.
   "connector.hub.open": "Open {name}",
   "connector.hub.setUp": "Set up",

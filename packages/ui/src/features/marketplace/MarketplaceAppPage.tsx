@@ -1,5 +1,6 @@
 import { pluginLinkText } from "@openbot/contracts/plugin-links";
 import {
+  Blocks,
   Button,
   ExternalLink,
   Item,
@@ -259,6 +260,20 @@ function CustomServerPage(props: { scope: MarketplaceScope; app: CustomApp }) {
         status={props.app.status}
         statusLabel={t(STATUS_LABEL[props.app.status])}
         subtitle={t("marketplace.app.custom")}
+        actions={
+          /* Turn on or off, test, sign in and edit are on the custom apps page, with the other MCP servers. */
+          props.scope.customApps ? (
+            <Button
+              type="button"
+              variant="outline"
+              data-cuelume-tap="navigate"
+              onClick={() => props.scope.nav.go({ kind: "custom-apps", adding: false })}
+            >
+              <Blocks aria-hidden="true" />
+              {t("marketplace.app.manage")}
+            </Button>
+          ) : undefined
+        }
       />
       <SettingsSection title={t("marketplace.app.server")}>
         <ItemGroup class="settings-modal-card">

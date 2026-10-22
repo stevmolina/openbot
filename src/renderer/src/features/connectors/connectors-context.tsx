@@ -8,7 +8,6 @@ import { useCustomAgents } from "../custom-agents/custom-agents-context";
 import { useCustomProviders } from "../custom-providers/custom-providers-context";
 import { useSetup } from "../onboarding/onboarding-context";
 import { remoteAdminServer } from "../servers/server-capabilities";
-import { useServerSettings } from "../servers/server-settings";
 import { useServers } from "../servers/servers-context";
 import { useSidebar } from "../sidebar/sidebar-context";
 import {
@@ -26,7 +25,6 @@ const context = createSimpleContext({
   name: "ConnectorsProvider",
   init: () => {
     const { activeServer } = useServers();
-    const { serverSettingsTarget } = useServerSettings();
     const { agentList, agentStatus, modelOptions, serverSetupChoice } = useAgents();
     const { setupState } = useSetup();
     const endpoints = useCustomProviders();
@@ -81,10 +79,8 @@ const context = createSimpleContext({
       return createConnectorRegistry(server, { computer, server: host });
     };
     return {
-      /** The connectors of the server on screen: the Marketplace and the chat cards. */
+      /** The connectors of the server on screen: the Apps area of the Marketplace and the chat cards. */
       active: registry(activeServer),
-      /** The connectors of the server whose settings are open, which can be another one. */
-      settings: registry(serverSettingsTarget),
     };
   },
 });

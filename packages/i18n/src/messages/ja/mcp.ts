@@ -102,7 +102,6 @@ export const messages = {
   "mcp.panel.removeDescription": "このサーバーのエージェントにそのツールが提供されなくなります。設定は保持されません。",
   "mcp.panel.removeConfirm": "MCP サーバーを削除",
   "mcp.panel.actionsFor": "{name} の操作",
-  "mcp.panel.testUnavailable": "このサーバーはここではテストできません。",
   "mcp.panel.signIn": "サインイン",
   "mcp.panel.signOut": "サインアウト",
   "mcp.panel.cancelSignIn": "サインインをキャンセル",
