@@ -1,4 +1,4 @@
-import { Heading, ServerGradientLogo, serverGradientLogoProfile, Text } from "@openbot/ui";
+import { Heading, ServerGradientLogo, Text } from "@openbot/ui";
 import { For } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 
@@ -23,6 +23,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Single: Story = {};
 
+export const WithLogoColor: Story = {
+  args: { seed: GALLERY_SEEDS[0], color: "#7cc68a" },
+};
+
 export const Gallery: Story = {
   parameters: { layout: "fullscreen" },
   render: () => (
@@ -33,9 +37,12 @@ export const Gallery: Story = {
       <div class="mx-auto grid max-w-5xl gap-6">
         <header class="grid gap-2">
           <Heading as="h1" size="lg">
-            Server gradient logos
+            Default server logos
           </Heading>
-          <Text tone="muted">Six deterministic mesh gradients, shown large and at the 40 px server rail size.</Text>
+          <Text tone="muted">
+            The default server logo: the OpenBot mascot face on a soft body. Each seed has its own corners. The body
+            takes the OpenBot logo color unless a color is passed.
+          </Text>
         </header>
 
         <div class="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-4">
@@ -57,7 +64,7 @@ export const Gallery: Story = {
                   <div class="grid gap-0.5">
                     <Text variant="label-sm">{seed}</Text>
                     <Text variant="caption" tone="muted">
-                      Palette {serverGradientLogoProfile(seed).paletteIndex + 1}
+                      Seeded corners
                     </Text>
                   </div>
                 </div>

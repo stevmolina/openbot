@@ -1,61 +1,30 @@
+import { APP_LOGO_EYE_POINTS, APP_LOGO_SIZE } from "@openbot/brand/app-logo-shape";
 import type { JSX } from "@solidjs/web";
 import { createMemo } from "solid-js";
 import { cx } from "./utils";
 
-type GradientPalette = readonly [base: string, first: string, second: string, third: string];
-
 export interface ServerGradientLogoProfile {
-  paletteIndex: number;
-  colors: GradientPalette;
-  backgroundImage: string;
+  /** Four seeded corner radii, as a CSS `border-radius` value. Each server gets its own soft blob. */
+  corners: string;
 }
 
 export interface ServerGradientLogoProps {
   seed: string;
+  /** The body color. Absent, the body takes the OpenBot logo color, the mascot's own color. */
+  color?: string | null;
   class?: JSX.HTMLAttributes<HTMLSpanElement>["class"];
 }
 
-const SERVER_GRADIENT_PALETTES = [
-  ["#10195c", "#4361ee", "#4cc9f0", "#b5179e"],
-  ["#4a102a", "#ff4d6d", "#ff9f1c", "#7b2cbf"],
-  ["#073b3a", "#00f5d4", "#80ff72", "#4361ee"],
-  ["#4a2100", "#ff6b35", "#ffd166", "#ef476f"],
-  ["#240046", "#9d4edd", "#ff70a6", "#3a86ff"],
-  ["#003049", "#00b4d8", "#90e0ef", "#2a9d8f"],
-  ["#3c096c", "#ff006e", "#8338ec", "#ffbe0b"],
-  ["#102a43", "#1f7a8c", "#bfdbf7", "#e63946"],
-  ["#3d0c11", "#e63946", "#ffb703", "#fb8500"],
-  ["#132a13", "#38b000", "#ccff33", "#00b4d8"],
-  ["#1b263b", "#3a86ff", "#8338ec", "#06d6a0"],
-  ["#3a0f2d", "#f72585", "#7209b7", "#4cc9f0"],
-] as const satisfies readonly GradientPalette[];
-
-const BLOB_RANGES = [
-  { x: [-12, 36], y: [-12, 42] },
-  { x: [62, 112], y: [-8, 58] },
-  { x: [8, 92], y: [64, 112] },
-] as const;
-
+/**
+ * The default server logo: the OpenBot mascot face (two eyes) on a soft rounded body. The eyes are
+ * the same strokes `AppLogo` draws. The corners vary by seed, so servers without a logo still look
+ * different from each other. A server logo image replaces this drawing; it never reaches here.
+ */
 export function serverGradientLogoProfile(seed: string): ServerGradientLogoProfile {
   const stableSeed = seed || "server";
-  const paletteIndex = stableHash(`${stableSeed}:palette`) % SERVER_GRADIENT_PALETTES.length;
-  const colors = requiredPalette(paletteIndex);
-  const layers = colors.slice(1).map((color, index) => {
-    const range = BLOB_RANGES[index];
-    if (!range) throw new Error("Server gradient blob ranges are incomplete.");
-    const x = seededRange(`${stableSeed}:blob:${index}:x`, range.x[0], range.x[1]);
-    const y = seededRange(`${stableSeed}:blob:${index}:y`, range.y[0], range.y[1]);
-    const width = seededRange(`${stableSeed}:blob:${index}:width`, 68, 94);
-    const height = seededRange(`${stableSeed}:blob:${index}:height`, 64, 92);
-    const solidStop = seededRange(`${stableSeed}:blob:${index}:solid`, 4, 15);
-    const fadeStop = seededRange(`${stableSeed}:blob:${index}:fade`, 66, 82);
-    return `radial-gradient(ellipse ${width}% ${height}% at ${x}% ${y}%, ${color} 0%, ${color} ${solidStop}%, ${transparentHex(color)} ${fadeStop}%)`;
-  });
-
+  const corner = (name: string) => seededRange(`${stableSeed}:corner:${name}`, 16, 30);
   return {
-    paletteIndex,
-    colors,
-    backgroundImage: layers.join(", "),
+    corners: `${corner("tl")}% ${corner("tr")}% ${corner("br")}% ${corner("bl")}% / ${corner("tl-y")}% ${corner("tr-y")}% ${corner("br-y")}% ${corner("bl-y")}%`,
   };
 }
 
@@ -66,11 +35,16 @@ export function ServerGradientLogo(props: ServerGradientLogoProps): JSX.Element 
     <span
       class={cx("ui-server-gradient-logo", props.class)}
       style={{
-        "--server-gradient-base": profile().colors[0],
-        "--server-gradient-layers": profile().backgroundImage,
+        "--server-logo-color": props.color || "var(--openbot-logo-production)",
+        "--server-logo-corners": profile().corners,
       }}
       aria-hidden="true"
-    />
+    >
+      <svg class="ui-server-gradient-logo-face" viewBox={`0 0 ${APP_LOGO_SIZE} ${APP_LOGO_SIZE}`} aria-hidden="true">
+        <polyline class="ui-server-gradient-logo-eye" points={APP_LOGO_EYE_POINTS.left} />
+        <polyline class="ui-server-gradient-logo-eye" points={APP_LOGO_EYE_POINTS.right} />
+      </svg>
+    </span>
   );
 }
 
@@ -85,14 +59,4 @@ function stableHash(value: string): number {
 
 function seededRange(seed: string, minimum: number, maximum: number): number {
   return minimum + (stableHash(seed) % (maximum - minimum + 1));
-}
-
-function transparentHex(color: string): string {
-  return `${color}00`;
-}
-
-function requiredPalette(index: number): GradientPalette {
-  const palette = SERVER_GRADIENT_PALETTES[index];
-  if (!palette) throw new Error("Server gradient palettes are empty.");
-  return palette;
 }
