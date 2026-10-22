@@ -544,8 +544,14 @@ export function ConversationComposer() {
         onPointerDown={(event) => {
           if (!(event.target instanceof Element)) return;
           // The "+" menu is in a portal, but its events come here too. Focus taken from it closes the menu
-          // before the item gets the pointerup.
-          if (event.target.closest("button, .composer-editor-surface, .ui-action-menu")) return;
+          // before the item gets the pointerup. The model picker panel keeps its focus for its search and segments.
+          if (
+            event.target.closest(
+              "button, .composer-editor-surface, .ui-action-menu, .provider-model-picker, .provider-model-effort-content",
+            )
+          ) {
+            return;
+          }
           event.preventDefault();
           setComposerFocusRequest((current) => current + 1);
         }}

@@ -519,6 +519,12 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
       setRailProvider(visibleKeys().includes(key) ? key : (visibleKeys()[0] ?? CUSTOM_RAIL));
       setSearch("");
       setView("provider");
+      // The panel is placed after it mounts, and a field that is not placed yet does not take the focus.
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          if (open()) searchInput?.focus({ preventScroll: true });
+        }),
+      );
     }
     setOpen(next);
   }
@@ -588,6 +594,9 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
   /** Tab and Shift+Tab stay inside the open panel; Escape closes it and gives focus back to the trigger. */
   function onPanelKeyDown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
+      // Focus goes back first: the panel is hidden from assistive technology once it closes.
+      event.preventDefault();
+      trigger?.focus({ preventScroll: true });
       setOpen(false);
       return;
     }

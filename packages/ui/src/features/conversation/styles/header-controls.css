@@ -281,7 +281,7 @@
 }
 
 .provider-model-popover {
-  --provider-model-rail-bg: color-mix(in srgb, var(--openbot-bg-notch) 22%, var(--ui-menu-bg));
+  --provider-model-rail-bg: color-mix(in srgb, var(--openbot-text-primary) 3%, var(--ui-menu-bg));
   --provider-model-segment-radius: calc(var(--ui-menu-item-radius) - var(--openbot-space-0-5));
   position: relative;
   z-index: var(--openbot-layer-dropdown);
@@ -389,12 +389,6 @@
 .provider-model-rail-add svg {
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
-  stroke-width: var(--openbot-icon-stroke);
-}
-
-.provider-model-rail-recent .provider-model-mark {
-  fill: none;
-  color: var(--openbot-text-secondary);
   stroke-width: var(--openbot-icon-stroke);
 }
 
@@ -542,6 +536,13 @@
   color: var(--openbot-text-muted);
 }
 
+/* The clock of the Recent row is a line icon: it keeps no fill, also when it is selected. */
+.provider-model-rail .provider-model-rail-recent .provider-model-mark {
+  fill: none;
+  color: var(--openbot-text-secondary);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
 /* The place of an account in its provider's list, when the provider has more than one. */
 .provider-model-rail-account {
   position: absolute;
@@ -572,7 +573,7 @@
   padding: var(--ui-menu-padding);
 }
 
-.provider-model-panel:not([data-selected]) {
+.provider-model-panel:not([data-selected], .provider-model-results) {
   display: none;
 }
 
@@ -982,6 +983,11 @@
   padding: 0 var(--openbot-space-2);
   box-shadow: none;
   color: var(--openbot-text-secondary);
+}
+
+/* As in the header, the Fast chip gets its own room, so the model name keeps its width. */
+.provider-model-trigger.provider-model-trigger-composer:has(.provider-model-trigger-fast) {
+  max-width: 296px;
 }
 
 .provider-model-trigger.provider-model-trigger-composer:hover:not(:disabled),
