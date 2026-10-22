@@ -27,6 +27,7 @@ import {
   Plus,
   Puzzle,
 } from "@openbot/ui";
+import { ProviderModelPicker } from "@openbot/ui/components/ProviderModelPicker";
 import { fileBadge } from "@openbot/ui/features/conversation/AttachmentCards";
 import { attachmentReferenceTone } from "@openbot/ui/features/conversation/AttachmentReference";
 import { AwaitingReplies } from "@openbot/ui/features/conversation/AwaitingReplies";
@@ -48,9 +49,12 @@ import { useText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, createStore, For, Loading, lazy, Show } from "solid-js";
 import { reportErrorBanner, reportNotification } from "../../error-reports";
 import { deviceSendShortcut, sendShortcutAriaKey, sendShortcutHintKey } from "../../send-shortcut-preference";
+import { simpleLayout } from "../../simple-layout";
 import { speechReading } from "../speech/speech-playback";
 import { stopSpokenReply } from "../speech/speech-replies";
+import { useConversationModelPicker } from "./conversation-model-picker";
 import { useConversationViewScope } from "./conversation-scope";
+import { trackRecentModel } from "./recent-models";
 import { voiceSupported } from "./voice-status";
 
 // Module scope: the composer remounts on navigation, and a dismissed notice must stay dismissed.
@@ -116,6 +120,13 @@ export function ConversationComposer() {
     activeRightPanel,
   } = useConversationViewScope();
   const { t, format, sourceText: localizeSourceText } = useText();
+  const modelPicker = useConversationModelPicker();
+  trackRecentModel(() => {
+    const agent = props.agent;
+    return agent && isKnownAgentProvider(agent.provider)
+      ? { provider: agent.provider, model: agent.model, accountId: agent.providerAccountId ?? null }
+      : undefined;
+  });
   const messageLabel = () =>
     props.agent?.name
       ? t("composer.placeholder.message", { name: props.agent.name })
@@ -533,8 +544,14 @@ export function ConversationComposer() {
         onPointerDown={(event) => {
           if (!(event.target instanceof Element)) return;
           // The "+" menu is in a portal, but its events come here too. Focus taken from it closes the menu
-          // before the item gets the pointerup.
-          if (event.target.closest("button, .composer-editor-surface, .ui-action-menu")) return;
+          // before the item gets the pointerup. The model picker panel keeps its focus for its search and segments.
+          if (
+            event.target.closest(
+              "button, .composer-editor-surface, .ui-action-menu, .provider-model-picker, .provider-model-effort-content",
+            )
+          ) {
+            return;
+          }
           event.preventDefault();
           setComposerFocusRequest((current) => current + 1);
         }}
@@ -730,6 +747,10 @@ export function ConversationComposer() {
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
           <div class="composer-primary-actions">
+            {/* The simple layout has no model pill in its top bar: the model lives next to Send. */}
+            <Show when={simpleLayout() && props.agent}>
+              <ProviderModelPicker {...modelPicker()} variant="composer" placement="top-end" />
+            </Show>
             <Show when={context()?.usage}>
               {(usage) => (
                 <ContextUsageMeter

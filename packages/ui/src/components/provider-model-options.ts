@@ -24,6 +24,8 @@ export interface PickerModel {
   /** The wire provider: the Custom tab holds both `opencode` endpoints and `acp` agents. */
   provider: AgentProviderId;
   name: string;
+  /** The one line that the provider or the catalog gives for the model. It can be empty. */
+  description: string;
   service: string;
   free: boolean;
   variants: { id: string; name: string }[];
@@ -104,6 +106,7 @@ export function pickerModels(options: ClientAgentModelOption[]): PickerModel[] {
           id: model.id,
           provider: model.provider,
           name: t("app.modelVariant.default"),
+          description: "",
           service: model.name,
           free: false,
           variants: [],
@@ -129,6 +132,7 @@ export function pickerModels(options: ClientAgentModelOption[]): PickerModel[] {
         id: model.id,
         provider: model.provider,
         name,
+        description: model.description,
         service,
         // Free-tier label only; shared with catalog order so badge and default agree.
         free: model.provider === "opencode" && isFreeOpencodeModel(model.id, name),

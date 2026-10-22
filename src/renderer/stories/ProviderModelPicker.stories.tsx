@@ -25,6 +25,41 @@ export const Pill: Story = {
   args: { reasoningEffort: "medium", onReasoningEffortChange: fn() },
 };
 
+/** The quiet chip next to Send in the simple layout. The panel opens above it. */
+export const Composer: Story = {
+  args: {
+    variant: "composer",
+    placement: "top-end",
+    reasoningEffort: "high",
+    onReasoningEffortChange: fn(),
+    onManageProviders: fn(),
+  },
+};
+
+/** Two or more models chosen before add the Recent view at the top of the rail. */
+export const RecentModels: Story = {
+  args: {
+    reasoningEffort: "medium",
+    onReasoningEffortChange: fn(),
+    recentModels: [
+      { provider: "codex", model: "gpt-5.6-luna" },
+      { provider: "claude", model: "claude-opus-5-5" },
+      { provider: "grok", model: "grok-4.6" },
+    ],
+  },
+};
+
+/** A Codex model with a fast tier: the speed is a second segmented control under the effort. */
+export const SpeedControl: Story = {
+  args: {
+    value: "gpt-5.6-sol",
+    reasoningEffort: "medium",
+    onReasoningEffortChange: fn(),
+    fastMode: true,
+    onFastModeChange: fn(),
+  },
+};
+
 /** A Claude model with every effort level. */
 export const AllEffortLevels: Story = {
   args: {
@@ -80,8 +115,8 @@ export const UnavailableProvidersOpen: Story = {
   },
 };
 
-/** The conversation picker: signed-out providers stay off the rail, and the plus opens the settings. */
-export const ConnectedProvidersOnly: Story = {
+/** The conversation picker: signed-out providers sit dimmed under "Not connected", and each offers a way in. */
+export const NotConnectedProviders: Story = {
   args: {
     onManageProviders: fn(),
     agentStatus: {

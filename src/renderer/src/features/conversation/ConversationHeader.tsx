@@ -1,9 +1,9 @@
-import { foreignProvider } from "@openbot/contracts/agent-providers";
 import type { AgentModelId, AgentReasoningEffort } from "@openbot/contracts/ipc";
 import { isAgentTaskActive } from "@openbot/team-client/agent-tasks";
 import { reasoningLabel } from "@openbot/ui/components/ProviderModelPicker";
 import { ConversationHeader as SharedConversationHeader } from "@openbot/ui/features/conversation/ConversationHeader";
 import { simpleLayout } from "../../simple-layout";
+import { useConversationModelPicker } from "./conversation-model-picker";
 import { useConversationViewScope } from "./conversation-scope";
 
 const loadAgentSettingsPanel = () => import("./AgentSettingsPanel");
@@ -17,12 +17,8 @@ export function ConversationHeader() {
     actingBrowserControl,
     agentActivity,
     browserControlAgent,
-    changeFastMode,
-    fastMode,
     props,
     runningTurnRuntime,
-    selectAndConfirmModel,
-    selectAndConfirmReasoning,
     setActiveRightPanel,
     settingsModel,
     settingsProvider,
@@ -30,6 +26,7 @@ export function ConversationHeader() {
     sidePanelOpen,
     toggleSidePanel,
   } = useConversationViewScope();
+  const modelPicker = useConversationModelPicker();
   const runningTasks = () => props.tasks?.snapshot?.tasks.filter(isAgentTaskActive).length ?? 0;
   const working = () => agentActivity() === "Working";
   /** The effort shows only where it differs, so a model change alone names only the models. */
@@ -60,35 +57,7 @@ export function ConversationHeader() {
       }}
       titleControlsSidePanel={simpleLayout()}
       pendingModel={pendingModel()}
-      modelPicker={{
-        provider: settingsProvider(),
-        foreignProvider: props.agent ? foreignProvider(props.agent.provider) : undefined,
-        value: settingsModel(),
-        reasoningEffort: settingsReasoning(),
-        modelOptions: props.modelOptions,
-        agentStatus: props.agentStatus,
-        runtimeStatuses: props.providerRuntimeStatuses,
-        customProviders: props.customProviders,
-        customAgents: props.customAgents,
-        onDownloadProvider: props.onDownloadProvider,
-        onCancelProviderDownload: props.onCancelProviderDownload,
-        onConnectProvider: props.onConnectProvider,
-        canConnectProvider: props.canConnectProvider,
-        onManageProviders: props.onManageProviders,
-        // A model or effort chosen during a turn applies from the next turn. A provider change waits.
-        providerChangesDisabled: working(),
-        disabledReason: working() ? t("conversation.header.providerBusy") : t("conversation.header.modelsUnavailable"),
-        accountChoice: true,
-        providerAccountId: props.agent?.providerAccountId,
-        onChange: (model, provider, accountId) => void selectAndConfirmModel(model, provider, accountId),
-        onReasoningEffortChange: (effort) => void selectAndConfirmReasoning(effort),
-        // Codex only for now, and only on this computer: the Team API does not carry fast mode.
-        fastMode: fastMode(),
-        onFastModeChange:
-          settingsProvider() === "codex" && props.server?.kind === "local"
-            ? (next) => void changeFastMode(next)
-            : undefined,
-      }}
+      modelPicker={modelPicker()}
       remoteControl={
         props.remoteDesktopEnabled !== false && props.server?.kind === "remote"
           ? {
