@@ -14,3 +14,7 @@
 - In the simple layout, the plug list shows Marketplace, then Apps, then your AI providers. Apps
   opens the Apps tab of the Marketplace, not the server settings.
 - The Sign in button for an MCP server on an agent's card opens the Custom apps page.
+- In the simple layout, Settings and Server settings open as their own view, with their own section
+  list and a Back button. The Apps list and the bottom bar no longer show beside them.
+- In the simple layout, an AI provider in the plug list opens its page in the Apps area, with its
+  accounts, version and on switch.

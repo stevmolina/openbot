@@ -16,13 +16,18 @@ export type MarketplaceView =
   | { kind: "skill"; listing: MarketplaceSkillSummary }
   | { kind: "app"; id: string }
   /** The custom apps of the host: its MCP servers, to add, edit, test and sign in to. `adding` opens the add form. */
-  | { kind: "custom-apps"; adding: boolean };
+  | { kind: "custom-apps"; adding: boolean }
+  /** One AI provider of the host, opened from the Apps area. `name` is its title in the crumbs. */
+  | { kind: "provider"; id: string; name: string };
 
 /**
  * The custom apps page. The app fills it, because the MCP server list and its forms call the host.
  * `back` returns to the view that opened the page.
  */
 export type MarketplaceCustomApps = (page: { adding: boolean; back: () => void }) => JSX.Element;
+
+/** The page of one AI provider. The app fills it with its provider page. */
+export type MarketplaceProviderPage = (page: { id: string }) => JSX.Element;
 
 export type MarketplaceTab = "agents" | "apps" | "skills";
 

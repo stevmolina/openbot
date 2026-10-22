@@ -23,6 +23,7 @@ import {
 import type { MarketplaceCalls } from "./features/settings/marketplace-calls";
 import type { MarketplaceAgentRow } from "./features/settings/marketplace-controller";
 import { MARKETPLACE_PLUGINS } from "./features/settings/marketplace-plugin-catalog";
+import type { HostProviderSettings } from "./features/settings/ProviderSettingsSection";
 import {
   AgentTemplateInstall,
   GlobalSearch,
@@ -88,6 +89,8 @@ export function MarketplaceOverlay(props: {
    * showed them: a remote host answers 403 to a `member` and 400 without the capability.
    */
   mcp?: Omit<ServerMcpOptions, "canManage"> | undefined;
+  /** The AI providers of `server`, for the page of one provider. Absent when this account cannot manage them. */
+  providers?: HostProviderSettings | undefined;
 }) {
   const controller = useConversationController();
   const manage = createMemo(() => serverCanAdminister(props.server, "skills-admin-v1"));
@@ -122,6 +125,8 @@ export function MarketplaceOverlay(props: {
           variant={props.variant}
           nav={props.nav}
           customApps={customApps()}
+          providers={props.providers}
+          providersHostName={props.server?.kind === "remote" ? props.server.name : undefined}
           calls={props.calls}
           connectors={props.connectors}
           agents={manage() ? props.agents : []}

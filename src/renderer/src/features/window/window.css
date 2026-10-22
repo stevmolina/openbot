@@ -547,6 +547,13 @@
   padding-bottom: var(--openbot-space-3);
 }
 
+/* The simple layout's way out of a settings page, above its heading. */
+.settings-page-back {
+  align-self: flex-start;
+  margin-bottom: var(--openbot-space-2);
+  color: var(--openbot-text-secondary);
+}
+
 .settings-page-title {
   margin: 0 0 var(--openbot-space-3);
   padding: 0 var(--openbot-space-2);

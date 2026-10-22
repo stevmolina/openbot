@@ -11,6 +11,7 @@ import type { MarketplaceModel } from "./marketplace-model";
 import type {
   MarketplaceCustomApps,
   MarketplaceNavigation,
+  MarketplaceProviderPage,
   MarketplaceScope,
   MarketplaceView,
 } from "./marketplace-view";
@@ -27,6 +28,8 @@ export interface MarketplaceProps {
   simple?: boolean | undefined;
   /** The custom apps page: add, edit, test and sign in to the MCP servers of the host. Absent: no such page. */
   customApps?: MarketplaceCustomApps | undefined;
+  /** The page of one AI provider of the host. Absent: no provider opens here. */
+  providerPage?: MarketplaceProviderPage | undefined;
 }
 
 function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string, customAppsTitle: string): string {
@@ -40,6 +43,8 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
       return scope.model.apps().find((app) => app.id === view.id)?.name ?? fallback;
     case "custom-apps":
       return customAppsTitle;
+    case "provider":
+      return view.name;
   }
 }
 
@@ -202,6 +207,13 @@ function MarketplaceWindow(props: MarketplaceProps) {
                 </Match>
                 <Match when={view.kind === "app" && view.id} keyed>
                   {(id) => <MarketplaceAppPage scope={scope} id={id} />}
+                </Match>
+                <Match when={view.kind === "provider" ? props.providerPage : undefined}>
+                  {(page) => (
+                    <div class="marketplace-view marketplace-provider-page">
+                      {page()({ id: view.kind === "provider" ? view.id : "" })}
+                    </div>
+                  )}
                 </Match>
                 <Match when={view.kind === "custom-apps" ? props.customApps : undefined}>
                   {(page) => page()({ adding: view.kind === "custom-apps" && view.adding, back: nav.back })}

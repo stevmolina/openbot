@@ -85,6 +85,15 @@ const Settings = createSimpleContext({
       if (page !== "apps") marketplaceNav.go({ kind: "custom-apps", adding: page === "add-custom" });
       setSkillsMarketplaceOpen(true);
     }
+    /** Opens the page of one AI provider in the Apps area. `name` is its title in the crumbs. */
+    function openProvider(id: string, name: string): void {
+      marketplaceNav.reset();
+      marketplaceNav.set((draft) => {
+        draft.tab = "apps";
+      });
+      marketplaceNav.go({ kind: "provider", id, name });
+      setSkillsMarketplaceOpen(true);
+    }
     // Undefined until main answers. The Settings preview then draws the notch it had before.
     const [builtInDisplayGeometry, setBuiltInDisplayGeometry] = createSignal<DynamicIslandGeometry | undefined>();
     /**
@@ -554,6 +563,7 @@ const Settings = createSimpleContext({
       setSkillsMarketplaceOpen,
       marketplaceNav,
       openApps,
+      openProvider,
       pendingPluginSlug,
       setPendingPluginSlug,
       pendingPluginConnect,

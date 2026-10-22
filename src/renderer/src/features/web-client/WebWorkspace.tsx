@@ -107,6 +107,7 @@ import { isGlobalSearchShortcut } from "../../global-search-shortcut";
 import { LayoutProvider, useLayout } from "../../layout";
 import { AgentUsagePanel, RoutineFlowsCanvas, ScheduleView, ServerOnboarding, TasksView } from "../../lazy-views";
 import { PlatformProvider } from "../../platform";
+import { simpleLayout } from "../../simple-layout";
 import { WorkspaceFrame } from "../../WorkspaceFrame";
 import {
   ChannelCreateOverlay,
@@ -1493,6 +1494,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                         }
                         onMounts={setSettingsMounts}
                         onEscape={showAgents}
+                        onBack={simpleLayout() ? showAgents : undefined}
                       />
                     )}
                   </Show>

@@ -1,9 +1,11 @@
+import { isAgentProvider } from "@openbot/contracts/ipc";
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
 import type { MarketplaceApp } from "@openbot/ui/features/marketplace/marketplace-model";
 import {
   createMarketplaceNavigation,
   type MarketplaceCustomApps,
   type MarketplaceNavigation,
+  type MarketplaceProviderPage,
 } from "@openbot/ui/features/marketplace/marketplace-view";
 import { McpKeyDialog } from "@openbot/ui/features/settings/McpKeyDialog";
 import { McpLocalDialog } from "@openbot/ui/features/settings/McpLocalDialog";
@@ -14,6 +16,7 @@ import { createEffect, createSignal, Match, Show, Switch, untrack } from "solid-
 import { simpleLayout } from "../../simple-layout";
 import { type ServerMcpOptions, ServerMcpPage } from "../servers/ServerMcpPage";
 import { createMarketplaceController, type MarketplaceControllerProps } from "./marketplace-controller";
+import { type HostProviderSettings, HostProviderSettingsPanel } from "./ProviderSettingsSection";
 
 export interface MarketplaceModalProps extends MarketplaceControllerProps {
   /**
@@ -41,6 +44,13 @@ export interface MarketplaceModalProps extends MarketplaceControllerProps {
   nav?: MarketplaceNavigation | undefined;
   /** The MCP servers of the host, for the custom apps page. Absent when this account cannot manage them. */
   customApps?: ServerMcpOptions | undefined;
+  /**
+   * The AI providers of the host, for the page of one provider in the Apps area. Absent when this
+   * account cannot manage them.
+   */
+  providers?: HostProviderSettings | undefined;
+  /** The joined server whose providers `providers` holds. Absent: this computer. */
+  providersHostName?: string | undefined;
 }
 
 /** The Marketplace on this computer's or a joined server's data, with the dialogs it opens. */
@@ -48,6 +58,22 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
   const nav = props.nav ?? createMarketplaceNavigation();
   const controller = createMarketplaceController(props);
   /** Apps › Custom apps. Each change there reads the apps again, so the cards show it. */
+  /** The page of one AI provider: the provider page of the server settings, opened on that provider. */
+  const [providerMount, setProviderMount] = createSignal<HTMLElement>();
+  const providerPage: MarketplaceProviderPage = (page) => (
+    <Show when={props.providers}>
+      {(providers) => (
+        <div ref={setProviderMount} class="marketplace-provider-panel">
+          <HostProviderSettingsPanel
+            {...providers()}
+            hostName={props.providersHostName}
+            selectMount={providerMount()}
+            initialProvider={isAgentProvider(page.id) ? page.id : undefined}
+          />
+        </div>
+      )}
+    </Show>
+  );
   const customApps: MarketplaceCustomApps = (page) => (
     <Show when={props.customApps}>
       {(options) => <ServerMcpPage options={options()} adding={page.adding} onChanged={controller.reloadApps} />}
@@ -148,6 +174,7 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
         variant={props.variant}
         simple={simpleLayout()}
         customApps={props.customApps ? customApps : undefined}
+        providerPage={props.providers ? providerPage : undefined}
       />
       {/* The confirmation and the connect step are beside the Marketplace: each is one decision
           over the page it was started from, not a part of that page. */}

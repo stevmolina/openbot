@@ -54,7 +54,7 @@ import {
   X,
 } from "@openbot/ui";
 import type { JSX } from "@solidjs/web";
-import { createEffect, createMemo, createSignal, createStore, For, onCleanup, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, createStore, For, onCleanup, Show, untrack } from "solid-js";
 import { ProviderAccountRenameField } from "../../components/ProviderAccountList";
 import type { ProviderPickerOption } from "../../components/ProviderPicker";
 import { type ProviderPickerAccount, providerAccountName } from "../../components/provider-accounts";
@@ -113,6 +113,8 @@ export interface ProviderSettingsPageProps extends ProviderRowHost {
   onRemoveCustomProvider?: ((provider: CustomProviderSummary) => void) | undefined;
   removingCustomProvider?: string | null | undefined;
   onDetailChange?: ((detail: ProviderSettingsDetail | null) => void) | undefined;
+  /** The provider whose page shows first, in place of the list: the user opened it from the Apps area. */
+  initialProvider?: AgentProviderId | undefined;
   /** Below the list: what the host found, and the other agents the user can add. */
   footer?: JSX.Element;
 }
@@ -121,7 +123,7 @@ type PageId = AgentProviderId | "custom";
 
 export function ProviderSettingsPage(props: ProviderSettingsPageProps) {
   const { t } = useText();
-  const [open, setOpen] = createSignal<PageId | null>(null);
+  const [open, setOpen] = createSignal<PageId | null>(untrack(() => props.initialProvider ?? null));
   const openOption = () => {
     const id = open();
     return id && id !== "custom" ? props.options.find((option) => option.id === id) : undefined;
