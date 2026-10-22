@@ -3394,7 +3394,6 @@ textarea {
 
 .agent-settings-notifications,
 .provider-model-panel,
-.provider-model-rail,
 .avatar-editor {
   border-color: var(--openbot-border);
   background: var(--openbot-bg-surface);

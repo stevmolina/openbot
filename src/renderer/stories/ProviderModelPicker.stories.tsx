@@ -1,4 +1,6 @@
+import type { AgentModelId, AgentProviderId, AgentReasoningEffort } from "@openbot/contracts/ipc";
 import { ProviderModelPicker } from "@openbot/ui/components/ProviderModelPicker";
+import { createStore } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { STORY_AGENT_STATUS, STORY_MODELS } from "./fixtures";
@@ -49,7 +51,10 @@ export const RecentModels: Story = {
   },
 };
 
-/** A Codex model with a fast tier: the speed is a second segmented control under the effort. */
+/**
+ * A Codex model with a fast tier. The chosen row holds the lightning, which turns fast mode on or off,
+ * and the effort chip, which opens the levels of the model.
+ */
 export const SpeedControl: Story = {
   args: {
     value: "gpt-5.6-sol",
@@ -60,7 +65,44 @@ export const SpeedControl: Story = {
   },
 };
 
-/** A Claude model with every effort level. */
+/** Choices apply here: a model, its effort and fast mode change as in the app. */
+export const Interactive: Story = {
+  render: (storyArgs) => {
+    const [choice, setChoice] = createStore<{
+      provider: AgentProviderId;
+      value: AgentModelId;
+      reasoningEffort: AgentReasoningEffort;
+      fastMode: boolean;
+    }>({ provider: "codex", value: "gpt-5.6-sol", reasoningEffort: "high", fastMode: true });
+    return (
+      <ProviderModelPicker
+        {...storyArgs}
+        provider={choice.provider}
+        value={choice.value}
+        reasoningEffort={choice.reasoningEffort}
+        fastMode={choice.fastMode}
+        onReasoningEffortChange={(effort) =>
+          setChoice((state) => {
+            state.reasoningEffort = effort;
+          })
+        }
+        onFastModeChange={(fastMode) =>
+          setChoice((state) => {
+            state.fastMode = fastMode;
+          })
+        }
+        onChange={(model, provider) =>
+          setChoice((state) => {
+            state.value = model;
+            state.provider = provider;
+          })
+        }
+      />
+    );
+  },
+};
+
+/** A Claude model with every effort level in its effort menu. */
 export const AllEffortLevels: Story = {
   args: {
     provider: "claude",
@@ -71,6 +113,16 @@ export const AllEffortLevels: Story = {
         : model,
     ),
     reasoningEffort: "high",
+    onReasoningEffortChange: fn(),
+  },
+};
+
+/** A model with one effort only: its row has no effort chip, only the check. */
+export const NoEffortChoice: Story = {
+  args: {
+    provider: "claude",
+    value: "claude-haiku-5-5",
+    reasoningEffort: "medium",
     onReasoningEffortChange: fn(),
   },
 };
@@ -115,7 +167,7 @@ export const UnavailableProvidersOpen: Story = {
   },
 };
 
-/** The conversation picker: signed-out providers sit dimmed under "Not connected", and each offers a way in. */
+/** The conversation picker: signed-out providers sit dimmed after the ready ones, and each offers a way in. */
 export const NotConnectedProviders: Story = {
   args: {
     onManageProviders: fn(),
@@ -225,6 +277,47 @@ export const OpenCodeLocalModels: Story = {
       ["zai/glm", "Z.AI/GLM"],
       ["openai/gpt", "OpenAI/GPT"],
     ]),
+  },
+};
+
+/** A long OpenCode catalog: the list has a filter field above it. Each model has effort variants. */
+export const OpenCodeManyModels: Story = {
+  args: {
+    provider: "opencode",
+    value: "anthropic/claude-sonnet-5/high",
+    agentStatus: {
+      ...STORY_AGENT_STATUS,
+      providers: [{ id: "opencode", state: "available", version: "1.3.13", message: null }],
+    },
+    modelOptions: [
+      ["anthropic/claude-sonnet-5", "Anthropic/Claude Sonnet 5"],
+      ["anthropic/claude-opus-5", "Anthropic/Claude Opus 5"],
+      ["anthropic/claude-haiku-5-5", "Anthropic/Claude Haiku 5.5"],
+      ["openai/gpt-5.6-sol", "OpenAI/GPT-5.6 Sol"],
+      ["openai/gpt-5.6-terra", "OpenAI/GPT-5.6 Terra"],
+      ["openai/gpt-5.6-luna", "OpenAI/GPT-5.6 Luna"],
+      ["opencode/example-free", "OpenCode Zen/Example Free"],
+      ["opencode/another-free", "OpenCode Zen/Another Free"],
+      ["opencode/example", "OpenCode Zen/Example"],
+      ["google/gemini-3-pro", "Google/Gemini 3 Pro"],
+      ["google/gemini-3-flash", "Google/Gemini 3 Flash"],
+      ["zai/glm-5", "Z.AI/GLM-5"],
+      ["zai/glm-5-air", "Z.AI/GLM-5 Air"],
+      ["deepseek/deepseek-v4", "DeepSeek/DeepSeek V4"],
+      [
+        "openrouter/qwen3-coder-480b-a35b-instruct-long-context",
+        "OpenRouter/Qwen3 Coder 480B A35B Instruct Long Context",
+      ],
+    ].flatMap(([id, name]) =>
+      ["", "low", "medium", "high"].map((effort) => ({
+        provider: "opencode" as const,
+        id: effort ? `${id}/${effort}` : id,
+        name: effort ? `${name} (${effort})` : name,
+        description: "Example model catalog",
+        defaultReasoningEffort: "medium" as const,
+        supportedReasoningEfforts: ["medium" as const],
+      })),
+    ),
   },
 };
 
