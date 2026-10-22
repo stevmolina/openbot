@@ -1,7 +1,7 @@
 import { isAgentProvider } from "@openbot/contracts/agent-providers";
 import { isAgentModel } from "@openbot/contracts/ipc";
 import type { RecentModelChoice } from "@openbot/ui/components/ProviderModelPicker";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect, createSignal, untrack } from "solid-js";
 import { z } from "zod";
 
 /**
@@ -46,7 +46,7 @@ const sameChoice = (left: RecentModelChoice, right: RecentModelChoice): boolean 
   (left.accountId ?? null) === (right.accountId ?? null);
 
 function rememberModel(choice: RecentModelChoice): void {
-  const current = recentModels();
+  const current = untrack(recentModels);
   const first = current[0];
   if (first && sameChoice(first, choice)) return;
   const next = [choice, ...current.filter((item) => !sameChoice(item, choice))].slice(0, MAX_RECENT_MODELS);

@@ -207,7 +207,17 @@ const MAX_EFFORT_SEGMENT_CHARACTERS = 26;
 /** The recent view lists this many models at most. */
 const MAX_RECENT_MODELS = 6;
 
-const TABBABLE = 'button:not(:disabled), input:not(:disabled), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE = "button:not(:disabled), input:not(:disabled), [tabindex]";
+
+/**
+ * A place that Tab stops at. Roving lists (the rail tabs, the model options) give their other items
+ * `tabindex="-1"`, and Tab stops only at the checked radio of a group that has one.
+ */
+function isTabStop(element: HTMLElement): boolean {
+  if (element.tabIndex < 0 || element.getClientRects().length === 0) return false;
+  if (!(element instanceof HTMLInputElement) || element.type !== "radio" || element.checked) return true;
+  return !element.closest('[role="radiogroup"]')?.querySelector('input[type="radio"]:checked');
+}
 
 function sameKeys(previous: readonly RailKey[], next: readonly RailKey[]): boolean {
   return previous.length === next.length && previous.every((key, index) => key === next[index]);
@@ -529,10 +539,16 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
     setOpen(next);
   }
 
-  function selectModel(option: PickerModel, accountId: string | null): void {
-    if (props.disabled || providerLocked(option, accountId) || !modelAvailable(option)) return;
-    if (!showsReasoningEffort() && !option.variants.length) setOpen(false);
+  /**
+   * Returns whether the choice closes the panel. A model with no effort to choose next closes it.
+   * The caller reads this value, not `open()`: a signal write is not visible to a read in the same tick.
+   */
+  function selectModel(option: PickerModel, accountId: string | null): boolean {
+    if (props.disabled || providerLocked(option, accountId) || !modelAvailable(option)) return false;
+    const closes = !showsReasoningEffort() && !option.variants.length;
+    if (closes) setOpen(false);
     props.onChange(option.id, option.provider, chosenAccount(option.provider, accountId));
+    return closes;
   }
 
   function selectRailProvider(provider: RailKey): void {
@@ -544,8 +560,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
   /** A choice from a list across providers. The panel of its provider opens, with its effort. */
   function chooseResult(item: ResultItem): void {
     if (!entryModelEnabled(item.key, item.model)) return;
-    if (!isCurrentItem(item)) selectModel(item.model, item.accountId);
-    if (!open()) return;
+    if (!isCurrentItem(item) && selectModel(item.model, item.accountId)) return;
     selectRailProvider(item.key);
     queueMicrotask(() => searchInput?.focus({ preventScroll: true }));
   }
@@ -601,9 +616,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
       return;
     }
     if (event.key !== "Tab" || !popover) return;
-    const tabbable = Array.from(popover.querySelectorAll<HTMLElement>(TABBABLE)).filter(
-      (element) => element.getClientRects().length > 0,
-    );
+    const tabbable = Array.from(popover.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(isTabStop);
     const first = tabbable[0];
     const last = tabbable[tabbable.length - 1];
     if (!first || !last) return;
