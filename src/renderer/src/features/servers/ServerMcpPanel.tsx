@@ -3,6 +3,8 @@ import {
   Blocks,
   Button,
   buttonVariants,
+  ChevronDown,
+  ChevronRight,
   ConfirmDialog,
   DropdownMenu,
   Ellipsis,
@@ -22,7 +24,6 @@ import {
   Plug,
   Plus,
   SettingsSection,
-  SlidingTabs,
   Switch,
   Text,
   Trash2,
@@ -39,7 +40,6 @@ import { createEffect, createMemo, createStore, For, onCleanup, onSettled, Show 
 import { type McpPanelSignInApp, McpSignInAppSection } from "./McpSignInAppSection";
 import {
   emptyMcpConfig,
-  isMcpHttpAddress,
   isMcpSignInCancelled,
   isMcpSignInOnHost,
   type McpServerConfig,
@@ -50,11 +50,14 @@ import {
   mcpConfigDraft,
   mcpConfigErrors,
   mcpConfigIsValid,
+  mcpConfigTarget,
   mcpFailureKind,
+  mcpHasAdvanced,
   mcpProviderLimitNote,
   mcpSaveConnects,
   mcpStatusLabel,
   mcpStatusVariant,
+  mcpTargetFields,
   mcpTestMessage,
   normalizeMcpConfig,
 } from "./mcp-servers";
@@ -162,6 +165,13 @@ interface McpPanelState {
   /** `null` in the form view means the user is connecting a new server. */
   editingId: string | null;
   draft: McpServerConfig;
+  /**
+   * The text of the one "URL or command" field. It is its own value, not read back from the draft:
+   * the draft holds the words of a command, and joining them would take away a space still being typed.
+   */
+  target: string;
+  /** Whether Advanced is open. */
+  advancedOpen: boolean;
   /** What the draft started as, so the panel can tell an edit from an untouched form. */
   baseline: McpServerConfig;
   /** Gates the error copy until the user has tried to save or left a field. */
@@ -181,11 +191,7 @@ interface McpPanelState {
   formTestConfig: McpServerConfig | null;
 }
 
-const STDIO_LABEL = "STDIO";
-const STREAMABLE_HTTP_LABEL = "Streamable HTTP";
-const COMMAND_PLACEHOLDER = "openai-dev-mcp";
 const WORKING_DIRECTORY_PLACEHOLDER = "~/code";
-const URL_PLACEHOLDER = "https://mcp.example.com/mcp";
 
 export function ServerMcpPanel(props: ServerMcpPanelProps) {
   const { t, sourceText } = useText();
@@ -193,6 +199,8 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
     view: "list",
     editingId: null,
     draft: emptyMcpConfig(),
+    target: "",
+    advancedOpen: false,
     baseline: emptyMcpConfig(),
     touched: false,
     removeId: null,
@@ -229,6 +237,8 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
     return undefined;
   };
   const visible = (key: "name" | "command" | "url") => (state.touched ? errors()[key] : undefined);
+  /** The one field names a program or an address, so it shows the error of the mode it reads as. */
+  const visibleTarget = () => (state.draft.transport === "http" ? visible("url") : visible("command"));
   const removeTarget = createMemo(() => props.servers.find((config) => config.id === state.removeId) ?? null);
   const disabled = () => !props.canManage || state.busy !== null;
   // The dialog holds the form's breadcrumb and save bar, and it outlives this panel: the capability
@@ -420,27 +430,8 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
   // Test connection, gets the focus one frame after the dialog left.
   const menuButtons: Record<string, HTMLElement> = {};
   let formTestButton: HTMLButtonElement | undefined;
-  // A URL in the command moves to Server URL, and refused credentials send the user to Headers.
-  let urlInput: HTMLInputElement | undefined;
-  let commandInput: HTMLInputElement | undefined;
+  // Refused credentials send the user to Headers, which sit in Advanced.
   let headerKeyInput: HTMLInputElement | undefined;
-
-  /** A web address in the stdio command names an http server: the form switches to it. */
-  function moveToUrl(address: string): void {
-    const from = document.activeElement;
-    setState((current) => {
-      current.draft.transport = "http";
-      current.draft.url = address.trim();
-      current.draft.command = "";
-    });
-    // A paste into an empty field leaves the stored command at "", so the field is not redrawn.
-    if (commandInput) commandInput.value = "";
-    // One frame later, once Server URL is mounted. The focus is still in the hidden command field
-    // after a paste, or nowhere after a blur to another stdio field. A click elsewhere keeps it.
-    requestAnimationFrame(() => {
-      if (document.activeElement === document.body || document.activeElement === from) urlInput?.focus();
-    });
-  }
 
   createEffect(
     () => {
@@ -477,6 +468,9 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
       current.view = "form";
       current.editingId = config?.id ?? null;
       current.draft = draft;
+      current.target = mcpConfigTarget(draft);
+      // A server that already holds an advanced value opens with it in view.
+      current.advancedOpen = config ? mcpHasAdvanced(config) : false;
       // Copy, not alias: the form edits `draft` in place while the baseline holds still.
       current.baseline = mcpConfigDraft(draft);
       current.touched = false;
@@ -550,10 +544,11 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
         current.error = test.error;
       });
       // With every header row removed there is no field to focus: Add header's row comes back.
-      if (state.draft.headers.length === 0)
-        setState((current) => {
-          current.draft.headers.push({ key: "", value: "" });
-        });
+      // Headers sit in Advanced, so it opens to show them.
+      setState((current) => {
+        current.advancedOpen = true;
+        if (current.draft.headers.length === 0) current.draft.headers.push({ key: "", value: "" });
+      });
       // One frame later, once the busy latch no longer disables the field and the row is mounted.
       requestAnimationFrame(() => headerKeyInput?.focus());
       return false;
@@ -572,6 +567,7 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
     endFormSignIn();
     setState((current) => {
       current.draft = mcpConfigDraft(current.baseline);
+      current.target = mcpConfigTarget(current.baseline);
       current.touched = false;
       current.error = "";
       current.formTest = null;
@@ -786,400 +782,306 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
   }
 
   function formView() {
+    const stdio = () => state.draft.transport === "stdio";
     return (
-      <SlidingTabs.Root
-        class="server-mcp-form"
-        value={state.draft.transport}
-        onChange={(value) => {
-          if (value !== "stdio" && value !== "http") return;
-          setState((current) => {
-            current.draft.transport = value;
-          });
-        }}
-      >
-        {/* The dialog header already names the view, so this section only labels the group. */}
-        <SettingsSection
-          class="server-mcp-section"
-          title={t("mcp.panel.detailsTitle")}
-          description={t("mcp.panel.detailsDescription")}
-          actions={
-            <SlidingTabs.List aria-label={t("mcp.panel.transport")}>
-              <SlidingTabs.Trigger value="stdio">{STDIO_LABEL}</SlidingTabs.Trigger>
-              <SlidingTabs.Trigger value="http">{STREAMABLE_HTTP_LABEL}</SlidingTabs.Trigger>
-            </SlidingTabs.List>
-          }
-        >
-          <Field label={t("mcp.panel.name")} error={visible("name")}>
-            <Input
-              size="md"
-              placeholder={t("mcp.panel.namePlaceholder")}
-              value={state.draft.name}
-              disabled={disabled()}
-              onValueChange={(value) =>
-                setState((current) => {
-                  current.draft.name = value;
-                })
-              }
-              onBlur={() =>
-                setState((current) => {
-                  current.touched = true;
-                })
-              }
-            />
-          </Field>
-        </SettingsSection>
+      <div class="server-mcp-form">
+        <Field label={t("mcp.panel.name")} error={visible("name")}>
+          <Input
+            size="md"
+            placeholder={t("mcp.panel.namePlaceholder")}
+            value={state.draft.name}
+            disabled={disabled()}
+            onValueChange={(value) =>
+              setState((current) => {
+                current.draft.name = value;
+              })
+            }
+            onBlur={() =>
+              setState((current) => {
+                current.touched = true;
+              })
+            }
+          />
+        </Field>
 
-        <SlidingTabs.ContentSlot>
-          <SlidingTabs.Content value="stdio" class="server-mcp-transport-panel">
-            <SettingsSection class="server-mcp-section" title={t("mcp.panel.launchTitle")}>
-              <Field
-                label={t("mcp.panel.command")}
-                description={t("mcp.panel.commandDescription")}
-                error={visible("command")}
-              >
-                <Input
-                  ref={(element: HTMLInputElement) => {
-                    commandInput = element;
-                  }}
-                  size="md"
-                  placeholder={COMMAND_PLACEHOLDER}
-                  value={state.draft.command}
+        {/* A web address is an http server and anything else is a command line, so one field
+            replaces the two transports. */}
+        <Field label={t("mcp.panel.urlOrCommand")} error={visibleTarget()}>
+          <Input
+            size="md"
+            placeholder={t("mcp.panel.urlOrCommandPlaceholder")}
+            autocomplete="off"
+            spellcheck={false}
+            value={state.target}
+            disabled={disabled()}
+            onValueChange={(value) =>
+              setState((current) => {
+                current.target = value;
+                Object.assign(current.draft, mcpTargetFields(value));
+              })
+            }
+            onBlur={() =>
+              setState((current) => {
+                current.touched = true;
+              })
+            }
+          />
+        </Field>
+
+        <div class="server-mcp-advanced">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            class="server-mcp-advanced-toggle"
+            aria-expanded={state.advancedOpen ? "true" : "false"}
+            data-cuelume-tap={state.advancedOpen ? "close" : "open"}
+            onClick={() =>
+              setState((current) => {
+                current.advancedOpen = !current.advancedOpen;
+              })
+            }
+          >
+            {state.advancedOpen ? <ChevronDown aria-hidden="true" /> : <ChevronRight aria-hidden="true" />}
+            {t("mcp.panel.advanced")}
+          </Button>
+          <Show when={state.advancedOpen}>
+            <div class="server-mcp-advanced-body">
+              <Show when={stdio()}>
+                <McpRowList
+                  label={t("mcp.panel.environmentVariables")}
+                  addLabel={t("mcp.panel.addEnvironmentVariable")}
                   disabled={disabled()}
-                  onValueChange={(value) => {
-                    // A paste moves at once. Typed text waits for the blur: the field leaves with the
-                    // stdio panel, and the keys typed before Server URL has the focus would be lost.
-                    if (isMcpHttpAddress(value) && value.length - state.draft.command.length > 1) moveToUrl(value);
-                    else
-                      setState((current) => {
-                        current.draft.command = value;
-                      });
-                  }}
-                  onBlur={() => {
+                  onAdd={() =>
                     setState((current) => {
-                      current.touched = true;
-                    });
-                    if (isMcpHttpAddress(state.draft.command)) moveToUrl(state.draft.command);
-                  }}
-                />
-              </Field>
-
-              <McpRowList
-                label={t("mcp.panel.arguments")}
-                addLabel={t("mcp.panel.addArgument")}
-                disabled={disabled()}
-                onAdd={() =>
-                  setState((current) => {
-                    current.draft.args.push("");
-                  })
-                }
-              >
-                <For each={state.draft.args} keyed={false}>
-                  {(value, index) => (
-                    <div class="server-mcp-repeat-row">
-                      <Input
-                        size="md"
-                        aria-label={t("mcp.panel.argument", { position: index + 1 })}
-                        value={value()}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            current.draft.args[index] = next;
-                          })
-                        }
-                      />
-                      <IconButton
-                        type="button"
-                        variant="ghost"
-                        label={t("mcp.panel.removeArgument", { position: index + 1 })}
-                        disabled={disabled()}
-                        onClick={() =>
-                          setState((current) => {
-                            current.draft.args.splice(index, 1);
-                          })
-                        }
-                      >
-                        <Trash2 aria-hidden="true" />
-                      </IconButton>
-                    </div>
-                  )}
-                </For>
-              </McpRowList>
-
-              <McpRowList
-                label={t("mcp.panel.environmentVariables")}
-                addLabel={t("mcp.panel.addEnvironmentVariable")}
-                disabled={disabled()}
-                onAdd={() =>
-                  setState((current) => {
-                    current.draft.env.push({ key: "", value: "" });
-                  })
-                }
-              >
-                <For each={state.draft.env} keyed={false}>
-                  {(pair, index) => (
-                    <div class="server-mcp-repeat-row server-mcp-repeat-row-pair">
-                      <Input
-                        size="md"
-                        placeholder={t("mcp.panel.key")}
-                        aria-label={t("mcp.panel.environmentVariableKey", { position: index + 1 })}
-                        value={pair().key}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            const entry = current.draft.env[index];
-                            if (entry) entry.key = next;
-                          })
-                        }
-                      />
-                      <Input
-                        size="md"
-                        placeholder={t("mcp.panel.value")}
-                        aria-label={t("mcp.panel.environmentVariableValue", { position: index + 1 })}
-                        type="password"
-                        autocomplete="off"
-                        spellcheck={false}
-                        value={pair().value}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            const entry = current.draft.env[index];
-                            if (entry) entry.value = next;
-                          })
-                        }
-                      />
-                      <IconButton
-                        type="button"
-                        variant="ghost"
-                        label={t("mcp.panel.removeEnvironmentVariable", { position: index + 1 })}
-                        disabled={disabled()}
-                        onClick={() =>
-                          setState((current) => {
-                            current.draft.env.splice(index, 1);
-                          })
-                        }
-                      >
-                        <Trash2 aria-hidden="true" />
-                      </IconButton>
-                    </div>
-                  )}
-                </For>
-              </McpRowList>
-
-              <McpRowList
-                label={t("mcp.panel.passthrough")}
-                addLabel={t("mcp.panel.addVariable")}
-                disabled={disabled()}
-                onAdd={() =>
-                  setState((current) => {
-                    current.draft.envPassthrough.push("");
-                  })
-                }
-              >
-                <For each={state.draft.envPassthrough} keyed={false}>
-                  {(value, index) => (
-                    <div class="server-mcp-repeat-row">
-                      <Input
-                        size="md"
-                        aria-label={t("mcp.panel.passthroughVariable", { position: index + 1 })}
-                        value={value()}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            current.draft.envPassthrough[index] = next;
-                          })
-                        }
-                      />
-                      <IconButton
-                        type="button"
-                        variant="ghost"
-                        label={t("mcp.panel.removePassthroughVariable", { position: index + 1 })}
-                        disabled={disabled()}
-                        onClick={() =>
-                          setState((current) => {
-                            current.draft.envPassthrough.splice(index, 1);
-                          })
-                        }
-                      >
-                        <Trash2 aria-hidden="true" />
-                      </IconButton>
-                    </div>
-                  )}
-                </For>
-              </McpRowList>
-
-              {/* The limit is named here, before the save, because it cannot be fixed afterwards:
-                  the ACP schema carries no working directory, and no key for one survived testing
-                  against the pinned Codex app-server, so only Claude and the test honour this
-                  field. The other providers skip such a server rather than start it somewhere
-                  else, and say so: the row keeps the note, and the hand-off reports the skip. */}
-              <Field label={t("mcp.panel.workingDirectory")} description={t("mcp.panel.workingDirectoryDescription")}>
-                <Input
-                  size="md"
-                  placeholder={WORKING_DIRECTORY_PLACEHOLDER}
-                  value={state.draft.workingDirectory}
-                  disabled={disabled()}
-                  onValueChange={(value) =>
-                    setState((current) => {
-                      current.draft.workingDirectory = value;
+                      current.draft.env.push({ key: "", value: "" });
                     })
                   }
-                />
-              </Field>
-            </SettingsSection>
-          </SlidingTabs.Content>
-
-          <SlidingTabs.Content value="http" class="server-mcp-transport-panel">
-            <SettingsSection
-              class="server-mcp-section"
-              title={t("mcp.panel.endpointTitle")}
-              description={t("mcp.panel.endpointDescription")}
-            >
-              <Field label={t("mcp.panel.serverUrl")} error={visible("url")}>
-                <Input
-                  ref={(element: HTMLInputElement) => {
-                    urlInput = element;
-                  }}
-                  size="md"
-                  type="url"
-                  placeholder={URL_PLACEHOLDER}
-                  value={state.draft.url}
-                  disabled={disabled()}
-                  onValueChange={(value) =>
-                    setState((current) => {
-                      current.draft.url = value;
-                    })
-                  }
-                  onBlur={() =>
-                    setState((current) => {
-                      current.touched = true;
-                    })
-                  }
-                />
-              </Field>
-
-              <McpRowList
-                label={t("mcp.panel.headers")}
-                addLabel={t("mcp.panel.addHeader")}
-                disabled={disabled()}
-                onAdd={() =>
-                  setState((current) => {
-                    current.draft.headers.push({ key: "", value: "" });
-                  })
-                }
-              >
-                <For each={state.draft.headers} keyed={false}>
-                  {(pair, index) => (
-                    <div class="server-mcp-repeat-row server-mcp-repeat-row-pair">
-                      <Input
-                        ref={(element: HTMLInputElement) => {
-                          if (index === 0) headerKeyInput = element;
-                        }}
-                        size="md"
-                        placeholder={t("mcp.panel.key")}
-                        aria-label={t("mcp.panel.headerKey", { position: index + 1 })}
-                        value={pair().key}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            const entry = current.draft.headers[index];
-                            if (entry) entry.key = next;
-                          })
-                        }
-                      />
-                      <Input
-                        size="md"
-                        placeholder={t("mcp.panel.value")}
-                        aria-label={t("mcp.panel.headerValue", { position: index + 1 })}
-                        type="password"
-                        autocomplete="off"
-                        spellcheck={false}
-                        value={pair().value}
-                        disabled={disabled()}
-                        onValueChange={(next) =>
-                          setState((current) => {
-                            const entry = current.draft.headers[index];
-                            if (entry) entry.value = next;
-                          })
-                        }
-                      />
-                      <IconButton
-                        type="button"
-                        variant="ghost"
-                        label={t("mcp.panel.removeHeader", { position: index + 1 })}
-                        disabled={disabled()}
-                        onClick={() =>
-                          setState((current) => {
-                            current.draft.headers.splice(index, 1);
-                          })
-                        }
-                      >
-                        <Trash2 aria-hidden="true" />
-                      </IconButton>
-                    </div>
-                  )}
-                </For>
-              </McpRowList>
-            </SettingsSection>
-
-            <Show when={props.signIn?.app}>
-              {(app) => (
-                <McpSignInAppSection
-                  api={app()}
-                  mcpServerId={state.editingId}
-                  urlChanged={state.draft.url.trim() !== state.baseline.url.trim()}
-                  hostName={props.signIn?.remote?.hostName}
-                  relayed={props.signIn?.remote?.relay !== undefined}
-                  disabled={disabled()}
-                />
-              )}
-            </Show>
-          </SlidingTabs.Content>
-        </SlidingTabs.ContentSlot>
-
-        <SettingsSection
-          class="server-mcp-section"
-          title={t("mcp.panel.testTitle")}
-          description={t("mcp.panel.testDescription")}
-          actions={
-            <>
-              <Show when={canSignIn(state.draft)}>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={!props.canManage || formWaiting()}
-                  onClick={() => void signInDraft()}
                 >
-                  <LogIn aria-hidden="true" />
-                  {t("mcp.panel.signIn")}
-                </Button>
+                  <For each={state.draft.env} keyed={false}>
+                    {(pair, index) => (
+                      <div class="server-mcp-repeat-row server-mcp-repeat-row-pair">
+                        <Input
+                          size="md"
+                          placeholder={t("mcp.panel.key")}
+                          aria-label={t("mcp.panel.environmentVariableKey", { position: index + 1 })}
+                          value={pair().key}
+                          disabled={disabled()}
+                          onValueChange={(next) =>
+                            setState((current) => {
+                              const entry = current.draft.env[index];
+                              if (entry) entry.key = next;
+                            })
+                          }
+                        />
+                        <Input
+                          size="md"
+                          placeholder={t("mcp.panel.value")}
+                          aria-label={t("mcp.panel.environmentVariableValue", { position: index + 1 })}
+                          type="password"
+                          autocomplete="off"
+                          spellcheck={false}
+                          value={pair().value}
+                          disabled={disabled()}
+                          onValueChange={(next) =>
+                            setState((current) => {
+                              const entry = current.draft.env[index];
+                              if (entry) entry.value = next;
+                            })
+                          }
+                        />
+                        <IconButton
+                          type="button"
+                          variant="ghost"
+                          label={t("mcp.panel.removeEnvironmentVariable", { position: index + 1 })}
+                          disabled={disabled()}
+                          onClick={() =>
+                            setState((current) => {
+                              current.draft.env.splice(index, 1);
+                            })
+                          }
+                        >
+                          <Trash2 aria-hidden="true" />
+                        </IconButton>
+                      </div>
+                    )}
+                  </For>
+                </McpRowList>
+
+                <McpRowList
+                  label={t("mcp.panel.passthrough")}
+                  addLabel={t("mcp.panel.addVariable")}
+                  disabled={disabled()}
+                  onAdd={() =>
+                    setState((current) => {
+                      current.draft.envPassthrough.push("");
+                    })
+                  }
+                >
+                  <For each={state.draft.envPassthrough} keyed={false}>
+                    {(value, index) => (
+                      <div class="server-mcp-repeat-row">
+                        <Input
+                          size="md"
+                          aria-label={t("mcp.panel.passthroughVariable", { position: index + 1 })}
+                          value={value()}
+                          disabled={disabled()}
+                          onValueChange={(next) =>
+                            setState((current) => {
+                              current.draft.envPassthrough[index] = next;
+                            })
+                          }
+                        />
+                        <IconButton
+                          type="button"
+                          variant="ghost"
+                          label={t("mcp.panel.removePassthroughVariable", { position: index + 1 })}
+                          disabled={disabled()}
+                          onClick={() =>
+                            setState((current) => {
+                              current.draft.envPassthrough.splice(index, 1);
+                            })
+                          }
+                        >
+                          <Trash2 aria-hidden="true" />
+                        </IconButton>
+                      </div>
+                    )}
+                  </For>
+                </McpRowList>
+
+                {/* The limit is named here, before the save, because it cannot be fixed afterwards:
+                    the ACP schema carries no working directory, and no key for one survived testing
+                    against the pinned Codex app-server, so only Claude and the test honour this
+                    field. The other providers skip such a server rather than start it somewhere
+                    else, and say so: the row keeps the note, and the hand-off reports the skip. */}
+                <Field label={t("mcp.panel.workingDirectory")} description={t("mcp.server.providerLimitNote")}>
+                  <Input
+                    size="md"
+                    placeholder={WORKING_DIRECTORY_PLACEHOLDER}
+                    value={state.draft.workingDirectory}
+                    disabled={disabled()}
+                    onValueChange={(value) =>
+                      setState((current) => {
+                        current.draft.workingDirectory = value;
+                      })
+                    }
+                  />
+                </Field>
               </Show>
+
+              <Show when={!stdio()}>
+                <McpRowList
+                  label={t("mcp.panel.headers")}
+                  addLabel={t("mcp.panel.addHeader")}
+                  disabled={disabled()}
+                  onAdd={() =>
+                    setState((current) => {
+                      current.draft.headers.push({ key: "", value: "" });
+                    })
+                  }
+                >
+                  <For each={state.draft.headers} keyed={false}>
+                    {(pair, index) => (
+                      <div class="server-mcp-repeat-row server-mcp-repeat-row-pair">
+                        <Input
+                          ref={(element: HTMLInputElement) => {
+                            if (index === 0) headerKeyInput = element;
+                          }}
+                          size="md"
+                          placeholder={t("mcp.panel.key")}
+                          aria-label={t("mcp.panel.headerKey", { position: index + 1 })}
+                          value={pair().key}
+                          disabled={disabled()}
+                          onValueChange={(next) =>
+                            setState((current) => {
+                              const entry = current.draft.headers[index];
+                              if (entry) entry.key = next;
+                            })
+                          }
+                        />
+                        <Input
+                          size="md"
+                          placeholder={t("mcp.panel.value")}
+                          aria-label={t("mcp.panel.headerValue", { position: index + 1 })}
+                          type="password"
+                          autocomplete="off"
+                          spellcheck={false}
+                          value={pair().value}
+                          disabled={disabled()}
+                          onValueChange={(next) =>
+                            setState((current) => {
+                              const entry = current.draft.headers[index];
+                              if (entry) entry.value = next;
+                            })
+                          }
+                        />
+                        <IconButton
+                          type="button"
+                          variant="ghost"
+                          label={t("mcp.panel.removeHeader", { position: index + 1 })}
+                          disabled={disabled()}
+                          onClick={() =>
+                            setState((current) => {
+                              current.draft.headers.splice(index, 1);
+                            })
+                          }
+                        >
+                          <Trash2 aria-hidden="true" />
+                        </IconButton>
+                      </div>
+                    )}
+                  </For>
+                </McpRowList>
+
+                <Show when={props.signIn?.app}>
+                  {(app) => (
+                    <McpSignInAppSection
+                      api={app()}
+                      mcpServerId={state.editingId}
+                      urlChanged={state.draft.url.trim() !== state.baseline.url.trim()}
+                      hostName={props.signIn?.remote?.hostName}
+                      relayed={props.signIn?.remote?.relay !== undefined}
+                      disabled={disabled()}
+                    />
+                  )}
+                </Show>
+              </Show>
+            </div>
+          </Show>
+        </div>
+
+        <div class="server-mcp-test">
+          <div class="server-mcp-test-actions">
+            <Show when={canSignIn(state.draft)}>
               <Button
-                ref={(element: HTMLButtonElement) => {
-                  formTestButton = element;
-                }}
                 type="button"
                 size="sm"
                 variant="outline"
                 disabled={!props.canManage || formWaiting()}
-                loading={formTest()?.status === "testing"}
-                loadingLabel={t("common.connecting")}
-                onClick={() => void testDraft()}
+                onClick={() => void signInDraft()}
               >
-                <Plug aria-hidden="true" />
-                {t("mcp.panel.testConnection")}
+                <LogIn aria-hidden="true" />
+                {t("mcp.panel.signIn")}
               </Button>
-            </>
-          }
-        >
-          <Show
-            when={formSignIn() ? state.formTest : formTest()}
-            fallback={
-              <Text variant="caption" tone="muted">
-                {t("mcp.panel.notTested")}
-              </Text>
-            }
-          >
+            </Show>
+            <Button
+              ref={(element: HTMLButtonElement) => {
+                formTestButton = element;
+              }}
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={!props.canManage || formWaiting()}
+              loading={formTest()?.status === "testing"}
+              loadingLabel={t("common.connecting")}
+              onClick={() => void testDraft()}
+            >
+              <Plug aria-hidden="true" />
+              {t("mcp.panel.testConnection")}
+            </Button>
+          </div>
+          <Show when={formSignIn() ? state.formTest : formTest()}>
             {(test) => (
               <>
                 <Text class="server-mcp-test-result" variant="caption" tone={mcpTestTone(test())} role="status">
@@ -1203,8 +1105,8 @@ export function ServerMcpPanel(props: ServerMcpPanelProps) {
               </>
             )}
           </Show>
-        </SettingsSection>
-      </SlidingTabs.Root>
+        </div>
+      </div>
     );
   }
 

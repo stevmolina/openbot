@@ -15,6 +15,7 @@ import {
 } from "@openbot/contracts/ipc";
 import { type AppTextKey, type AppTranslate, matchingSourceKeys } from "@openbot/i18n";
 import { currentText } from "@openbot/ui/text";
+import { joinCommandLine, splitCommandLine } from "./mcp-command-line";
 
 export type {
   McpServerConfig,
@@ -165,9 +166,39 @@ export function mcpSaveConnects(draft: McpServerConfig, baseline: McpServerConfi
   return next.url !== stored.url || JSON.stringify(next.headers) !== JSON.stringify(stored.headers);
 }
 
-/** A value in the stdio command that is a web address: it names an http server, not a program. */
+/** A value in the "URL or command" line that is a web address: it names an http server, not a program. */
 export function isMcpHttpAddress(value: string): boolean {
   return /^https?:\/\/\S/i.test(value.trim());
+}
+
+/** What the form's one "URL or command" line holds for a configuration: its address, or its command line. */
+export function mcpConfigTarget(config: McpServerConfig): string {
+  if (config.transport === "http") return config.url;
+  return config.command ? joinCommandLine([config.command, ...config.args.filter((arg) => arg !== "")]) : "";
+}
+
+/**
+ * The fields a "URL or command" line sets. A web address is an http server; anything else is a
+ * command line, split into the program and its arguments. The other mode's fields are cleared.
+ */
+export function mcpTargetFields(value: string): Pick<McpServerConfig, "transport" | "command" | "args" | "url"> {
+  if (isMcpHttpAddress(value)) return { transport: "http", command: "", args: [""], url: value.trim() };
+  const [command = "", ...args] = splitCommandLine(value);
+  return { transport: "stdio", command, args: args.length > 0 ? args : [""], url: "" };
+}
+
+/**
+ * Whether a configuration holds a value that only the form's Advanced part shows: variables, a
+ * working directory or headers. Such a form opens with Advanced open, so the value is not hidden.
+ */
+export function mcpHasAdvanced(config: McpServerConfig): boolean {
+  const stored = normalizeMcpConfig(config);
+  return (
+    stored.env.length > 0 ||
+    stored.envPassthrough.length > 0 ||
+    stored.workingDirectory !== "" ||
+    stored.headers.length > 0
+  );
 }
 
 /**

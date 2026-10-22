@@ -121,15 +121,45 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--openbot-space-6);
+  gap: var(--openbot-space-4);
   min-width: 0;
 }
 
-.server-mcp-transport-panel {
+/* Advanced is closed by default: its toggle sits under the fields, and its body opens below it. */
+.server-mcp-advanced {
   display: flex;
   flex-direction: column;
-  gap: var(--openbot-space-6);
+  align-items: flex-start;
+  gap: var(--openbot-space-3);
   min-width: 0;
+}
+
+.server-mcp-advanced-toggle {
+  margin-inline-start: calc(var(--openbot-space-2) * -1);
+}
+
+.server-mcp-advanced-body {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: var(--openbot-space-4);
+  min-width: 0;
+}
+
+/* Sign in and Test sit together at the foot of the form; the answer to the test follows them. */
+.server-mcp-test {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--openbot-space-2);
+  min-width: 0;
+}
+
+.server-mcp-test-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--openbot-space-2);
 }
 
 /* A fieldset so the legend names the group; the browser default frame is not wanted here. */
