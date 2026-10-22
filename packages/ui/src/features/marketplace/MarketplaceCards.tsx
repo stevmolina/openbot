@@ -19,7 +19,7 @@ export function useInstalls() {
  * "Add", then "Added", or "Update available" when the user has an older version. Add keeps the
  * Marketplace open. The button is then gone, so `onAdded` gives the focus a new place.
  */
-function AgentState(props: { scope: MarketplaceScope; listing: MarketplaceAgentSummary; onAdded: () => void }) {
+export function AgentState(props: { scope: MarketplaceScope; listing: MarketplaceAgentSummary; onAdded: () => void }) {
   const { t } = useText();
   const model = () => props.scope.model;
   return (

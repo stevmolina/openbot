@@ -83,6 +83,8 @@ export interface DiagramBoardProps {
    */
   focusRoutineId: string | null;
   editable?: boolean | undefined;
+  /** The simple layout: an agent that no routine starts shows a "Connect" link instead of a plain status. */
+  simple?: boolean | undefined;
   onSelectNode: (nodeId: string | null) => void;
   onFocusRoutine: (routineId: string) => void;
   onMoveNode: (nodeId: string, position: DiagramPoint) => void;
@@ -258,6 +260,17 @@ export function DiagramBoard(props: DiagramBoardProps) {
     void Promise.resolve(props.onConnect(from, to)).then((saved) => {
       if (saved) done();
     });
+  };
+  /**
+   * "Connect" on an agent that no routine starts: it joins the routine in focus, or the only routine.
+   * The connection is drawn from the agent that routine starts, as a drag between two agents is,
+   * because a routine node is not a source that the host accepts. Otherwise it says what to do.
+   */
+  const connectToTrigger = (nodeId: string) => {
+    const routineIds = props.diagram.nodes.flatMap((node) => (node.kind === "routine" ? [node.id] : []));
+    const from = props.focusRoutineId ?? (routineIds.length === 1 ? routineIds[0] : undefined);
+    if (from) tryConnect(props.diagram.edges.find((edge) => edge.from === from)?.to ?? from, nodeId);
+    else announce(t(routineIds.length === 0 ? "simple.routine.connectNone" : "simple.routine.connectPick"), "danger");
   };
   const startConnection = (from: string) => {
     setInteraction((state) => {
@@ -639,6 +652,7 @@ export function DiagramBoard(props: DiagramBoardProps) {
                       if (source) tryConnect(source, node.id);
                     }}
                     onRunRoutine={props.onRunRoutine ? () => props.onRunRoutine?.(node.id) : undefined}
+                    onConnectTrigger={props.simple && connectable() ? () => connectToTrigger(node.id) : undefined}
                   />
                 )}
               </For>

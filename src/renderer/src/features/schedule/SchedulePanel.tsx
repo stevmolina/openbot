@@ -11,6 +11,7 @@ import {
 } from "@openbot/ui/features/conversation/RoutineCalendar";
 import { createEffect, createMemo, createSignal, createStore, onSettled } from "solid-js";
 import { useNavigation } from "../../navigation";
+import { simpleLayout } from "../../simple-layout";
 import { useAgents } from "../agents/agents-context";
 import { useChannels } from "../channels/channels-context";
 import { useWindowPage } from "../window/window-page-context";
@@ -199,6 +200,7 @@ export function ScheduleView(props: ScheduleViewProps) {
         now={now()}
         timeZone={timeZone}
         hostName={props.hostName}
+        simple={simpleLayout()}
         state={state.phase}
         onRangeChange={(first, last) => {
           range = rangeAround(Date.parse(first), Date.parse(last));

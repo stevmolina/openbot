@@ -36,6 +36,7 @@ import { WorkspacePageRail } from "./features/window/WorkspacePageRail";
 import { useWindowPage } from "./features/window/window-page-context";
 import { useLayout } from "./layout";
 import { usePlatform } from "./platform";
+import { simpleLayout } from "./simple-layout";
 import { WorkspaceFrame } from "./WorkspaceFrame";
 import { WorkspaceOverlays } from "./WorkspaceOverlays";
 
@@ -98,6 +99,8 @@ export function WorkspaceShell(props: { account: () => CentralAuthUser }) {
   const agentChatOpen = () => middlePane() === "agent";
   /** The list stays while a connection screen covers the page: the screen does not span the sidebar. */
   const tasksAgentsHidden = () =>
+    // The simple layout keeps the list beside every page: its bottom bar is the way between them.
+    !simpleLayout() &&
     middlePane() === "tasks" &&
     !windowPage.tasksAgentsOpen() &&
     scope.loaded() &&
@@ -175,7 +178,8 @@ export function WorkspaceShell(props: { account: () => CentralAuthUser }) {
     <ConnectorsProvider>
       {/* The page rail sits at the left of the frame. The frame is the card of the page that the rail selects. */}
       <div class="app-window">
-        <WorkspacePageRail hidden={remoteDesktopWorkspaceVisible()} />
+        {/* The simple layout moves the rail into the bottom bar of the sidebar. */}
+        <WorkspacePageRail hidden={remoteDesktopWorkspaceVisible() || simpleLayout()} />
         <WorkspaceFrame
           compact={layout.leftPanelCompact()}
           initialLoading={!serversLoaded() || !scope.connection.hasContent}

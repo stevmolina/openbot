@@ -1,5 +1,5 @@
 import { agentAutomationAllowed, type FilePreview } from "@openbot/contracts/ipc";
-import { BookMarked, CalendarClock, Folder, Gauge, Puzzle, Table2, Upload } from "@openbot/ui";
+import { BookMarked, CalendarClock, Folder, Gauge, Globe2, Puzzle, Table2, Upload } from "@openbot/ui";
 import { SettingsLinkGroup, SettingsLinkRow } from "@openbot/ui/components/SettingsPanel";
 import type { AgentProfile } from "@openbot/ui/data";
 import {
@@ -8,11 +8,14 @@ import {
 } from "@openbot/ui/features/conversation/AgentSessionSettings";
 import SharedAgentSettingsPanel, {
   type AgentSettingsPanelProps as SharedAgentSettingsPanelProps,
+  type SimpleAgentPanelSlots,
+  type SimpleAgentRoutineRow,
 } from "@openbot/ui/features/conversation/AgentSettingsPanel";
 import { agentFilesLinkValue } from "@openbot/ui/features/files/AgentFilesView";
 import { useText } from "@openbot/ui/text";
-import { createEffect, createMemo, createStore, Show, untrack } from "solid-js";
+import { createEffect, createMemo, createSignal, createStore, Show, untrack } from "solid-js";
 import { createSettingsPanelWidth, saveSettingsPanelWidth } from "../../components/settings-panel-width";
+import { simpleLayout } from "../../simple-layout";
 import { agentSkillCalls, skillsPort } from "../../skills-port";
 import { type AgentFilesOptions, AgentFilesSettings } from "../files/AgentFilesSettings";
 import { createStorageUsage } from "../files/storage-usage";
@@ -22,15 +25,18 @@ import { AgentSkillsModal, type AgentSkillsMode, assignedSkillCount, type SkillD
 import { conversationPort, type SharedTableCalls } from "./conversation-port";
 import type { ConversationRuntime } from "./conversation-runtime";
 import { agentMemoriesPort } from "./memories-port";
+import { isEventRoutine, routineListSummary } from "./routine-summary";
 import type { EventRoutinesApi } from "./routine-webhooks-api";
-import { agentRoutinesPort, eventRoutinesPort, type RoutinesPort } from "./routines-port";
+import { agentRoutinesPort, eventRoutinesPort, type RoutineEditorRecord, type RoutinesPort } from "./routines-port";
 import { SharedTablesModal } from "./SharedTablesModal";
 
 interface AgentSettingsPanelProps
   extends Omit<
     SharedAgentSettingsPanelProps,
-    "width" | "onResize" | "onResizeEnd" | "links" | "detailOpen" | "children"
+    "width" | "onResize" | "onResizeEnd" | "links" | "detailOpen" | "children" | "simple"
   > {
+  /** Opens the browser pane of the side panel, for the Computer tab of the simple layout. */
+  onOpenBrowser?: (() => void) | undefined;
   remoteClient?: boolean;
   /** Routines can copy local run commands only on the computer that runs the agent. */
   localHost?: boolean;
@@ -69,8 +75,12 @@ interface AgentSettingsPanelProps
 
 export type { AgentSkillsMode };
 
+/** How far ahead the Routines card of the simple layout looks for each routine's next run. */
+const ROUTINE_ROWS_RANGE_MS = 8 * 24 * 60 * 60 * 1000;
+
 export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
-  const { t } = useText();
+  const text = useText();
+  const { t } = text;
   const sessionSettings = createMemo((): AgentSessionSettingsApi | undefined => {
     if (!props.sessionSettingsEditable) return undefined;
     if (props.remoteClient) return props.adminCalls?.sessionSettings;
@@ -92,10 +102,11 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
     };
   });
   const [panelWidth, setPanelWidth] = createSettingsPanelWidth();
+  const routineRowsAtStart: SimpleAgentRoutineRow[] = [];
   const [draft, setDraft] = createStore({
     tables: { count: 0, open: false },
     memories: { count: 0, open: false },
-    routines: { count: 0, open: false },
+    routines: { count: 0, open: false, rows: routineRowsAtStart },
     files: { open: false },
     skills: { count: 0, open: false, reopenAfterMarketplace: false },
   });
@@ -138,6 +149,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       state.tables.open = false;
       state.memories.open = false;
       state.routines.open = false;
+      state.routines.rows = [];
       state.files.open = false;
       state.skills.open = false;
       state.skills.reopenAfterMarketplace = false;
@@ -185,16 +197,69 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       });
   }
 
+  // Each load takes a number. A slow answer for an older load must not replace a newer one, or a deleted
+  // routine would show again.
+  let routinesRequest = 0;
   function loadRoutinesCount(port: RoutinesPort): void {
+    const request = ++routinesRequest;
+    const stale = () => request !== routinesRequest;
     void port
       .list()
       .catch(() => [])
-      .then((items) => {
+      .then(async (items) => {
+        if (stale()) return;
         setDraft((state) => {
           state.routines.count = items.length;
         });
+        if (!untrack(simpleLayout)) return;
+        const rows = await routineRows(items);
+        if (stale() || port.ownerId !== untrack(() => props.agent.id)) return;
+        setDraft((state) => {
+          state.routines.rows = rows;
+        });
       });
   }
+
+  /**
+   * The Routines card of the simple layout: each routine with its next run in the coming week, from
+   * the host's routine calendar. A routine with no run in that week shows its schedule instead.
+   */
+  async function routineRows(items: RoutineEditorRecord[]): Promise<SimpleAgentRoutineRow[]> {
+    const now = new Date();
+    const nextRuns = new Map<string, string>();
+    const serverId = untrack(() => props.skillsServerId);
+    if (serverId && items.length > 0) {
+      const to = new Date(now.getTime() + ROUTINE_ROWS_RANGE_MS);
+      const calendar = await conversationPort()
+        .agent.routineCalendar({ from: now.toISOString(), to: to.toISOString() }, serverId)
+        .catch(() => null);
+      for (const run of calendar?.runs ?? []) {
+        if (run.status !== "scheduled" || Date.parse(run.at) < now.getTime()) continue;
+        const known = nextRuns.get(run.routineId);
+        if (!known || Date.parse(run.at) < Date.parse(known)) nextRuns.set(run.routineId, run.at);
+      }
+    }
+    return items.map((routine) => {
+      const next = nextRuns.get(routine.id);
+      const paused = !isEventRoutine(routine) && !routine.active;
+      return {
+        id: routine.id,
+        name: routine.name,
+        when: next
+          ? text.format.date(new Date(next), { weekday: "short", hour: "numeric", minute: "2-digit" })
+          : paused
+            ? t("routine.settings.paused")
+            : routineListSummary(routine, text),
+      };
+    });
+  }
+
+  // The Routines card asks for its rows when the simple layout is turned on while the panel shows.
+  let lastSimpleLayout = untrack(simpleLayout);
+  createEffect(simpleLayout, (on) => {
+    if (on && !lastSimpleLayout && untrack(() => !props.remoteClient)) loadRoutinesCount(untrack(routinesPort));
+    lastSimpleLayout = on;
+  });
 
   // The count follows a skill change made anywhere, as the dialog does.
   createEffect(
@@ -265,6 +330,101 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       });
   });
 
+  // A row of the Routines card opens that routine, through the same request a chat card makes.
+  // Its numbers are negative so they never meet a request from the conversation.
+  const [ownRoutineRequest, setOwnRoutineRequest] = createSignal<RoutineSelectionRequest | null>(null);
+  let ownRoutineNonce = 0;
+
+  function openRoutine(routineId: string | null): void {
+    const routine = routineId ? draft.routines.rows.find((row) => row.id === routineId) : undefined;
+    ownRoutineNonce -= 1;
+    setOwnRoutineRequest(routine ? { routineId: routine.id, routineName: routine.name, nonce: ownRoutineNonce } : null);
+    setDraft((state) => {
+      state.routines.open = true;
+    });
+  }
+
+  /** Memories, skills, files and tables: the Knows group, and the Library tab of the simple layout. */
+  const knowsGroup = (title?: string) => (
+    <Show when={!props.remoteClient || skillsMode() !== "hidden" || props.tablesVisible !== false || props.files}>
+      <SettingsLinkGroup inset title={title}>
+        <Show when={!props.remoteClient}>
+          <SettingsLinkRow
+            icon={<BookMarked aria-hidden="true" />}
+            label={t("agentSettings.links.memories")}
+            value={t("agentSettings.links.memoriesCount", { count: draft.memories.count })}
+            onClick={() =>
+              setDraft((state) => {
+                state.memories.open = true;
+              })
+            }
+          />
+        </Show>
+        <Show when={skillsMode() !== "hidden"}>
+          <SettingsLinkRow
+            icon={<Puzzle aria-hidden="true" />}
+            label={t("agentSettings.links.skills")}
+            value={t("agentSettings.links.skillsCount", { count: draft.skills.count })}
+            onClick={() =>
+              setDraft((state) => {
+                state.skills.open = true;
+              })
+            }
+          />
+        </Show>
+        <Show when={props.files}>
+          <SettingsLinkRow
+            icon={<Folder aria-hidden="true" />}
+            label={t("agentSettings.links.files")}
+            value={storage.state.usage ? agentFilesLinkValue(storage.state.usage.breakdown) : undefined}
+            onClick={() =>
+              setDraft((state) => {
+                state.files.open = true;
+              })
+            }
+          />
+        </Show>
+        <Show when={props.tablesVisible !== false}>
+          <SettingsLinkRow
+            icon={<Table2 aria-hidden="true" />}
+            label={t("agentSettings.links.tables")}
+            value={t("agentSettings.links.tablesCount", { count: draft.tables.count })}
+            onClick={() =>
+              setDraft((state) => {
+                state.tables.open = true;
+              })
+            }
+          />
+        </Show>
+      </SettingsLinkGroup>
+    </Show>
+  );
+
+  const simpleSlots = (): SimpleAgentPanelSlots | undefined =>
+    simpleLayout()
+      ? {
+          library: () => knowsGroup(),
+          computer: () => (
+            <Show when={props.onOpenBrowser}>
+              {(openBrowser) => (
+                <SettingsLinkGroup inset>
+                  <SettingsLinkRow
+                    icon={<Globe2 aria-hidden="true" />}
+                    label={t("conversation.sidePanel.pane.browser")}
+                    value={t("common.open")}
+                    onClick={() => openBrowser()()}
+                  />
+                </SettingsLinkGroup>
+              )}
+            </Show>
+          ),
+          routines: props.remoteClient ? null : draft.routines.rows,
+          onOpenRoutine: (routineId) => openRoutine(routineId),
+          onManageRoutines: () => openRoutine(null),
+          onShare: props.onPublish,
+        }
+      : undefined;
+
   return (
     <SharedAgentSettingsPanel
       {...props}
@@ -272,6 +432,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       onResize={setPanelWidth}
       onResizeEnd={saveSettingsPanelWidth}
       detailOpen={draft.routines.open || draft.files.open}
+      simple={simpleSlots()}
       links={
         <>
           <Show when={sessionSettings()}>
@@ -283,58 +444,8 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
               />
             )}
           </Show>
-          <Show when={!props.remoteClient || skillsMode() !== "hidden" || props.tablesVisible !== false || props.files}>
-            <SettingsLinkGroup inset title={t("agentSettings.groups.knows")}>
-              <Show when={!props.remoteClient}>
-                <SettingsLinkRow
-                  icon={<BookMarked aria-hidden="true" />}
-                  label={t("agentSettings.links.memories")}
-                  value={t("agentSettings.links.memoriesCount", { count: draft.memories.count })}
-                  onClick={() =>
-                    setDraft((state) => {
-                      state.memories.open = true;
-                    })
-                  }
-                />
-              </Show>
-              <Show when={skillsMode() !== "hidden"}>
-                <SettingsLinkRow
-                  icon={<Puzzle aria-hidden="true" />}
-                  label={t("agentSettings.links.skills")}
-                  value={t("agentSettings.links.skillsCount", { count: draft.skills.count })}
-                  onClick={() =>
-                    setDraft((state) => {
-                      state.skills.open = true;
-                    })
-                  }
-                />
-              </Show>
-              <Show when={props.files}>
-                <SettingsLinkRow
-                  icon={<Folder aria-hidden="true" />}
-                  label={t("agentSettings.links.files")}
-                  value={storage.state.usage ? agentFilesLinkValue(storage.state.usage.breakdown) : undefined}
-                  onClick={() =>
-                    setDraft((state) => {
-                      state.files.open = true;
-                    })
-                  }
-                />
-              </Show>
-              <Show when={props.tablesVisible !== false}>
-                <SettingsLinkRow
-                  icon={<Table2 aria-hidden="true" />}
-                  label={t("agentSettings.links.tables")}
-                  value={t("agentSettings.links.tablesCount", { count: draft.tables.count })}
-                  onClick={() =>
-                    setDraft((state) => {
-                      state.tables.open = true;
-                    })
-                  }
-                />
-              </Show>
-            </SettingsLinkGroup>
-          </Show>
+          {/* The simple layout shows these rows in its Library tab. */}
+          {simpleLayout() ? null : knowsGroup(t("agentSettings.groups.knows"))}
           <Show when={!props.remoteClient || props.onPublish}>
             <SettingsLinkGroup inset title={t("agentSettings.groups.does")}>
               <Show when={!props.remoteClient}>
@@ -398,8 +509,11 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
               })
             }
             onClose={props.onClose}
-            selectionRequest={props.routineSelectionRequest}
-            onSelectionRequestHandled={props.onRoutineSelectionRequestHandled}
+            selectionRequest={ownRoutineRequest() ?? props.routineSelectionRequest}
+            onSelectionRequestHandled={(nonce) => {
+              if (nonce < 0) setOwnRoutineRequest(null);
+              else props.onRoutineSelectionRequestHandled?.(nonce);
+            }}
             onOpenRun={props.onOpenRoutineRun}
           />
         </div>

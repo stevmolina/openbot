@@ -2,11 +2,12 @@ import { SKILL_CATEGORIES, type SkillCategory } from "@openbot/contracts/ipc";
 import { Button, Input, Search, Skeleton, SlidingTabs, Text } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
-import { createEffect, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { AgentGrid, AppCard, SkillGrid } from "./MarketplaceCards";
 import { type FilterGroup, MarketplaceFilter } from "./MarketplaceFilter";
 import { skillAgents } from "./MarketplaceInstallSkill";
 import { Block } from "./MarketplaceParts";
+import { SimpleAgentHome } from "./MarketplaceSimple";
 import { CATEGORY_LABELS, type MarketplaceListing } from "./marketplace-listing";
 import {
   appGroups,
@@ -113,6 +114,8 @@ function ListingPanel(props: {
   count: number;
   empty: JSX.Element;
   children: JSX.Element;
+  /** Runs when "Load more" is pressed, for a list that shows a collapsed part of the loaded rows. */
+  onLoadMore?: (() => void) | undefined;
 }) {
   const { t } = useText();
   const failure = () => (
@@ -157,7 +160,10 @@ function ListingPanel(props: {
                 class="marketplace-load-more"
                 data-cuelume-tap="navigate"
                 loading={props.listing.loadingMore()}
-                onClick={props.listing.loadMore}
+                onClick={() => {
+                  props.onLoadMore?.();
+                  props.listing.loadMore();
+                }}
               >
                 {t("marketplace.loadMore")}
               </Button>
@@ -171,6 +177,9 @@ function ListingPanel(props: {
 
 export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
   const { t, format } = useText();
+  // The simple layout's "All agents" list shows a few rows until it is expanded; "Load more" expands it
+  // too, so a row that loaded is never hidden.
+  const [simpleHomeExpanded, setSimpleHomeExpanded] = createSignal(false);
   const model = () => props.scope.model;
   const nav = () => props.scope.nav;
   const state = () => props.scope.nav.state;
@@ -276,8 +285,52 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
       }
     });
 
+  /** The simple layout's category pills: one at a time, and the lit one clears itself. */
+  const categoryPills = () => (
+    <Show when={state().tab !== "apps"}>
+      <span class="marketplace-pills-divider" aria-hidden="true" />
+      <For each={SKILL_CATEGORIES}>
+        {(category) => {
+          const active = () => (state().tab === "agents" ? state().agentCategory : state().skillCategory) === category;
+          return (
+            <Button
+              type="button"
+              variant="ghost"
+              class="marketplace-category-pill"
+              aria-pressed={active() ? "true" : "false"}
+              data-cuelume-tap="select"
+              onClick={() =>
+                nav().set((draft) => {
+                  const next = active() ? null : category;
+                  if (draft.tab === "agents") draft.agentCategory = next;
+                  else draft.skillCategory = next;
+                })
+              }
+            >
+              {t(CATEGORY_LABELS[category])}
+            </Button>
+          );
+        }}
+      </For>
+    </Show>
+  );
+  const tabList = () => (
+    <SlidingTabs.List aria-label={t("marketplace.kinds")}>
+      <For each={TABS}>
+        {(tab) => (
+          <SlidingTabs.Trigger value={tab}>
+            {t(TAB_LABEL[tab])}
+            <Show when={searching()}>
+              <span class="marketplace-count">{countLabel(tab)}</span>
+            </Show>
+          </SlidingTabs.Trigger>
+        )}
+      </For>
+    </SlidingTabs.List>
+  );
+
   return (
-    <div class="marketplace-view">
+    <div class="marketplace-view" data-simple={props.scope.simple ? "" : undefined}>
       <SlidingTabs.Root
         value={state().tab}
         onChange={(value: string) =>
@@ -287,18 +340,12 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
         }
       >
         <div class="marketplace-toolbar">
-          <SlidingTabs.List aria-label={t("marketplace.kinds")}>
-            <For each={TABS}>
-              {(tab) => (
-                <SlidingTabs.Trigger value={tab}>
-                  {t(TAB_LABEL[tab])}
-                  <Show when={searching()}>
-                    <span class="marketplace-count">{countLabel(tab)}</span>
-                  </Show>
-                </SlidingTabs.Trigger>
-              )}
-            </For>
-          </SlidingTabs.List>
+          <Show when={props.scope.simple} fallback={tabList()}>
+            <div class="marketplace-pills">
+              {tabList()}
+              {categoryPills()}
+            </div>
+          </Show>
           <label class="search-field marketplace-search">
             <Search aria-hidden="true" />
             <Input
@@ -325,6 +372,7 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
           <SlidingTabs.Content value="agents">
             <ListingPanel
               listing={props.scope.agents}
+              onLoadMore={() => setSimpleHomeExpanded(true)}
               loadingLabel={t("marketplace.loading.agents")}
               count={agents().length}
               empty={
@@ -337,7 +385,15 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
                 />
               }
             >
-              <AgentGrid scope={props.scope} items={agents()} />
+              <Show when={props.scope.simple} fallback={<AgentGrid scope={props.scope} items={agents()} />}>
+                <SimpleAgentHome
+                  scope={props.scope}
+                  items={agents()}
+                  narrowed={searching() || agentsFiltered()}
+                  expanded={simpleHomeExpanded()}
+                  onExpandedChange={setSimpleHomeExpanded}
+                />
+              </Show>
             </ListingPanel>
           </SlidingTabs.Content>
           <SlidingTabs.Content value="apps">

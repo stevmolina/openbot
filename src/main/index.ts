@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { parseInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
 import {
@@ -179,6 +180,15 @@ if (commandLineUserDataDirectory) {
       ),
     ),
   );
+}
+// A renamed fork build, such as OpenBot Light, keeps its data apart from the official app and leaves
+// `openbot://` to it. `setName` below hides the packaged name, so it is read here, before it runs.
+const renamedPackagedBuild = app.isPackaged && app.getName() !== "OpenBot";
+if (renamedPackagedBuild && !commandLineUserDataDirectory) {
+  // `setPath` expects the folder to exist, and a first launch has none yet.
+  const renamedUserData = join(app.getPath("appData"), app.getName());
+  mkdirSync(renamedUserData, { recursive: true });
+  app.setPath("userData", renamedUserData);
 }
 app.setName("OpenBot");
 app.enableSandbox();
@@ -979,8 +989,9 @@ if (!hasSingleInstanceLock) {
         installLinuxDesktopEntry({ platform: process.platform, environment: process.env, iconPath: appIconPath }),
       );
       if (
-        process.platform === "linux" ||
-        ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged)
+        !renamedPackagedBuild &&
+        (process.platform === "linux" ||
+          ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged))
       ) {
         if (!app.setAsDefaultProtocolClient("openbot")) {
           logger.warn("Unable to register the openbot:// scheme. Invitation links will not open OpenBot.");

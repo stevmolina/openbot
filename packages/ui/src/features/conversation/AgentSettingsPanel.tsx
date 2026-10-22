@@ -86,6 +86,14 @@ import { useText } from "../../text";
 import { AVATAR_HUE_LABEL } from "../agents/avatar-hue-label";
 import { AgentNewChatDialog } from "./AgentNewChatDialog";
 import { BackupModelsPage } from "./BackupModels";
+import {
+  SimpleAgentPanel,
+  SimpleAgentPanelActions,
+  type SimpleAgentPanelSlots,
+  type SimpleAgentTab,
+} from "./SimpleAgentPanel";
+
+export type { SimpleAgentPanelSlots, SimpleAgentRoutineRow } from "./SimpleAgentPanel";
 
 export interface AgentRuntimeSettings {
   provider: AgentProviderId;
@@ -158,6 +166,12 @@ export interface AgentSettingsPanelProps {
    * it and keeps its setup. Left out when the host cannot do it.
    */
   onStartNewChat?: (() => Promise<void>) | undefined;
+  /**
+   * The simple layout of this fork: a big face, the name and the title, then the Details, Library
+   * and Computer tabs. "More settings" shows the rest of the root page and `links`. Left out, the
+   * panel is unchanged.
+   */
+  simple?: SimpleAgentPanelSlots | undefined;
 }
 
 const INSTRUCTIONS_SAVE_DELAY_MS = 400;
@@ -166,12 +180,15 @@ const INSTRUCTIONS_SAVE_DELAY_MS = 400;
  * The pages behind the root list. The root edits the agent's face, name, title and instructions
  * in place, as the mobile app does, and shows one row for each page.
  */
-type AgentSettingsPage = "permissions" | "backup-models" | "advanced";
+/** `runtime` and `more` are the simple layout's "Runs on" and "More settings" pages. */
+type AgentSettingsPage = "permissions" | "backup-models" | "advanced" | "runtime" | "more";
 
 const PAGE_TITLE: Record<AgentSettingsPage, AppTextKey> = {
   permissions: "agentSettings.permissions.title",
   "backup-models": "agentSettings.backupModels.title",
   advanced: "agentSettings.advanced.title",
+  runtime: "simple.agentPanel.runsOn",
+  more: "simple.agentPanel.more",
 };
 
 /** The three free-text fields of the panel, each with a flag for edits made since the last save. */
@@ -256,6 +273,9 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
   });
   const avatarUrl = () => props.agent.avatarUrl ?? null;
   const [page, setPage] = createSignal<AgentSettingsPage | null>(null);
+  const [simpleTab, setSimpleTab] = createSignal<SimpleAgentTab>("details");
+  // The simple layout opens pages from "More settings", so Back returns to the page that opened one.
+  let pageParents: (AgentSettingsPage | null)[] = [];
   // The root row that opened the closed page takes the focus back when the root shows again.
   let returnFocusPage: AgentSettingsPage | null = null;
 
@@ -272,21 +292,26 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
   /**
    * The row that opened the page is gone, so the focus moves to the first control of the page.
    * A page with no control, such as read-only permissions, gives the focus to the back button.
+   * A control that a stylesheet hides, as the simple layout's pages do, has no box and is skipped.
    */
   function openPage(target: AgentSettingsPage): void {
+    pageParents.push(page());
     setPage(target);
     queueMicrotask(() =>
       (
-        pageRoot?.querySelector<HTMLElement>(
-          'button:not(:disabled, [aria-disabled="true"]), input, textarea, select',
-        ) ?? pageRoot?.closest("aside")?.querySelector<HTMLElement>(".settings-panel-nav-button")
+        [
+          ...(pageRoot?.querySelectorAll<HTMLElement>(
+            'button:not(:disabled, [aria-disabled="true"]), input, textarea, select',
+          ) ?? []),
+        ].find((element) => element.getClientRects().length > 0) ??
+        pageRoot?.closest("aside")?.querySelector<HTMLElement>(".settings-panel-nav-button")
       )?.focus(),
     );
   }
 
   function closePage(): void {
     returnFocusPage = page();
-    setPage(null);
+    setPage(pageParents.pop() ?? null);
   }
 
   function workspaceEnforcementNote(provider: AgentProviderId): string {
@@ -394,6 +419,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
         lastAgentId = agent.id;
         if (agentChanged) {
           returnFocusPage = null;
+          pageParents = [];
           setPage(null);
         }
         setDraft((state) => {
@@ -860,6 +886,32 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
     }
   }
 
+  function editName(value: string): void {
+    setDraft((state) => {
+      state.fields.name = value;
+      state.dirty.name = true;
+    });
+  }
+
+  function editTitle(value: string): void {
+    setDraft((state) => {
+      state.fields.title = value;
+      state.dirty.title = true;
+    });
+  }
+
+  /** The inline name and title of the simple layout save on Enter, as they do when the focus leaves. */
+  function blurOnEnter(event: KeyboardEvent & { currentTarget: HTMLInputElement }): void {
+    if (event.isComposing) return;
+    if (event.key === "Enter") event.currentTarget.blur();
+  }
+
+  /** "Low effort", or the provider's note when it sets the reasoning itself. */
+  const runsOnEffort = () =>
+    reasoningSetByProvider()
+      ? t("agentSettings.runtime.reasoningSetByProvider", { provider: agentProviderName(draft.runtime.provider) })
+      : t("simple.agentPanel.effort", { effort: reasoningLabel(draft.runtime.reasoningEffort) });
+
   return (
     <SettingsPanel
       onResizeEnd={props.onResizeEnd}
@@ -896,8 +948,15 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       </Show>
       <Show when={!props.detailOpen}>
         <SettingsPanelContent>
-          <div ref={(element) => (pageRoot = element)} class="agent-settings-page">
-            <Show when={page() === null}>
+          <div
+            ref={(element) => (pageRoot = element)}
+            class="agent-settings-page"
+            data-simple-page={props.simple ? (page() ?? "root") : undefined}
+          >
+            <Show when={page() === null ? props.simple : undefined}>
+              {(simple) => <SimpleAgentPanelActions onShare={simple().onShare} onClose={props.onClose} />}
+            </Show>
+            <Show when={page() === null || page() === "runtime" || page() === "more"}>
               <div ref={(element) => (avatarPickerRoot = element)} class="agent-settings-avatar-picker">
                 <Popover.Root
                   open={draft.avatar.pickerOpen}
@@ -1240,6 +1299,62 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                   onClick={() => openPage("advanced")}
                 />
               </SettingsLinkGroup>
+            </Show>
+            {/* The simple layout keeps the root page above for its face editor, and its stylesheet
+                shows only the face there. "Runs on" and "More settings" show the other parts. */}
+            <Show when={page() === null ? props.simple : undefined}>
+              {(simple) => (
+                <SimpleAgentPanel
+                  slots={simple()}
+                  tab={simpleTab()}
+                  onTabChange={setSimpleTab}
+                  name={
+                    <Input
+                      class="simple-agent-inline-input simple-agent-name-input"
+                      value={draft.fields.name}
+                      aria-label={t("agentSettings.nameLabel")}
+                      maxlength={INPUT_LIMITS.agentName}
+                      onValueChange={editName}
+                      onKeyDown={blurOnEnter}
+                      onBlur={saveName}
+                    />
+                  }
+                  title={
+                    <Input
+                      class="simple-agent-inline-input simple-agent-title-input"
+                      value={draft.fields.title}
+                      aria-label={t("agentSettings.agentTitleLabel")}
+                      placeholder={t("agentSettings.agentTitlePlaceholder")}
+                      maxlength={INPUT_LIMITS.agentTitle}
+                      onValueChange={editTitle}
+                      onKeyDown={blurOnEnter}
+                      onBlur={saveTitle}
+                    />
+                  }
+                  model={selectedModel()?.name ?? draft.runtime.model}
+                  effort={runsOnEffort()}
+                  computerUse={
+                    <Show when={props.computerUseEditable}>
+                      <div class="agent-settings-notifications">
+                        <div>
+                          <strong>{t("agentSettings.computerUse.title")}</strong>
+                          <span>{t("agentSettings.computerUse.description")}</span>
+                        </div>
+                        <Switch
+                          size="sm"
+                          aria-label={t("agentSettings.computerUse.title")}
+                          checked={draft.computerUse}
+                          onChange={(next) => void saveComputerUse(next)}
+                        />
+                      </div>
+                    </Show>
+                  }
+                  onOpenRuntime={() => openPage("runtime")}
+                  onOpenMore={() => openPage("more")}
+                  runtimeRef={pageRowRef("runtime")}
+                  moreRef={pageRowRef("more")}
+                />
+              )}
             </Show>
             <Show when={page() === "permissions"}>
               <Show when={props.onUpdatePermissions}>

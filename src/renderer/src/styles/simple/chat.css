@@ -1,0 +1,272 @@
+/* Simple layout: chat. Keyed on :root[data-openbot-layout="simple"]. */
+
+:root[data-openbot-layout="simple"] {
+  /* One centred column: the messages, the composer and the notices over it share this width. */
+  --simple-chat-column: 720px;
+  --simple-chat-inset: max(var(--openbot-space-4), calc((100% - var(--simple-chat-column)) / 2));
+}
+
+/* The column */
+
+:root[data-openbot-layout="simple"] .conversation-scroll {
+  padding-inline: var(--simple-chat-inset);
+}
+
+:root[data-openbot-layout="simple"] .composer-wrap {
+  padding-inline: var(--simple-chat-inset);
+  padding-bottom: var(--openbot-space-4);
+}
+
+/* Agent bubbles: a soft, warm tone. */
+
+:root[data-openbot-layout="simple"] .message-entry-agent .ui-bubble-variant-muted > .ui-bubble-content {
+  border-color: transparent;
+  border-radius: var(--openbot-radius-grouped);
+  background: var(--openbot-simple-bubble-agent);
+  padding: var(--openbot-space-3) 14px;
+}
+
+:root[data-openbot-layout="simple"] .message-entry-agent .ui-bubble-variant-muted .message-markdown :not(pre) > code {
+  border-color: var(--openbot-simple-card-border);
+  background: var(--openbot-simple-card);
+}
+
+/* Code, Mermaid and HTML previews sit on the card surface, so they stand out from the agent bubble. */
+:root[data-openbot-layout="simple"] .message-code-block {
+  border-color: var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-card);
+  background: var(--openbot-simple-card);
+}
+
+/* Your bubbles: dark, on the right. Inside one, the text tokens turn light, so a link, a quote, an
+   inline code span and a reference stay readable without a rule for each. */
+
+:root[data-openbot-layout="simple"] .message-entry-user .ui-bubble {
+  --openbot-text-primary: var(--openbot-simple-bubble-user-text);
+  --openbot-text-secondary: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 88%, transparent);
+  --openbot-text-readable: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 72%, transparent);
+  --openbot-text-muted: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 64%, transparent);
+  --openbot-text-dim: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 52%, transparent);
+  --openbot-border: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 18%, transparent);
+  --openbot-border-strong: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 32%, transparent);
+  --openbot-bg-control: color-mix(in srgb, var(--openbot-simple-bubble-user-text) 14%, transparent);
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .ui-bubble-variant-secondary > .ui-bubble-content {
+  border-color: transparent;
+  border-radius: var(--openbot-radius-grouped);
+  background: var(--openbot-simple-bubble-user);
+  padding: var(--openbot-space-3) 14px;
+  color: var(--openbot-simple-bubble-user-text);
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .message-reply-context {
+  border-left-color: var(--openbot-border-strong);
+  color: var(--openbot-text-readable);
+}
+
+/* The citation marks and links of the light bubble of the dark theme read as light chips on a dark bubble. */
+:root[data-openbot-layout="simple"] .message-entry-user .message-citation-mark {
+  background: var(--openbot-bg-control);
+  color: var(--openbot-text-secondary);
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .message-citation-footer {
+  border-top-color: var(--openbot-border);
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .message-citation-ref-label {
+  color: var(--openbot-text-primary);
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .message-citation-ref-host {
+  color: var(--openbot-text-muted);
+}
+
+/* Agent mentions: the name, bold, in the agent's own colour. No face, no chip. The colour is the
+   agent's head colour, mixed toward the ink so a pale head still reads on the agent bubble. */
+
+:root[data-openbot-layout="simple"] .reference-chip.message-agent-tag {
+  display: inline;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  background: transparent;
+  padding: 0;
+  color: color-mix(in srgb, var(--message-mention-color, var(--openbot-text-primary)) 72%, var(--openbot-text-primary));
+  font-size: inherit;
+  font-weight: var(--openbot-weight-bold);
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+:root[data-openbot-layout="simple"] .reference-chip.message-agent-tag:hover {
+  background: transparent;
+  color: var(--message-mention-color, var(--openbot-text-primary));
+  text-decoration: underline;
+}
+
+:root[data-openbot-layout="simple"] .reference-chip.message-agent-tag .reference-chip-icon {
+  display: none;
+}
+
+:root[data-openbot-layout="simple"] .message-entry-user .reference-chip.message-agent-tag {
+  color: inherit;
+}
+
+/* File mentions stay, a little lighter. */
+:root[data-openbot-layout="simple"] .message-file-reference {
+  font-weight: var(--openbot-weight-medium);
+}
+
+/* A message with a table: the table leaves the bubble and stands as a card of the column's width.
+   The text around it keeps its own agent bubbles. */
+
+:root[data-openbot-layout="simple"]
+  .message-entry-agent
+  .ui-bubble:has(:is(.message-data-table-scroll))
+  > .ui-bubble-content {
+  overflow: visible;
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+}
+
+:root[data-openbot-layout="simple"]
+  .message-entry-agent
+  .ui-bubble:has(.message-data-table-scroll)
+  .message-content-blocks {
+  display: grid;
+  gap: var(--openbot-space-3);
+  justify-items: start;
+}
+
+:root[data-openbot-layout="simple"]
+  .message-entry-agent
+  .ui-bubble:has(.message-data-table-scroll)
+  .message-content-blocks
+  > .message-copy {
+  max-width: 100%;
+  border-radius: var(--openbot-radius-grouped);
+  background: var(--openbot-simple-bubble-agent);
+  padding: var(--openbot-space-3) 14px;
+}
+
+:root[data-openbot-layout="simple"] .message-data-table-frame {
+  position: relative;
+  justify-self: stretch;
+}
+
+:root[data-openbot-layout="simple"] .message-data-table-scroll {
+  border-radius: var(--openbot-radius-xl);
+}
+
+:root[data-openbot-layout="simple"] .message-data-table {
+  /* A collapsed border has no radius and the clip of the card cut it off, so the card keeps its own. */
+  border-collapse: separate;
+  border-color: var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-xl);
+  background: var(--openbot-simple-card);
+  box-shadow: none;
+}
+
+:root[data-openbot-layout="simple"] .message-data-table tbody {
+  background: transparent;
+}
+
+:root[data-openbot-layout="simple"] .message-data-table :is(th, td) {
+  border-right: 0;
+  padding: var(--openbot-space-3) 18px;
+  color: var(--openbot-text-primary);
+}
+
+:root[data-openbot-layout="simple"] .message-data-table thead th {
+  border-bottom: 1px solid var(--openbot-simple-row-line);
+  padding-block: 14px;
+  font-weight: var(--openbot-weight-semibold);
+}
+
+:root[data-openbot-layout="simple"] .message-data-table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--openbot-simple-row-line);
+}
+
+/* Copy as Markdown and Copy as CSV float under the table and show while the pointer or focus is on it. */
+:root[data-openbot-layout="simple"] .message-data-table-actions {
+  position: absolute;
+  top: 100%;
+  right: var(--openbot-space-2);
+  z-index: 3;
+  margin-top: var(--openbot-space-1);
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-simple-card);
+  padding: 2px var(--openbot-space-1);
+  box-shadow: 0 2px 10px var(--openbot-simple-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--openbot-duration-hover) ease;
+}
+
+:root[data-openbot-layout="simple"] .message-data-table-frame:is(:hover, :focus-within) .message-data-table-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none), (pointer: coarse) {
+  :root[data-openbot-layout="simple"] .message-data-table-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* The composer: a rounded card bar with a soft shadow. */
+
+:root[data-openbot-layout="simple"] .composer {
+  border: 1px solid var(--openbot-simple-card-border);
+  border-radius: var(--openbot-radius-bubble);
+  background: var(--openbot-simple-card);
+  box-shadow: 0 2px 14px var(--openbot-simple-shadow);
+}
+
+:root[data-openbot-layout="simple"] .composer[data-compact] {
+  min-height: 52px;
+  border-radius: var(--openbot-radius-modal);
+  padding: var(--openbot-space-2) var(--openbot-space-2) var(--openbot-space-2) var(--openbot-space-3);
+}
+
+:root[data-openbot-layout="simple"] .composer:focus-within {
+  border-color: var(--openbot-border-strong);
+  box-shadow:
+    0 2px 14px var(--openbot-simple-shadow),
+    0 0 0 3px var(--openbot-hover);
+}
+
+/* The plus and the microphone are quiet icons. */
+:root[data-openbot-layout="simple"] .composer .composer-button,
+:root[data-openbot-layout="simple"] .composer .dictation-button {
+  background: transparent;
+  color: var(--openbot-text-muted);
+}
+
+:root[data-openbot-layout="simple"] .composer .composer-button:hover:not(:disabled),
+:root[data-openbot-layout="simple"] .composer .dictation-button:hover:not(:disabled) {
+  background: var(--openbot-hover);
+  color: var(--openbot-text-primary);
+}
+
+/* Send: a circle in the send colour with a light arrow. Stop keeps the dark circle. */
+:root[data-openbot-layout="simple"] .composer .voice-button.ui-button:not(.voice-button-active),
+:root[data-openbot-layout="simple"] .composer .voice-morph-send-blob {
+  background: var(--openbot-simple-send);
+  color: var(--openbot-simple-bubble-user-text);
+}
+
+:root[data-openbot-layout="simple"] .composer .voice-button.ui-button:not(.voice-button-active):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--openbot-simple-send) 88%, var(--openbot-text-primary));
+  color: var(--openbot-simple-bubble-user-text);
+}
+
+/* Day separators, the new-message line and the routine lines: quiet, centred in the column. */
+:root[data-openbot-layout="simple"] .time-marker {
+  color: var(--openbot-text-muted);
+}

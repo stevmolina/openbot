@@ -4,7 +4,7 @@ import { Bot, Button, CircleFadingArrowUp, DropdownMenu, FolderPlus, Hash, Puzzl
 import { Show } from "solid-js";
 import { useText } from "../../text";
 import { ServerMenu } from "../servers/ServerMenu";
-import { PlusIcon, SidebarToggleIcon } from "./SidebarIcons";
+import { PlusIcon, SearchIcon, SidebarToggleIcon } from "./SidebarIcons";
 import { useSidebarScope } from "./sidebar-scope";
 
 export function SidebarTopbar() {
@@ -74,6 +74,19 @@ export function SidebarTopbar() {
             <Show when={props.compact} fallback={<Puzzle aria-hidden="true" />}>
               <SidebarToggleIcon />
             </Show>
+          </Button>
+        </Show>
+        <Show when={props.searchButton && !props.compact}>
+          <Button
+            variant="ghost"
+            type="button"
+            class="sidebar-icon-button sidebar-topbar-search no-drag"
+            aria-label={t("conversation.globalSearch.title")}
+            aria-haspopup="dialog"
+            title={t("conversation.globalSearch.title")}
+            onClick={props.onOpenSearch}
+          >
+            <SearchIcon />
           </Button>
         </Show>
         <Show when={props.createSupported !== false || props.onCreateChannel || layoutMutable()}>

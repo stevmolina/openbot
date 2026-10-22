@@ -38,6 +38,7 @@ import { messages as settings } from "./settings";
 import { shared } from "./shared";
 import { messages as sharedTable } from "./sharedTable";
 import { messages as sidebar } from "./sidebar";
+import { messages as simple } from "./simple";
 import { messages as sitePage } from "./sitePage";
 import { messages as skill } from "./skill";
 import { source } from "./source";
@@ -110,6 +111,7 @@ export const en = {
   ...connector,
   ...uiBlock,
   ...sitePage,
+  ...simple,
 } as const satisfies MessageCatalog;
 
 export type AppMessages = typeof en;

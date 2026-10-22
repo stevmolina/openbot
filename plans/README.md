@@ -17,6 +17,7 @@ changes, and respect the `STOP` conditions.
 | 007 | The web client keeps only the latest page of a conversation that is not open | P2 | S | — | DONE |
 | 008 | Mailbox reads of one delivery do not sort or scan the whole mailbox | P2 | S | — | DONE |
 | 009 | An HTTPS sign-out or session revoke also closes the browser views of that session | P2 | S | — | DONE |
+| 010 | Simple light mode for the desktop app (fork only) | P1 | L | — | DONE |
 
 Allowed states: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`,
 `REJECTED: <reason>`.
@@ -42,6 +43,7 @@ Allowed states: `TODO`, `IN PROGRESS`, `DONE`, `BLOCKED: <reason>`,
 
 - Plan 004 was written by the `improve-animations` skill on 2026-10-12 for the mobile search sheet. It
   is independent of the other plans.
+- Plan 010 was added on 2026-10-21 for the stevmolina fork. Its approved mockup and light tokens are in `plans/010-simple-light-mode/`. It is independent of the other plans.
 - Plans 005-009 are independent of each other and of 001-004. Plan 005 needs one
   maintainer decision first: whether a revoked member can rejoin with a new
   invite (the plan's default is to refuse). Plan 009 touches the Team API route

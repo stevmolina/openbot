@@ -5,6 +5,7 @@ import "katex/contrib/copy-tex";
 import { App } from "./App";
 import { startActionSounds } from "./action-sounds";
 import { syncLogoColor } from "./logo-color";
+import { startSimpleLayout } from "./simple-layout";
 import "./styles.css";
 
 const root = document.getElementById("root");
@@ -16,6 +17,7 @@ if (!root) {
 // A startup mark for `dev:bench`, after the bundle is parsed.
 performance.mark("openbot:renderer-start");
 installPointerFocusGuard();
+startSimpleLayout();
 syncLogoColor();
 startActionSounds();
 

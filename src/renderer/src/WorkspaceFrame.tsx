@@ -6,6 +6,7 @@ import { type WindowPage, windowPageKind } from "./features/window/window-page-c
 import { useLayout } from "./layout";
 import { LEFT_PANEL_COMPACT } from "./layout-constants";
 import { usePlatform } from "./platform";
+import { simpleLayout } from "./simple-layout";
 import { WorkspaceLeftPanelResizer } from "./WorkspaceLeftPanelResizer";
 
 type WorkspaceFrameProps = ParentProps<
@@ -71,7 +72,8 @@ export function WorkspaceFrame(props: WorkspaceFrameProps) {
         {
           "app-frame-sidebar-compact": props.compact,
           "app-frame-edge": platform.appInfo() !== null,
-          "app-frame-with-server-rail": layout.serverRailVisible(),
+          // The simple layout lists the servers in the photo menu, so it leaves no room for the server rail.
+          "app-frame-with-server-rail": layout.serverRailVisible() && !simpleLayout(),
           "app-frame-page-open": pageOpen(),
           "app-frame-sidebar-hidden": props.sidebarHidden === true,
           "app-frame-platform-darwin": platform.appInfo()?.platform === "darwin",

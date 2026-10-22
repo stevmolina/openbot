@@ -1,0 +1,214 @@
+/*
+ * The simple light theme of this fork (plan 010). It overrides the dark base in tokens.css only
+ * while the renderer sets data-openbot-theme="simple-light" on the root, so the dark values stay
+ * untouched and an upstream merge of tokens.css stays a clean merge. Colour literals may only live
+ * in @openbot/brand, so the simple layout keeps its own values here too.
+ */
+:root[data-openbot-theme="simple-light"] {
+  /* Simple layout values that have no upstream token. */
+  --openbot-simple-bubble-agent: #f0efec;
+  --openbot-simple-bubble-user: #1a1a1a;
+  --openbot-simple-bubble-user-text: #ffffff;
+  --openbot-simple-send: #e5484d;
+  --openbot-simple-card: #ffffff;
+  --openbot-simple-card-border: #e6e5e1;
+  --openbot-simple-row-line: #efeeea;
+  --openbot-simple-bar: #e8e7e3;
+  --openbot-simple-bar-active: #ffffff;
+  --openbot-simple-dot-on: #22b45e;
+  --openbot-simple-dot-attention: #f59e0b;
+  --openbot-simple-run-chip: #fde2ef;
+  --openbot-simple-run-chip-text: #9d1458;
+  --openbot-simple-canvas-dot: #dddcd8;
+  --openbot-simple-shadow: rgba(20, 20, 20, 0.06);
+  --openbot-simple-switch-off: #d3d2cd;
+
+  /* Sidebar bottom bar and rows (plan 010, stage 2). */
+  --openbot-simple-bar-radius: 18px;
+  --openbot-simple-row-radius: 10px;
+  --openbot-simple-bar-photo: #c8c6c0;
+  /* Pages: the big title of Schedule, Usage and Marketplace, and the radius of their cards. */
+  --openbot-simple-title-size: 28px;
+  --openbot-simple-title-leading: 34px;
+  --openbot-simple-card-radius: 18px;
+  --openbot-simple-bar-photo-ring: #1a1a1a;
+  --openbot-simple-bar-photo-text: #1a1a1a;
+
+  color-scheme: light;
+
+  /* Surfaces: warm off-white, like Grok Bot */
+  --openbot-bg-canvas: #fcfcfb;
+  --openbot-bg-canvas-clear: rgba(252, 252, 251, 0);
+  --openbot-bg-sidebar: #f3f2ef;
+  --openbot-bg-surface: #ffffff;
+  --openbot-bg-surface-raised: #ffffff;
+  --openbot-bg-control: #ecebe7;
+  --openbot-bg-control-hover: #e6e5e1;
+  --openbot-bg-control-active: #e0dfdb;
+  --openbot-tabs-bar-bg: #e8e7e3;
+  --openbot-tabs-pill-bg: #ffffff;
+  --openbot-bg-overlay: rgba(252, 252, 251, 0.92);
+  --openbot-bg-glass: rgba(255, 255, 255, 0.86);
+  --openbot-bg-grouped: #ffffff;
+  --openbot-border-grouped: #ecebe7;
+  --openbot-text-grouped-secondary: #8a8984;
+
+  /* Lines */
+  --openbot-border: #ecebe7;
+  --openbot-border-strong: #e3e2df;
+  --openbot-image-outline: rgba(20, 20, 20, 0.08);
+
+  /* Text */
+  --openbot-text-primary: #1a1a1a;
+  --openbot-text-secondary: #3d3d3a;
+  --openbot-text-muted: #6e6d69;
+  --openbot-text-dim: #747370;
+  --openbot-text-readable: rgba(20, 20, 20, 0.6);
+  --openbot-text-placeholder: #9c9b97;
+
+  /* Accent and status */
+  --openbot-accent: #2f7cf6;
+  --openbot-accent-hover: #1f6fe8;
+  --openbot-accent-text: #1f6fe8;
+  --openbot-accent-soft: rgba(47, 124, 246, 0.12);
+  --openbot-accent-strong: rgba(47, 124, 246, 0.26);
+  --openbot-success-text: #1b7a46;
+  --openbot-success-soft: #e8f6ee;
+  --openbot-warning-text: #9a5b00;
+  --openbot-warning-soft: #fff4e0;
+  --openbot-danger: #e5484d;
+  --openbot-danger-text: #c6282f;
+  --openbot-danger-soft: rgba(229, 72, 77, 0.12);
+
+  /* Buttons that were light-on-dark become dark-on-light */
+  --openbot-action: #1a1a1a;
+  --openbot-action-foreground: #ffffff;
+
+  /* The "on light" family is the inverse surface: a light chip on the dark app. On the light app
+     the inverse is dark, the same ink as the user bubble, so these four tokens swap meaning with
+     the theme. Primary buttons, tooltips and the user bubble read them. */
+  --openbot-surface-light: #1a1a1a;
+  --openbot-text-on-light: #ffffff;
+  --openbot-text-muted-on-light: rgba(255, 255, 255, 0.62);
+  --openbot-text-dim-on-light: rgba(255, 255, 255, 0.42);
+  --openbot-border-on-light: rgba(255, 255, 255, 0.18);
+
+  /* Native-only and sheet surfaces. The menu panel reads bg-sheet. */
+  --openbot-bg-native-canvas: #fcfcfb;
+  --openbot-bg-native-sidebar: #f3f2ef;
+  --openbot-bg-sheet: #ffffff;
+  --openbot-bg-chrome-glass: rgba(255, 255, 255, 0.94);
+  --openbot-border-chrome-glass: rgba(20, 20, 20, 0.08);
+  --openbot-bg-chrome-blur: rgba(255, 255, 255, 0.6);
+  --openbot-marketplace-detail-bg: #f7f6f3;
+  --openbot-bg-host-inset: #efeeea;
+
+  /* Scrims, rings and shadows. The shadows are soft grey, never black. */
+  --openbot-dialog-overlay: rgba(26, 26, 26, 0.22);
+  --openbot-dialog-ring: rgba(20, 20, 20, 0.08);
+  --openbot-scroll-edge-overlay: rgba(252, 252, 251, 0.72);
+  --openbot-shadow-popover-ambient: rgba(20, 20, 20, 0.1);
+  --openbot-shadow-dialog: rgba(20, 20, 20, 0.2);
+  --openbot-shadow-dynamic-island: rgba(20, 20, 20, 0.32);
+  --openbot-shadow-ring: rgba(20, 20, 20, 0.05);
+  --openbot-shadow-overlay: 0 12px 32px rgba(20, 20, 20, 0.14);
+  --openbot-shadow-card: 0 1px 2px rgba(20, 20, 20, 0.04);
+  --openbot-border-focus: rgba(47, 124, 246, 0.6);
+  --openbot-hover: rgba(20, 20, 20, 0.05);
+
+  /* Browser dock and previews: the translucent "glass" becomes a faint ink tint on white. */
+  --openbot-glass-surface: rgba(20, 20, 20, 0.04);
+  --openbot-glass-surface-hover: rgba(20, 20, 20, 0.07);
+  --openbot-glass-border: rgba(20, 20, 20, 0.12);
+  --openbot-glass-highlight: rgba(255, 255, 255, 0.7);
+  --openbot-glass-shadow: rgba(20, 20, 20, 0.12);
+
+  /* Tables in messages */
+  --openbot-data-table-border: #e6e5e1;
+  --openbot-data-table-header-text: #7b7a76;
+  --openbot-data-table-text: #1a1a1a;
+  --openbot-data-table-outer-border: rgba(20, 20, 20, 0);
+  --openbot-data-table-ring: rgba(20, 20, 20, 0.08);
+  --openbot-settings-text-muted: rgba(20, 20, 20, 0.6);
+
+  /* Status fills (the text and soft variants are above). */
+  --openbot-success: #1fa65a;
+  --openbot-success-wash: rgba(31, 166, 90, 0.06);
+  --openbot-warning: #e08600;
+  --openbot-danger-hover: #d93a40;
+  --openbot-danger-soft-hover: rgba(229, 72, 77, 0.2);
+  --openbot-danger-focus: rgba(229, 72, 77, 0.32);
+  --openbot-danger-border: rgba(229, 72, 77, 0.45);
+  --openbot-approval-badge-soft: rgba(224, 134, 0, 0.16);
+  --openbot-badge-new: #e11d5a;
+  --openbot-badge-new-soft: rgba(225, 29, 90, 0.12);
+  --openbot-unread-surface: #2f7cf6;
+  --openbot-unread-text: #ffffff;
+
+  /* Agent questions and message badges */
+  --openbot-question-option: #1c7f92;
+  --openbot-question-option-soft: rgba(28, 127, 146, 0.1);
+  --openbot-question-option-hover: rgba(28, 127, 146, 0.16);
+  --openbot-question-option-pressed: rgba(28, 127, 146, 0.22);
+  --openbot-question-badge-text: #17687a;
+  --openbot-question-badge-soft: rgba(28, 127, 146, 0.12);
+  --openbot-message-badge-text: #1f6fd1;
+  --openbot-message-badge-soft: rgba(31, 111, 209, 0.12);
+
+  /* File references: the same hues as dark, darker so the name reads on a light surface. */
+  --openbot-file-blue: #1f6fd1;
+  --openbot-file-blue-soft: rgba(31, 111, 209, 0.1);
+  --openbot-file-yellow: #8a5a00;
+  --openbot-file-yellow-soft: rgba(224, 134, 0, 0.14);
+  --openbot-file-orange: #b55a1f;
+  --openbot-file-orange-soft: rgba(181, 90, 31, 0.12);
+  --openbot-file-teal: #1c7f92;
+  --openbot-file-teal-soft: rgba(28, 127, 146, 0.12);
+  --openbot-file-green: #1b7a46;
+  --openbot-file-green-soft: rgba(31, 166, 90, 0.12);
+  --openbot-file-red: #c6282f;
+  --openbot-file-red-soft: rgba(229, 72, 77, 0.12);
+  --openbot-file-pink: #a3478f;
+  --openbot-file-pink-soft: rgba(163, 71, 143, 0.12);
+  --openbot-file-default: #1f6fe8;
+  --openbot-file-default-soft: rgba(47, 124, 246, 0.1);
+
+  /* Providers and charts, retuned from dark to read on white. */
+  --openbot-provider-claude: #c4623f;
+  --openbot-provider-antigravity: #7b5fa6;
+  --openbot-chart-series-codex: #8e5bd0;
+  --openbot-chart-series-grok: #1f8a9e;
+  --openbot-chart-storage-workspaces: #2f77d6;
+  --openbot-chart-storage-files: #d0501c;
+  --openbot-chart-storage-chats: #148a60;
+  --openbot-chart-storage-downloads: #7a6fd6;
+  --openbot-chart-storage-runtimes: #b57600;
+  --openbot-sound-off-back: #e6e5e1;
+  --openbot-sound-off-ink: #b5b4b0;
+}
+
+/* The Dynamic Island is a black pill in both themes, so inside it the text and control tokens keep
+   their dark-theme values. */
+:root[data-openbot-theme="simple-light"] .dynamic-island {
+  color-scheme: dark;
+  --openbot-text-primary: #ffffff;
+  --openbot-text-secondary: #dcdcdc;
+  --openbot-text-muted: #979797;
+  --openbot-text-dim: #6a6a6a;
+  --openbot-text-on-light: #141414;
+  --openbot-surface-light: #f0f0f0;
+  --openbot-hover: rgba(255, 255, 255, 0.06);
+  --openbot-border: rgba(255, 255, 255, 0.035);
+  --openbot-border-strong: rgba(255, 255, 255, 0.045);
+  --openbot-border-focus: rgba(0, 124, 247, 0.72);
+  --openbot-accent: #007cf7;
+  --openbot-accent-soft: rgba(0, 124, 247, 0.16);
+  --openbot-accent-text: #42a0ff;
+  --openbot-danger-text: #ff6069;
+  --openbot-warning: #ff9412;
+  --openbot-question-option: #6bc7d9;
+  --openbot-question-option-soft: rgba(107, 199, 217, 0.14);
+  --openbot-question-option-hover: rgba(107, 199, 217, 0.2);
+  --openbot-question-option-pressed: rgba(107, 199, 217, 0.26);
+  --openbot-shadow-ring: rgba(228, 228, 228, 0.04);
+}

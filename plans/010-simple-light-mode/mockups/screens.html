@@ -1,0 +1,184 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><style>
+/* biome-ignore-all lint/style/noDescendingSpecificity: one-file design mockup, not app code */
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,"SF Pro Text",Inter,system-ui,sans-serif}
+.lab{font-size:14px;margin:22px 0 8px;color:var(--foreground)}.lab:first-child{margin-top:0}
+.lab b{font-weight:600}.lab span{color:var(--muted-foreground)}
+.win{width:1040px;background:#fcfcfb;border:1px solid #e3e2df;border-radius:14px;overflow:hidden;display:grid;grid-template-columns:220px 1fr;height:600px;box-shadow:0 8px 30px rgba(0,0,0,.07);color:#1a1a1a;font-size:13.5px}
+.win.three{grid-template-columns:220px 1fr 300px}
+.side{background:#f3f2ef;border-right:1px solid #e8e7e3;display:flex;flex-direction:column;padding:12px 10px}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.lights span{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px}
+.rb{display:inline-flex;width:28px;height:28px;border-radius:50%;background:#fff;border:1px solid #e3e2df;align-items:center;justify-content:center;color:#444;margin-left:5px;font-size:13px}
+.av{width:32px;height:32px;border-radius:50%;flex:none;position:relative}
+.av:after{content:"";position:absolute;width:12%;height:28%;background:#fff;border-radius:3px;top:24%;left:56%;transform:rotate(-25deg)}
+.item{display:flex;gap:10px;align-items:center;padding:7px 8px;border-radius:10px}
+.item.on{background:#e6e5e1}
+.item b{display:block;font-weight:500}
+.item small{display:block;color:#7b7a76;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:135px}
+.item .meta{margin-left:auto;color:#8a8984;font-size:12px}
+.ic{width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid #e6e5e1;display:flex;align-items:center;justify-content:center;color:#444;flex:none}
+.grp{font-size:11.5px;color:#8a8984;margin:12px 8px 4px}
+.dot{width:7px;height:7px;border-radius:50%;background:#2f7cf6;margin-left:auto;flex:none}
+.bar{margin-top:auto;background:#e8e7e3;border-radius:18px;padding:6px;display:flex;align-items:center;gap:4px}
+.me{width:34px;height:34px;border-radius:50%;background:#c8c6c0;color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;margin-right:auto}
+.me.on{outline:2px solid #1a1a1a;outline-offset:1px}
+.tab{width:40px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#555}
+.tab.on{background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.main{display:flex;flex-direction:column;min-width:0;position:relative}
+.head{display:flex;justify-content:center;align-items:center;padding:12px;position:relative}
+.pill{display:flex;gap:7px;align-items:center;background:#fff;border:1px solid #e3e2df;border-radius:20px;padding:4px 12px 4px 5px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:18px;padding:6px 14px;background:#ecebe7;font-size:13px}
+.btn.dark{background:#1a1a1a;color:#fff}
+.hr{position:absolute;right:14px;top:12px;display:flex;gap:8px}
+.chat{flex:1;overflow:hidden;padding:4px 30px;display:flex;flex-direction:column;gap:9px;line-height:1.55}
+.msg{background:#f0efec;border-radius:16px;padding:9px 14px;align-self:flex-start;max-width:92%}
+.mine{align-self:flex-end;background:#1a1a1a;color:#fff}
+.mention{font-weight:600}
+.tbl{background:#fff;border:1px solid #e6e5e1;border-radius:18px;overflow:hidden}
+.tbl table{border-collapse:collapse;width:100%}
+.tbl th{text-align:left;font-weight:600;padding:11px 18px}
+.tbl td{padding:10px 18px;border-top:1px solid #efeeea}
+.tbl .n{text-align:right}
+.st{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;background:#e8f6ee;color:#1b7a46}
+.st.r{background:#fff4e0;color:#9a5b00}
+.comp{margin:8px 24px 14px;display:flex;align-items:center;gap:10px;border:1px solid #e3e2df;background:#fff;border-radius:24px;padding:8px 8px 8px 14px;color:#9c9b97;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.send{margin-left:auto;width:30px;height:30px;border-radius:50%;background:#e5484d;color:#fff;display:inline-flex;align-items:center;justify-content:center}
+.right{border-left:1px solid #e8e7e3;background:#fafaf9;padding:12px 16px;display:flex;flex-direction:column}
+.hero{text-align:center;margin-top:6px}
+.hero h3{margin:10px 0 0;font-size:18px;font-weight:500}
+.hero p{margin:4px 0 12px;color:#8a8984;font-size:12.5px}
+.tabs{display:flex;justify-content:center;gap:4px;margin-bottom:14px}
+.tabs span,.seg span{padding:5px 12px;border-radius:14px;color:#555}
+.tabs .on,.seg .on{background:#ebeae6;color:#111}
+.seg{display:inline-flex;background:#f3f2ef;border-radius:16px;padding:3px;font-size:12.5px}
+.seg .on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.lbl{display:flex;justify-content:space-between;color:#6f6e6a;font-size:12.5px;margin:4px 4px 6px}
+.card{background:#fff;border:1px solid #ecebe7;border-radius:14px;padding:6px 12px;margin-bottom:14px}
+.sg{display:flex;gap:10px;padding:7px 0}.sg b{font-weight:500;display:block}.sg small{color:#8a8984;font-size:12px}.sg i{font-style:normal;color:#666;width:16px}
+.rowx{display:flex;justify-content:space-between;padding:7px 0}.rowx span{color:#8a8984}
+.muted{color:#8a8984}
+/* routines */
+.canvas{flex:1;background-color:#fafaf9;background-image:radial-gradient(#dcdbd6 1px,transparent 1px);background-size:18px 18px;position:relative}
+.node{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:290px;background:#fff;border:1px solid #e3e2df;border-radius:18px;box-shadow:0 6px 20px rgba(0,0,0,.07);padding:14px}
+.node .h{display:flex;gap:10px;align-items:center}.node .h small{display:block;color:#8a8984;font-size:12px}
+.node .body{margin:12px 0;background:#f6f5f2;border-radius:12px;padding:16px;text-align:center;color:#8a8984}
+.warn{display:flex;justify-content:space-between;align-items:center;background:#fff4e0;color:#9a5b00;border-radius:10px;padding:6px 10px;font-size:12.5px}
+.warn u{text-decoration:none;font-weight:600}
+.handle{position:absolute;top:30px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #cfcec9}
+.ask{position:absolute;left:18px;bottom:16px;display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #e3e2df;border-radius:22px;padding:6px 14px 6px 6px;box-shadow:0 2px 10px rgba(0,0,0,.06);color:#555}
+.zoom{position:absolute;right:16px;bottom:16px;background:#fff;border:1px solid #e3e2df;border-radius:14px;display:flex;flex-direction:column;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.zoom span{width:34px;height:32px;display:flex;align-items:center;justify-content:center;color:#555}
+/* schedule */
+.pad{padding:6px 26px 20px;overflow:hidden;flex:1}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:#fff;border:1px solid #ecebe7;border-radius:14px;height:210px;padding:10px 8px}
+.day .d{display:flex;gap:6px;align-items:center;color:#6f6e6a;font-size:12.5px;margin-bottom:8px}
+.day .d b{color:#1a1a1a;font-weight:600}
+.day.today .d b{background:#2f7cf6;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center}
+.ev{background:#fde7f3;color:#8f1d5c;border-radius:9px;padding:6px 8px;font-size:12px;line-height:1.35}
+.ev b{display:block;font-weight:600}
+.up{margin-top:16px}
+.up .rowx{border-top:1px solid #f0efeb;padding:9px 4px;align-items:center}.up .rowx:first-child{border:0}
+.up .l{display:flex;gap:10px;align-items:center}
+/* usage */
+.title{font-size:28px;font-weight:600;letter-spacing:-.02em;margin:4px 0 4px}
+.kpis{display:flex;gap:14px;margin:14px 0}
+.kpi{flex:1;background:#fff;border:1px solid #ecebe7;border-radius:16px;padding:12px 16px}
+.kpi small{color:#8a8984;font-size:12px}.kpi div{font-size:24px;font-weight:600;letter-spacing:-.02em;margin-top:2px}
+.chartc{background:#fff;border:1px solid #ecebe7;border-radius:16px;padding:12px 16px;margin-bottom:14px}
+/* marketplace */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.chip{padding:7px 14px;border-radius:18px;background:#f0efec;font-size:13px}.chip.on{background:#1a1a1a;color:#fff}
+.search{background:#f0efec;border-radius:20px;padding:10px 16px;color:#8a8984;display:flex;gap:8px;align-items:center}
+.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:10px 0 18px}
+.fc{background:#f4f3f0;border-radius:16px;padding:18px 10px;text-align:center}
+.fc b{display:block;font-weight:600;margin-top:10px}.fc small{color:#8a8984;font-size:12px}
+.list{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 28px}
+.li{display:flex;gap:12px;align-items:center;padding:6px 0}
+.li .t{min-width:0;flex:1}.li b{font-weight:600}.li small{display:block;color:#7b7a76;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.add{background:#ecebe7;border-radius:16px;padding:5px 14px;font-size:12.5px;font-weight:500}
+.sec{display:flex;justify-content:space-between;align-items:baseline;font-weight:500;font-size:15px}.sec span{font-size:12.5px;color:#8a8984;font-weight:400}
+</style></head><body><div id="out"></div>
+<script>
+const I={
+chat:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z"/></svg>',
+clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+plug:'<svg viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/></svg>',
+search:'<svg style="width:15px;height:15px" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><path d="M15 15l5 5"/></svg>',
+tasks:'<svg style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M4 6l2 2 3-3M4 13l2 2 3-3M12 7h8M12 14h8M4 20h16"/></svg>',
+cal:'<svg style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+store:'<svg style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M4 9l1.5-5h13L20 9M4 9h16v11H4zM9 20v-6h6v6"/></svg>',
+link:'<svg style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/></svg>',
+play:'<svg style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg>'};
+const C={chief:'#8e6cf0',research:'#22b5a0',builder:'#f2a33a',launch:'#e94fae',org:'#f5b82e',sales:'#e94fae'};
+const av=(c,s=32,x='')=>`<div class="av" style="background:${c};width:${s}px;height:${s}px;${x}"></div>`;
+const lights=`<div class="top"><div class="lights"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div><span class="rb">${I.search}</span><span class="rb">+</span></div></div>`;
+const bar=(t,me)=>`<div class="bar"><div class="me ${me?'on':''}">S</div>${['chat','clock','plug'].map(k=>`<div class="tab ${k===t?'on':''}">${I[k]}</div>`).join('')}</div>`;
+const agents=(on)=>[['Chief','chief','Run the full launch audit…'],['Research','research','Which claim is still open…'],['Builder','builder','Add the rollback step…'],['Launch','launch','Hold publication until…']].map(([n,k,s])=>`<div class="item ${n===on?'on':''}">${av(C[k])}<div><b>${n}</b><small>${s}</small></div>${n==='Research'?'<span class="dot"></span>':''}</div>`).join('');
+const side=(inner,t,me)=>`<aside class="side">${lights}${inner}${bar(t,me)}</aside>`;
+const nav=(ic,n,meta,on)=>`<div class="item ${on?'on':''}"><div class="ic">${ic}</div><b>${n}</b><span class="meta">${meta||''}</span></div>`;
+const clockSide=on=>side(nav(I.tasks,'Tasks','',on==='Tasks')+nav(I.cal,'Schedule','6 upcoming',on==='Schedule')+'<div class="grp">Routines</div>'+
+ `<div class="item ${on==='org'?'on':''}">${av(C.org)}<div><b>Personal Organizer</b><small>Nothing was saved. Send on…</small></div></div>`+
+ `<div class="item">${av(C.sales)}<div><b>Sales</b><small>Created and verified both…</small></div></div>`,'clock');
+const plugSide=on=>side(nav(I.store,'Marketplace','',on==='m')+nav(I.link,'Connectors','4',on==='c')+'<div class="grp">AI providers</div>'+
+ [['Claude','#d97757','#22b07d'],['Codex','#1a1a1a','#22b07d'],['Grok','#2f7cf6','#f2a33a']].map(([n,c,s])=>`<div class="item">${av(c,28)}<b>${n}</b><span class="dot" style="background:${s}"></span></div>`).join(''),'plug');
+
+const S=[];
+S.push(['Chat','your agents, the chat icon',`<div class="win three">${side(agents('Chief'),'chat')}
+<section class="main"><div class="head"><div class="pill">${av(C.chief,22)}Chief</div></div>
+<div class="chat"><div class="msg mine">Prepare the launch plan, tag Research, and keep every decision traceable.</div>
+<div class="msg">Here is the launch plan. I asked <span class="mention" style="color:#0f7f73">Research</span> to verify the evidence in launch-brief.md.</div>
+<div class="tbl"><table><tr><th>Workstream</th><th>Owner</th><th>Status</th></tr><tr><td>Product QA</td><td>Builder</td><td><span class="st">Ready</span></td></tr><tr><td>Evidence</td><td>Research</td><td><span class="st r">In review</span></td></tr><tr><td>Release</td><td>Launch</td><td><span class="st">Ready</span></td></tr></table></div>
+<div class="msg mine">Who owns the rollback if the release note is wrong?</div>
+<div class="msg"><span class="mention" style="color:#b86e00">Builder</span> owns it. <span class="mention" style="color:#c2348f">Launch</span> holds publication until the checks pass.</div></div>
+<div class="comp"><span style="font-size:18px;color:#777">+</span>Message Chief<span class="send">↑</span></div></section>
+<aside class="right"><div style="display:flex;justify-content:flex-end"><span class="rb">↑</span><span class="rb">✕</span></div>
+<div class="hero">${av(C.chief,72,'margin:0 auto')}<h3>Chief</h3><p>Chief of staff</p></div>
+<div class="tabs"><span class="on">Details</span><span>Library</span><span>Computer</span></div>
+<div class="lbl">Suggestions<span>Hide</span></div><div class="card"><div class="sg"><i>✦</i><div><b>I can rerun the launch audit</b><small>Check the three workstreams again before Friday.</small></div></div><div class="sg"><i>✉︎</i><div><b>I can draft the release note</b><small>Built from the plan and Research's evidence.</small></div></div></div>
+<div class="lbl">Runs on</div><div class="card"><div class="rowx">GPT-6-Luna<span>Low effort ›</span></div></div>
+<div class="lbl">Routines</div><div class="card"><div class="rowx">Friday launch review<span>Fri 9:00</span></div></div>
+<div class="muted" style="margin-top:auto;text-align:center;font-size:12.5px">More settings</div></aside></div>`]);
+
+S.push(['Routines','automations drawn as a diagram, the clock icon',`<div class="win">${clockSide('org')}
+<section class="main"><div class="head" style="border-bottom:1px solid #efeeea"><div class="pill">${av(C.org,22)}Personal Organizer routine</div><div class="hr"><span class="btn">Details</span><span class="btn dark">${I.play} Run now</span></div></div>
+<div class="canvas"><div class="node"><span class="handle" style="left:-6px"></span><span class="handle" style="right:-6px"></span>
+<div class="h">${av(C.org,36)}<div><b>Personal Organizer</b><small>Grok 4.7 · 256k context</small></div></div>
+<div class="body">No run yet</div><div class="warn">Not connected to a trigger<u>Connect</u></div></div>
+<div class="ask">${av(C.org,26)}Ask an agent to edit this diagram</div>
+<div class="zoom"><span>+</span><span style="border-top:1px solid #efeeea">−</span><span style="border-top:1px solid #efeeea">⤢</span></div></div></section></div>`]);
+
+const days=['Mon 19','Tue 20','Wed 21','Thu 22','Fri 23','Sat 24','Sun 25'];
+S.push(['Schedule','what runs when, the clock icon',`<div class="win">${clockSide('Schedule')}
+<section class="main"><div class="pad"><div class="toolbar"><div class="title" style="margin:0">Schedule</div><span style="margin-left:14px" class="rb">‹</span><span class="btn">Today</span><span class="rb" style="margin:0">›</span><b style="font-weight:500">Oct 19 – 25, 2026</b><span style="margin-left:auto" class="seg"><span>Day</span><span class="on">Week</span><span>Month</span></span></div>
+<div class="week">${days.map((d,i)=>{const [w,n]=d.split(' ');return `<div class="day ${i===2?'today':''}"><div class="d">${w} <b>${n}</b></div>${(i===3||i===4)?'<div class="ev"><b>9:00 AM</b>Weekday sales follow-ups</div>':''}</div>`}).join('')}</div>
+<div class="up"><div class="lbl">Upcoming runs <span>Buenos Aires time</span></div><div class="card" style="padding:2px 12px">
+${[['Weekday sales follow-ups','Tomorrow, 9:00 AM'],['Weekday sales follow-ups','Fri, Oct 23, 9:00 AM'],['Weekly sales prospects','Mon, Oct 26, 9:00 AM']].map(([a,b])=>`<div class="rowx"><div class="l">${av(C.sales,24)}${a}</div><span>${b}</span></div>`).join('')}
+</div></div></div></section></div>`]);
+
+S.push(['Usage','tokens and cost, under your photo',`<div class="win">${side(agents(''),'chat',true)}
+<section class="main"><div class="pad"><div class="toolbar"><div class="title" style="margin:0">Usage</div><span style="margin-left:auto" class="btn">All agents ▾</span><span class="btn">Last 30 days ▾</span></div>
+<div class="kpis"><div class="kpi"><small>Tokens</small><div>1.4M</div></div><div class="kpi"><small>Sessions</small><div>3</div></div><div class="kpi"><small>Messages</small><div>25</div></div><div class="kpi"><small>Cost</small><div style="font-size:15px;font-weight:500;color:#8a8984;margin-top:8px">Not reported by Codex</div></div></div>
+<div class="chartc"><div class="lbl" style="margin:0 0 6px">Tokens per day</div><svg viewBox="0 0 760 120" style="width:100%;height:120px" preserveAspectRatio="none"><path d="M0 110H760" stroke="#ecebe7" stroke-width="1"/><path d="M0 108 L120 108 L220 104 L300 106 L400 96 L480 100 L560 70 L640 82 L700 30 L760 46" stroke="#2f7cf6" stroke-width="2.2"/></svg>
+<div style="display:flex;justify-content:space-between;color:#8a8984;font-size:11.5px"><span>Sep 24</span><span>Oct 4</span><span>Oct 14</span><span>Oct 21</span></div></div>
+<div class="lbl">By agent <span class="seg"><span class="on">Agent</span><span>Model</span><span>Day</span></span></div>
+<div class="tbl"><table><tr><th>Agent</th><th>Runs on</th><th class="n">Tokens</th><th class="n">Share</th></tr><tr><td>Sales</td><td>Codex CLI</td><td class="n">1.36M</td><td class="n">98%</td></tr><tr><td>Personal Organizer</td><td>Cursor CLI</td><td class="n">32.8K</td><td class="n">2%</td></tr></table></div></div></section></div>`]);
+
+const feat=[['Product Design Lead',C.chief,571],['Code Review Partner','#2f7cf6',509],['Research Analyst',C.research,498],['Project Partner','#22c07a',379]];
+const lst=[['Debugging Partner',C.builder,'Reproduce a reported failure and find the smallest fix.'],['Operations Planner',C.research,'Document and improve a repeatable process.'],['Security Reviewer',C.builder,'Find security weaknesses and realistic abuse paths.'],['Campaign Analyst',C.launch,'Check campaign exports against the business goal.'],['Outreach Writer','#f08a24','Draft outreach for a stated audience and offer.'],['Meeting Assistant',C.chief,'Turn meeting notes into a record of decisions.']];
+S.push(['Marketplace','add ready-made agents, the plug icon',`<div class="win">${plugSide('m')}
+<section class="main"><div class="pad" style="padding-top:18px"><div class="title">Marketplace</div>
+<div class="chips"><span class="chip on">Agents</span><span class="chip">Apps</span><span class="chip">Skills</span><span style="width:1px;background:#e3e2df;margin:0 4px"></span><span class="chip">Engineering</span><span class="chip">Product</span><span class="chip">Sales</span><span class="chip">Operations</span></div>
+<div class="search">${I.search}Search agents</div>
+<div class="sec" style="margin-top:16px">Most installed</div>
+<div class="feat">${feat.map(([n,c,k])=>`<div class="fc">${av(c,58,'margin:0 auto')}<b style="color:${c}">${n}</b><small>${k} installs</small></div>`).join('')}</div>
+<div class="sec">All agents <span>View all</span></div>
+<div class="list">${lst.map(([n,c,d])=>`<div class="li">${av(c,36)}<div class="t"><b>${n}</b><small>${d}</small></div><span class="add">Add</span></div>`).join('')}</div>
+</div></section></div>`]);
+
+document.getElementById('out').innerHTML=S.map(([t,d,h],i)=>`<div class="lab"><b>${i+1}. ${t}</b> <span>· ${d}</span></div><div class="fit">${h}</div>`).join('');
+const f=()=>document.querySelectorAll('.win').forEach(w=>{w.style.zoom=Math.min(1,document.body.clientWidth/1042)});f();addEventListener('resize',f);
+</script></body></html>

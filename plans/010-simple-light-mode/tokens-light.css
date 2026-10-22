@@ -1,0 +1,74 @@
+/*
+ * Plan 010: proposed light values for the desktop app.
+ *
+ * Starting point only. Token names come from packages/brand/src/tokens.css
+ * at 9491b02ab. Values come from the approved mockup (mockups/screens.html).
+ * Every token in tokens.css that is not listed here still holds a dark value:
+ * check each one before calling the theme done.
+ *
+ * Scoped to an attribute so the dark theme stays untouched and upstream
+ * merges stay small.
+ */
+:root[data-openbot-theme="simple-light"] {
+  color-scheme: light;
+
+  /* Surfaces: warm off-white, like Grok Bot */
+  --openbot-bg-canvas: #fcfcfb;
+  --openbot-bg-canvas-clear: rgba(252, 252, 251, 0);
+  --openbot-bg-sidebar: #f3f2ef;
+  --openbot-bg-surface: #ffffff;
+  --openbot-bg-surface-raised: #ffffff;
+  --openbot-bg-control: #ecebe7;
+  --openbot-bg-control-hover: #e6e5e1;
+  --openbot-bg-control-active: #e0dfdb;
+  --openbot-tabs-bar-bg: #e8e7e3;
+  --openbot-tabs-pill-bg: #ffffff;
+  --openbot-bg-overlay: rgba(252, 252, 251, 0.92);
+  --openbot-bg-glass: rgba(255, 255, 255, 0.86);
+  --openbot-bg-grouped: #ffffff;
+  --openbot-border-grouped: #ecebe7;
+  --openbot-text-grouped-secondary: #8a8984;
+
+  /* Lines */
+  --openbot-border: #ecebe7;
+  --openbot-border-strong: #e3e2df;
+  --openbot-image-outline: rgba(20, 20, 20, 0.08);
+
+  /* Text */
+  --openbot-text-primary: #1a1a1a;
+  --openbot-text-secondary: #3d3d3a;
+  --openbot-text-muted: #7b7a76;
+  --openbot-text-dim: #8a8984;
+  --openbot-text-readable: rgba(20, 20, 20, 0.6);
+  --openbot-text-placeholder: #9c9b97;
+
+  /* Accent and status */
+  --openbot-accent: #2f7cf6;
+  --openbot-accent-hover: #1f6fe8;
+  --openbot-accent-text: #1f6fe8;
+  --openbot-accent-soft: rgba(47, 124, 246, 0.12);
+  --openbot-accent-strong: rgba(47, 124, 246, 0.26);
+  --openbot-success-text: #1b7a46;
+  --openbot-success-soft: #e8f6ee;
+  --openbot-warning-text: #9a5b00;
+  --openbot-warning-soft: #fff4e0;
+  --openbot-danger: #e5484d;
+  --openbot-danger-text: #c6282f;
+  --openbot-danger-soft: rgba(229, 72, 77, 0.12);
+
+  /* Buttons that were light-on-dark become dark-on-light */
+  --openbot-action: #1a1a1a;
+  --openbot-action-foreground: #ffffff;
+}
+
+/*
+ * Values the mockup uses that may not have a token yet. Find where the app
+ * sets them (messages.css, composer.css) and point them at these.
+ *   agent message bubble   #f0efec, radius 16px
+ *   your message bubble    #1a1a1a, white text, radius 16px
+ *   send button            #e5484d (Grok Bot red)
+ *   table card             #ffffff, 1px #e6e5e1, radius 18px, row line #efeeea
+ *   status pill Ready      bg #e8f6ee, text #1b7a46
+ *   status pill In review  bg #fff4e0, text #9a5b00
+ *   bottom bar             bg #e8e7e3, radius 18px, active button #ffffff
+ */
