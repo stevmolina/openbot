@@ -492,11 +492,11 @@ const POSTHOG: MarketplacePluginDetail = {
   name: "PostHog",
   tagline: "Product analytics and flags",
   description:
-    "PostHog lets agents query events and funnels, inspect feature flags, and summarize what changed after a release. A personal API key from the project settings goes into one Authorization header.",
+    "PostHog lets agents query events and funnels, inspect feature flags, and summarize what changed after a release. Each user signs in to their own PostHog account through the browser.",
   category: "data-analytics",
   creatorName: "posthog.com",
   iconUrl: "https://app.posthog.com/static/icons/apple-touch-icon.png",
-  version: "1.0.0",
+  version: "1.1.0",
   prompts: [
     { id: "prompt-funnel", text: "How does the signup funnel look for the last 14 days?" },
     { id: "prompt-flag", text: "Which feature flags are enabled for this user?" },
@@ -506,31 +506,13 @@ const POSTHOG: MarketplacePluginDetail = {
     {
       id: "app-posthog-mcp",
       name: "PostHog",
-      description: "Event, funnel, and feature-flag access, over PostHog's MCP server with a personal API key.",
+      description: "Event, funnel, and feature-flag access, over PostHog's MCP server with browser sign-in.",
       iconUrl: "https://app.posthog.com/static/icons/apple-touch-icon.png",
       server: {
         name: "posthog",
         transport: "http",
         url: "https://mcp.posthog.com/mcp",
-        auth: [
-          {
-            id: "posthog-key",
-            kind: "key",
-            label: "Personal API key",
-            fields: [
-              {
-                id: "token",
-                label: "Personal API key",
-                header: "Authorization",
-                prefix: "Bearer ",
-                placeholder: "phx_…",
-                hint: "PostHog Project settings → Personal API keys",
-              },
-            ],
-            docsUrl: "https://posthog.com/docs/api",
-            docsLabel: "Create a key",
-          },
-        ],
+        auth: [{ id: "posthog-oauth", kind: "link", label: "Sign in" }],
       },
     },
   ],
@@ -550,11 +532,11 @@ const AIRTABLE: MarketplacePluginDetail = {
   name: "Airtable",
   tagline: "Bases and records",
   description:
-    "Airtable lets agents list bases, read and update records, and summarize table contents. An API key from the account page is passed to the local server as one environment variable.",
+    "Airtable lets agents list bases, read and update records, and summarize table contents. Each user signs in to their own Airtable account through the browser and selects the bases to share.",
   category: "data-analytics",
   creatorName: "airtable.com",
   iconUrl: "https://airtable.com/favicon.ico",
-  version: "1.0.0",
+  version: "1.1.0",
   prompts: [
     { id: "prompt-bases", text: "What bases do I have access to?" },
     { id: "prompt-records", text: "Summarize the launch tracker table." },
@@ -564,23 +546,13 @@ const AIRTABLE: MarketplacePluginDetail = {
     {
       id: "app-airtable-mcp",
       name: "Airtable",
-      description: "Base listing and record access, over a local MCP server with an Airtable API key.",
+      description: "Base listing and record access, over Airtable's MCP server with browser sign-in.",
       iconUrl: "https://airtable.com/favicon.ico",
       server: {
         name: "airtable",
-        transport: "stdio",
-        command: "npx",
-        args: ["-y", "airtable-mcp-server"],
-        auth: [
-          {
-            id: "airtable-key",
-            kind: "key",
-            label: "API key",
-            fields: [{ id: "token", label: "API key", env: "AIRTABLE_API_KEY", hint: "Airtable account page → API" }],
-            docsUrl: "https://airtable.com/developers/web/api/introduction",
-            docsLabel: "Get a key",
-          },
-        ],
+        transport: "http",
+        url: "https://mcp.airtable.com/mcp",
+        auth: [{ id: "airtable-oauth", kind: "link", label: "Sign in" }],
       },
     },
   ],
@@ -710,11 +682,11 @@ const RESEND: MarketplacePluginDetail = {
   name: "Resend",
   tagline: "Transactional email",
   description:
-    "Resend lets agents send transactional email and check delivery through one API. An API key from the Resend dashboard is passed to the local server as one environment variable.",
+    "Resend lets agents send transactional email and check delivery through one API. Each user signs in to their own Resend account through the browser.",
   category: "automation",
   creatorName: "resend.com",
   iconUrl: "https://resend.com/static/favicons/favicon.ico",
-  version: "1.0.0",
+  version: "1.1.0",
   prompts: [
     { id: "prompt-send", text: "Send the launch announcement draft to the beta list." },
     { id: "prompt-status", text: "Did the invoice email reach the customer?" },
@@ -724,25 +696,13 @@ const RESEND: MarketplacePluginDetail = {
     {
       id: "app-resend-mcp",
       name: "Resend",
-      description: "Email sending and delivery checks, over a local MCP server with a Resend API key.",
+      description: "Email sending and delivery checks, over Resend's MCP server with browser sign-in.",
       iconUrl: "https://resend.com/static/favicons/favicon.ico",
       server: {
         name: "resend",
-        transport: "stdio",
-        command: "npx",
-        args: ["-y", "resend-mcp"],
-        auth: [
-          {
-            id: "resend-key",
-            kind: "key",
-            label: "API key",
-            fields: [
-              { id: "token", label: "API key", env: "RESEND_API_KEY", prefix: "", hint: "Resend dashboard → API keys" },
-            ],
-            docsUrl: "https://resend.com/docs/dashboard/api-keys/introduction",
-            docsLabel: "Get a key",
-          },
-        ],
+        transport: "http",
+        url: "https://mcp.resend.com/mcp",
+        auth: [{ id: "resend-oauth", kind: "link", label: "Sign in" }],
       },
     },
   ],
@@ -760,13 +720,13 @@ const COMPOSIO: MarketplacePluginDetail = {
   id: "plugin-composio",
   slug: "composio",
   name: "Composio",
-  tagline: "Many apps through your own Composio link",
+  tagline: "Many apps through one Composio sign-in",
   description:
-    "Composio connects agents to Gmail, Slack, GitHub, and hundreds of other apps through one MCP server. Connect the apps you want in your Composio account, then paste its MCP URL and API key here.",
+    "Composio connects agents to Gmail, Slack, GitHub, and hundreds of other apps through one MCP server. Sign in to your Composio account in the browser, then connect the apps you want in Composio.",
   category: "automation",
   creatorName: "composio.dev",
   iconUrl: "https://composio.dev/favicon.ico",
-  version: "1.1.0",
+  version: "1.2.0",
   prompts: [
     { id: "prompt-inbox", text: "Summarize my unread email and draft replies to the urgent ones." },
     { id: "prompt-handoff", text: "Post a summary of this pull request to our team channel." },
@@ -776,37 +736,13 @@ const COMPOSIO: MarketplacePluginDetail = {
     {
       id: "app-composio-mcp",
       name: "Composio",
-      description: "The apps you add to your Composio MCP server, over the link from your Composio account.",
+      description: "The apps you connect in your Composio account, over Composio's MCP server with browser sign-in.",
       iconUrl: "https://composio.dev/favicon.ico",
       server: {
         name: "composio",
         transport: "http",
-        url: "https://composio.dev/",
-        auth: [
-          {
-            id: "composio-link",
-            kind: "key",
-            label: "MCP link",
-            fields: [
-              {
-                id: "url",
-                label: "MCP URL",
-                url: true,
-                placeholder: "https://connect.composio.dev/mcp",
-                hint: "The URL of an MCP server in your Composio account",
-              },
-              {
-                id: "api-key",
-                label: "API key",
-                header: "x-consumer-api-key",
-                placeholder: "ck_…",
-                hint: "Find it in your Composio account, in Settings > Sessions & API Key.",
-              },
-            ],
-            docsUrl: "https://docs.composio.dev/kb/guide/consumer-project-boundaries-and-auth-selection",
-            docsLabel: "Get a key",
-          },
-        ],
+        url: "https://connect.composio.dev/mcp",
+        auth: [{ id: "composio-oauth", kind: "link", label: "Sign in" }],
       },
     },
   ],

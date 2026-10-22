@@ -208,17 +208,17 @@ export const messages = {
   "marketplace.plugin.stripe.prompt.link": "Pro プランの月額 49 の支払いリンクの下書きを作成してください。",
   "marketplace.plugin.posthog.tagline": "プロダクト分析とフラグ",
   "marketplace.plugin.posthog.description":
-    "PostHog を使うと、エージェントはイベントとファネルを照会し、フィーチャーフラグを調べ、リリース後に何が変わったかをまとめられます。プロジェクト設定の個人用 API キーを 1 つの Authorization ヘッダーに入れます。",
+    "PostHog を使うと、エージェントはイベントとファネルを照会し、フィーチャーフラグを調べ、リリース後に何が変わったかをまとめられます。各ユーザーはブラウザーで自分の PostHog アカウントにサインインします。",
   "marketplace.plugin.posthog.app":
-    "イベント、ファネル、フィーチャーフラグへのアクセスを、個人用 API キーを使う PostHog の MCP サーバーで提供します。",
+    "イベント、ファネル、フィーチャーフラグへのアクセスを、ブラウザーでサインインする PostHog の MCP サーバーで提供します。",
   "marketplace.plugin.posthog.prompt.funnel": "過去 14 日間のサインアップファネルはどうなっていますか？",
   "marketplace.plugin.posthog.prompt.flag": "このユーザーに有効になっているフィーチャーフラグはどれですか？",
   "marketplace.plugin.posthog.prompt.release": "先週のリリース後にアクティベーションは変わりましたか？",
   "marketplace.plugin.airtable.tagline": "ベースとレコード",
   "marketplace.plugin.airtable.description":
-    "Airtable を使うと、エージェントはベースを一覧表示し、レコードを読み取って更新し、テーブルの内容をまとめられます。アカウントページの API キーは、1 つの環境変数としてローカルサーバーに渡されます。",
+    "Airtable を使うと、エージェントはベースを一覧表示し、レコードを読み取って更新し、テーブルの内容をまとめられます。各ユーザーはブラウザーで自分の Airtable アカウントにサインインし、共有するベースを選びます。",
   "marketplace.plugin.airtable.app":
-    "ベースの一覧とレコードへのアクセスを、Airtable API キーを使うローカルの MCP サーバーで提供します。",
+    "ベースの一覧表示とレコードへのアクセスを、ブラウザーでサインインする Airtable の MCP サーバーで提供します。",
   "marketplace.plugin.airtable.prompt.bases": "私がアクセスできるベースはどれですか？",
   "marketplace.plugin.airtable.prompt.records": "ローンチトラッカーのテーブルをまとめてください。",
   "marketplace.plugin.airtable.prompt.update": "ロードマップのベースで、リリース済みの機能を完了にしてください。",
@@ -241,26 +241,21 @@ export const messages = {
   "marketplace.plugin.braveSearch.prompt.compare": "この 2 つのベンダーを、情報源を引用して比較してください。",
   "marketplace.plugin.resend.tagline": "トランザクションメール",
   "marketplace.plugin.resend.description":
-    "Resend を使うと、エージェントは 1 つの API でトランザクションメールを送信し、配信を確認できます。Resend ダッシュボードの API キーは、1 つの環境変数としてローカルサーバーに渡されます。",
+    "Resend を使うと、エージェントは 1 つの API でトランザクションメールを送信し、配信を確認できます。各ユーザーはブラウザーで自分の Resend アカウントにサインインします。",
   "marketplace.plugin.resend.app":
-    "メールの送信と配信の確認を、Resend API キーを使うローカルの MCP サーバーで提供します。",
+    "メールの送信と配信の確認を、ブラウザーでサインインする Resend の MCP サーバーで提供します。",
   "marketplace.plugin.resend.prompt.send": "ローンチのお知らせの下書きをベータリストに送信してください。",
   "marketplace.plugin.resend.prompt.status": "請求書のメールは顧客に届きましたか？",
   "marketplace.plugin.resend.prompt.template": "新しいフロー用のパスワードリセットメールの下書きを作成してください。",
-  "marketplace.plugin.composio.tagline": "自分の Composio リンクで多数のアプリを利用",
+  "marketplace.plugin.composio.tagline": "1 回の Composio サインインで多数のアプリを利用",
   "marketplace.plugin.composio.description":
-    "Composio は、1 つの MCP サーバーでエージェントを Gmail、Slack、GitHub など数百のアプリに接続します。Composio アカウントで使いたいアプリを接続し、その MCP URL と API キーをここに貼り付けてください。",
+    "Composio は、1 つの MCP サーバーでエージェントを Gmail、Slack、GitHub など数百のアプリに接続します。ブラウザーで Composio アカウントにサインインし、使いたいアプリを Composio で接続してください。",
   "marketplace.plugin.composio.app":
-    "Composio MCP サーバーに追加したアプリを、Composio アカウントのリンクで提供します。",
+    "Composio アカウントで接続したアプリを、ブラウザーでサインインする Composio の MCP サーバーで提供します。",
   "marketplace.plugin.composio.prompt.inbox": "未読メールをまとめて、急ぎのものに返信の下書きを作成してください。",
   "marketplace.plugin.composio.prompt.handoff": "このプルリクエストの概要をチームのチャンネルに投稿してください。",
   "marketplace.plugin.composio.prompt.apps": "Composio で使えるアプリと操作はどれですか？",
-  "marketplace.plugin.composio.hint.url": "Composio アカウントにある MCP サーバーの URL",
-  "marketplace.plugin.composio.hint.apiKey": "Composio アカウントの Settings > Sessions & API Key で確認できます。",
   "marketplace.auth.apiKey": "API キー",
-  "marketplace.auth.personalApiKey": "個人用 API キー",
-  "marketplace.auth.mcpUrl": "MCP URL",
-  "marketplace.auth.createKey": "キーを作成",
 
   "marketplace.skill.installMenu.install": "インストール",
   "marketplace.skill.installMenu.installNamed": "{name} をインストール",

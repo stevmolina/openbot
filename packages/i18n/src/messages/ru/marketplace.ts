@@ -228,16 +228,16 @@ export const messages = {
   "marketplace.plugin.stripe.prompt.link": "Составьте платёжную ссылку на тариф Pro за 49 в месяц.",
   "marketplace.plugin.posthog.tagline": "Продуктовая аналитика и флаги",
   "marketplace.plugin.posthog.description":
-    "PostHog позволяет агентам запрашивать события и воронки, проверять флаги функций и кратко описывать, что изменилось после релиза. Персональный API-ключ из настроек проекта передаётся в одном заголовке Authorization.",
+    "PostHog позволяет агентам запрашивать события и воронки, проверять флаги функций и кратко описывать, что изменилось после релиза. Каждый пользователь входит в свой аккаунт PostHog через браузер.",
   "marketplace.plugin.posthog.app":
-    "Доступ к событиям, воронкам и флагам функций через сервер MCP PostHog с персональным API-ключом.",
+    "Доступ к событиям, воронкам и флагам функций через сервер MCP PostHog со входом через браузер.",
   "marketplace.plugin.posthog.prompt.funnel": "Как выглядит воронка регистрации за последние 14 дней?",
   "marketplace.plugin.posthog.prompt.flag": "Какие флаги функций включены для этого пользователя?",
   "marketplace.plugin.posthog.prompt.release": "Изменилась ли активация после релиза на прошлой неделе?",
   "marketplace.plugin.airtable.tagline": "Базы и записи",
   "marketplace.plugin.airtable.description":
-    "Airtable позволяет агентам просматривать базы, читать и обновлять записи и кратко описывать содержимое таблиц. Ключ API со страницы аккаунта передаётся локальному серверу в одной переменной окружения.",
-  "marketplace.plugin.airtable.app": "Список баз и доступ к записям через локальный сервер MCP с API-ключом Airtable.",
+    "Airtable позволяет агентам просматривать базы, читать и обновлять записи и кратко описывать содержимое таблиц. Каждый пользователь входит в свой аккаунт Airtable через браузер и выбирает базы, к которым даёт доступ.",
+  "marketplace.plugin.airtable.app": "Список баз и доступ к записям через сервер MCP Airtable со входом через браузер.",
   "marketplace.plugin.airtable.prompt.bases": "К каким базам у меня есть доступ?",
   "marketplace.plugin.airtable.prompt.records": "Кратко опишите таблицу трекера запуска.",
   "marketplace.plugin.airtable.prompt.update": "Отметьте выпущенные функции как готовые в базе роадмапа.",
@@ -260,28 +260,23 @@ export const messages = {
   "marketplace.plugin.braveSearch.prompt.compare": "Сравните этих двух поставщиков со ссылками на источники.",
   "marketplace.plugin.resend.tagline": "Транзакционная почта",
   "marketplace.plugin.resend.description":
-    "Resend позволяет агентам отправлять транзакционные письма и проверять доставку через один API. Ключ API из панели Resend передаётся локальному серверу в одной переменной окружения.",
-  "marketplace.plugin.resend.app": "Отправка писем и проверка доставки через локальный сервер MCP с API-ключом Resend.",
+    "Resend позволяет агентам отправлять транзакционные письма и проверять доставку через один API. Каждый пользователь входит в свой аккаунт Resend через браузер.",
+  "marketplace.plugin.resend.app":
+    "Отправка писем и проверка доставки через сервер MCP Resend со входом через браузер.",
   "marketplace.plugin.resend.prompt.send": "Отправьте черновик анонса запуска списку бета-тестеров.",
   "marketplace.plugin.resend.prompt.status": "Дошло ли письмо со счётом до клиента?",
   "marketplace.plugin.resend.prompt.template": "Составьте письмо для сброса пароля для нового сценария.",
-  "marketplace.plugin.composio.tagline": "Множество приложений по вашей ссылке Composio",
+  "marketplace.plugin.composio.tagline": "Множество приложений после одного входа в Composio",
   "marketplace.plugin.composio.description":
-    "Composio подключает агентов к Gmail, Slack, GitHub и сотням других приложений через один сервер MCP. Подключите нужные приложения в своём аккаунте Composio и вставьте сюда его URL MCP и ключ API.",
+    "Composio подключает агентов к Gmail, Slack, GitHub и сотням других приложений через один сервер MCP. Войдите в свой аккаунт Composio через браузер, затем подключите нужные приложения в Composio.",
   "marketplace.plugin.composio.app":
-    "Приложения, которые вы добавили на свой сервер MCP Composio, по ссылке из вашего аккаунта Composio.",
+    "Приложения, которые вы подключили в своём аккаунте Composio, через сервер MCP Composio со входом через браузер.",
   "marketplace.plugin.composio.prompt.inbox":
     "Кратко перескажите мои непрочитанные письма и подготовьте ответы на срочные.",
   "marketplace.plugin.composio.prompt.handoff":
     "Опубликуйте краткое описание этого пул-реквеста в канале нашей команды.",
   "marketplace.plugin.composio.prompt.apps": "Какие приложения и действия доступны вам через Composio?",
-  "marketplace.plugin.composio.hint.url": "URL сервера MCP в вашем аккаунте Composio",
-  "marketplace.plugin.composio.hint.apiKey":
-    "Он находится в аккаунте Composio, в разделе Settings > Sessions & API Key.",
   "marketplace.auth.apiKey": "API-ключ",
-  "marketplace.auth.personalApiKey": "Личный API-ключ",
-  "marketplace.auth.mcpUrl": "URL MCP",
-  "marketplace.auth.createKey": "Создать ключ",
   "marketplace.skill.installMenu.install": "Установить",
   "marketplace.skill.installMenu.installNamed": "Установить: {name}",
   "marketplace.skill.installMenu.allAgents": "Все агенты",

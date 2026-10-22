@@ -1,0 +1,33 @@
+{
+  "slug": "resend",
+  "name": "Resend",
+  "tagline": "Transactional email",
+  "description": "Resend lets agents send transactional email and check delivery through one API. Each user signs in to their own Resend account through the browser.",
+  "category": "automation",
+  "creatorName": "resend.com",
+  "iconUrl": "https://resend.com/static/favicons/favicon.ico",
+  "version": "1.1.0",
+  "prompts": [
+    { "id": "prompt-send", "text": "Send the launch announcement draft to the beta list." },
+    { "id": "prompt-status", "text": "Did the invoice email reach the customer?" },
+    { "id": "prompt-template", "text": "Draft a password-reset email for the new flow." }
+  ],
+  "apps": [
+    {
+      "id": "app-resend-mcp",
+      "name": "Resend",
+      "description": "Email sending and delivery checks, over Resend's MCP server with browser sign-in.",
+      "iconUrl": "https://resend.com/static/favicons/favicon.ico",
+      "server": {
+        "name": "resend",
+        "transport": "http",
+        "url": "https://mcp.resend.com/mcp",
+        "auth": [{ "id": "resend-oauth", "kind": "link", "label": "Sign in" }]
+      }
+    }
+  ],
+  "websiteUrl": "https://resend.com",
+  "privacyPolicyUrl": "https://resend.com/legal/privacy-policy",
+  "termsUrl": "https://resend.com/legal/terms",
+  "skills": []
+}
