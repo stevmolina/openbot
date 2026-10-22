@@ -491,3 +491,25 @@
 :root[data-openbot-layout="simple"] .conversation-header .conversation-title h1 {
   font-weight: var(--openbot-weight-medium);
 }
+
+/* The three top-row icons share one glyph size, larger than the 28px classic row holds: 20px, up from 16px
+ * (search), 18px (New agent) and 17px (collapse). The round buttons grow from 28px to 32px so the glyph keeps
+ * its room, and the 32px row stays centred on the window buttons (their centre is 20px from the top). The
+ * stroke follows `.ui-glyph-20` and `.sidebar-toggle-icon`, so the line weight keeps pace with the other
+ * sidebar icons. The compact rail button keeps its 28px box, and only its glyph grows. */
+:root[data-openbot-layout="simple"]
+  .sidebar:not(.sidebar-compact)
+  .sidebar-topbar
+  :is(.sidebar-collapse-button, .sidebar-topbar-search, .sidebar-new-button) {
+  width: 32px;
+  height: 32px;
+  flex-basis: 32px;
+}
+
+:root[data-openbot-layout="simple"]
+  .sidebar-topbar
+  :is(.sidebar-collapse-button, .sidebar-toggle-button, .sidebar-topbar-search, .sidebar-new-button)
+  svg {
+  width: 20px;
+  height: 20px;
+}
