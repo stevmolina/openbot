@@ -371,7 +371,7 @@
   background: var(--openbot-bg-control-hover);
 }
 
-:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-avatar {
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-avatar:not(.sidebar-pinned-avatar) {
   width: 42px;
   height: 42px;
   flex-basis: 42px;
@@ -379,8 +379,8 @@
 
 :root[data-openbot-layout="simple"]
   .sidebar:not(.sidebar-compact)
-  .agent-row-avatar
-  :is(.agent-avatar, .person-avatar) {
+  .agent-row-avatar:not(.sidebar-pinned-avatar)
+  > :is(.agent-avatar, .person-avatar) {
   width: 42px;
   height: 42px;
 }
