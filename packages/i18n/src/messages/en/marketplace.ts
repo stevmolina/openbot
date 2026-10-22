@@ -101,6 +101,11 @@ export const messages = defineMessages("marketplace", {
   "marketplace.app.onePasswordCategory": "Login and Credential Management",
   "marketplace.app.yourApps": "Your apps",
   "marketplace.app.moreApps": "More apps",
+  // A custom app is an MCP server that the user adds by its address or its command.
+  "marketplace.app.addCustom": "Add custom app",
+  "marketplace.app.manageCustom": "Manage custom apps",
+  "marketplace.app.customApps": "Custom apps",
+  "marketplace.app.manage": "Manage",
   "marketplace.app.server": "Server",
   "marketplace.app.command": "Command",
   "marketplace.app.address": "Address",

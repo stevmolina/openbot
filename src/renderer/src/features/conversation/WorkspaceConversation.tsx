@@ -5,6 +5,7 @@ import {
   agentPermissionUpdate,
   type CentralAuthUser,
   DEFAULT_AGENT_ACCESS,
+  MCP_SERVERS_CAPABILITY,
   sameAgentModelChoice,
   type UpdateAgentAdminSettingsInput,
   type UpdateAgentInput,
@@ -38,7 +39,7 @@ import { useConnectors } from "../connectors/connectors-context";
 import { useCustomAgents } from "../custom-agents/custom-agents-context";
 import { useCustomProviders } from "../custom-providers/custom-providers-context";
 import { useRemoteDesktop } from "../remote-desktop/remote-desktop-context";
-import { remoteMcpSignIn, serverSupportsCapability } from "../servers/server-capabilities";
+import { remoteMcpSignIn, serverCanAdminister, serverSupportsCapability } from "../servers/server-capabilities";
 import { useServerScope } from "../servers/server-scope";
 import { useServerSettings } from "../servers/server-settings";
 import { useServers } from "../servers/servers-context";
@@ -71,12 +72,13 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
   const platform = usePlatform();
   const connectors = useConnectors();
   const { activeServer, activeServerSupportsCapability, joinServerOpen } = useServers();
-  const { serverSettingsOpen, openServerSettings, openMcpSignIn, serverSettingsTargetId, serverSettingsMcpSignIns } =
+  const { serverSettingsOpen, openServerSettings, requestMcpSignIn, mcpTargetId, serverSettingsMcpSignIns } =
     useServerSettings();
   const {
     appSettingsOpen,
     skillsMarketplaceOpen,
     setSkillsMarketplaceOpen,
+    openApps,
     setPendingPluginSlug,
     setPendingPluginConnect,
     agentAutoApproves,
@@ -426,15 +428,20 @@ export function WorkspaceConversation(props: { account: () => CentralAuthUser })
           setPendingPluginSlug(request.appId);
           setSkillsMarketplaceOpen(true);
         }}
-        // The server settings sign in as their MCP panel does: on this computer, or through a host that
-        // relays its sign-in page.
+        // Apps › Custom apps signs in as its MCP list does: on this computer, or through a host that
+        // relays its sign-in page. Only an account that manages the MCP servers has that page, so a
+        // member gets no Sign in here.
         onOpenMcpSignIn={(() => {
           const server = activeServer();
-          if (!server || (server.kind === "remote" && !remoteMcpSignIn(server))) return undefined;
-          return (mcpServerId: string, trigger: HTMLElement | null) => openMcpSignIn(server.id, mcpServerId, trigger);
+          if (!server || !serverCanAdminister(server, MCP_SERVERS_CAPABILITY)) return undefined;
+          if (server.kind === "remote" && !remoteMcpSignIn(server)) return undefined;
+          return (mcpServerId: string) => {
+            requestMcpSignIn(server.id, mcpServerId);
+            openApps("custom-apps");
+          };
         })()}
         mcpSignedIn={(mcpServerId) =>
-          serverSettingsTargetId() === activeServer()?.id && serverSettingsMcpSignIns()[mcpServerId]?.signedIn === true
+          mcpTargetId() === activeServer()?.id && serverSettingsMcpSignIns()[mcpServerId]?.signedIn === true
         }
         onOpenUsage={(trigger) => usage.openUsage(activeServer()?.id ?? "local", trigger, activeAgent()?.id)}
         agentStatus={

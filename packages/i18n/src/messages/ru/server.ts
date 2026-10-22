@@ -210,9 +210,6 @@ export const messages = {
   "server.settings.membersDescription": "Публикуйте сервер, приглашайте людей и управляйте доступом.",
   "server.settings.desktopTitle": "Рабочий стол",
   "server.settings.desktopDescription": "Настройте рабочий стол этого сервера или подключитесь к нему.",
-  "server.settings.mcpTitle": "MCP",
-  "server.settings.mcpDescription":
-    "Подключайте серверы MCP и выбирайте, какие из них могут использовать агенты этого сервера.",
   "server.settings.storageTitle": "Хранилище",
   "server.settings.storageDescription": "Посмотрите, что OpenBot хранит на диске этого сервера, и освободите место.",
   "server.settings.hostedSitesTitle": "Сайты",
@@ -222,9 +219,6 @@ export const messages = {
   "server.settings.importDescription": "Перенесите своих агентов из Grok Bot или Hermes Agent на этот сервер.",
   "server.settings.transferTitle": "Перенос",
   "server.settings.transferDescription": "Перенос агентов и настроек этого сервера в файл или из файла.",
-  "server.settings.connectorsTitle": "Коннекторы",
-  "server.settings.connectorsDescription":
-    "Подключайте аккаунты, которыми смогут пользоваться все агенты этого сервера.",
   "server.settings.routinesTitle": "Регулярные задачи",
   "server.settings.routinesDescription":
     "Показывать расписание регулярных задач этого компьютера в приложении-календаре.",

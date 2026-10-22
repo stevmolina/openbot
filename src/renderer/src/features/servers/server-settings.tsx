@@ -111,6 +111,13 @@ const ServerSettings = createSimpleContext({
     let serverSettingsRestoreTarget: HTMLElement | null = null;
 
     const serverSettingsTarget = createMemo(() => servers().find((server) => server.id === serverSettingsTargetId()));
+    /**
+     * The server whose MCP servers the lists below hold: the server of the Apps area, which is the
+     * selected one. It is not the settings target, because the MCP servers are apps and are not in
+     * the server settings.
+     */
+    const [mcpTargetId, setMcpTargetId] = createSignal<string | null>(null);
+    const mcpTarget = createMemo(() => servers().find((server) => server.id === mcpTargetId()));
     /** The server that the leave confirmation from the server menu asks about, and the element that asked. */
     const [leaveRequest, setLeaveRequest] = createSignal<{ serverId: string; trigger: HTMLElement | null } | null>(
       null,
@@ -213,24 +220,36 @@ const ServerSettings = createSimpleContext({
     ): void {
       serverSettingsRequest += 1;
       setServerSettingsSection(section);
-      serverSettingsMcpRequest += 1;
       serverSettingsRestoreTarget = trigger;
       setServerSettingsTargetId(serverId);
       setServerSettingsOpen(true);
       setServerSettingsOpenRequest((count) => count + 1);
       setServerSettingsMembers([]);
       setServerSettingsInvites([]);
-      setServerSettingsMcp([]);
-      setServerSettingsMcpError(null);
-      setServerSettingsMcpSignIns({});
-      setServerSettingsMcpSignInRequest(null);
       setServerSettingsError(null);
       void refreshServerSettings(serverId);
     }
 
-    /** Opens the MCP section of a server and signs in to one of its rows, as its Sign in button does. */
-    function openMcpSignIn(serverId: string, mcpServerId: string, trigger: HTMLElement | null): void {
-      openServerSettings(serverId, trigger, "mcp");
+    /**
+     * Points the MCP lists at a server. Another server starts with empty lists, so a slower read for
+     * the one before cannot fill them. The same server keeps them, with a sign-in that still waits.
+     */
+    function showMcpServers(serverId: string): void {
+      if (mcpTargetId() === serverId) return;
+      serverSettingsMcpRequest += 1;
+      setMcpTargetId(serverId);
+      setServerSettingsMcp([]);
+      setServerSettingsMcpError(null);
+      setServerSettingsMcpSignIns({});
+      setServerSettingsMcpSignInRequest(null);
+    }
+
+    /**
+     * Asks the custom apps page to sign in to one MCP row of a server, as its Sign in button does.
+     * The caller opens the page.
+     */
+    function requestMcpSignIn(serverId: string, mcpServerId: string): void {
+      showMcpServers(serverId);
       setServerSettingsMcpSignInRequest(mcpServerId);
     }
 
@@ -464,15 +483,15 @@ const ServerSettings = createSimpleContext({
     /**
      * The MCP list.
      *
-     * It is read when the MCP section opens, not when the dialog opens, because most visits to this
-     * dialog never reach that section. Nothing connects here: OpenBot connects only when the user
+     * It is read when Apps › Custom apps opens, not when the Marketplace opens, because most visits to
+     * the Marketplace never reach that page. Nothing connects here: OpenBot connects only when the user
      * asks for a test, and the providers make their own connections when an agent starts.
      */
     async function refreshMcpServers(): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) return;
       const request = ++serverSettingsMcpRequest;
-      const current = (): boolean => request === serverSettingsMcpRequest && serverSettingsTargetId() === server.id;
+      const current = (): boolean => request === serverSettingsMcpRequest && mcpTargetId() === server.id;
       try {
         const [configs, signIns] = await Promise.all([
           serversPort().agent.listMcpServers(server.id),
@@ -499,7 +518,7 @@ const ServerSettings = createSimpleContext({
      * stored: the panel holds it while it is open, and it says nothing about any later moment.
      */
     async function testMcpServer(config: McpServerConfig): Promise<McpTestResult> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       const analytics = desktopAnalytics.scope();
       const result = await serversPort().agent.testMcpServer({ config }, server.id);
@@ -526,7 +545,7 @@ const ServerSettings = createSimpleContext({
      * host opens the page in its own browser, and the panel shows that tab while the sign-in waits.
      */
     async function signInMcpServer(config: McpServerConfig): Promise<McpTestResult> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       let waiting = true;
       const signIn = serversPort().agent.signInMcpServer({ config }, server.id);
@@ -539,7 +558,7 @@ const ServerSettings = createSimpleContext({
         waiting = false;
       });
       const signIns = await listMcpSignIns(server);
-      if (serverSettingsTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
+      if (mcpTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
       return result;
     }
 
@@ -583,34 +602,34 @@ const ServerSettings = createSimpleContext({
 
     /** Opens a relayed sign-in page in this computer's browser, after the user checked its host name. */
     async function openMcpSignInRelay(url: string): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       await serversPort().agent.openMcpSignInRelay({ url }, server.id);
     }
 
     /** The address the browser shows at the end of a relayed sign-in. Main sends only its query to the host. */
     async function pasteMcpSignInRelay(url: string, address: string): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       await serversPort().agent.completeMcpSignInRelay({ url, address }, server.id);
     }
 
     async function cancelMcpSignIn(url: string): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       await serversPort().agent.cancelMcpSignIn({ url }, server.id);
     }
 
     async function signOutMcpServer(mcpServerId: string): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       const states = await serversPort().agent.signOutMcpServer({ mcpServerId }, server.id);
-      if (serverSettingsTargetId() === server.id) setServerSettingsMcpSignIns(mcpSignInRecord(states));
+      if (mcpTargetId() === server.id) setServerSettingsMcpSignIns(mcpSignInRecord(states));
     }
 
     /** The OAuth app of a saved http row. The answer says only whether a secret is saved. */
     async function mcpSignInApp(mcpServerId: string): Promise<McpSignInAppState> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       return serversPort().agent.mcpSignInApp({ mcpServerId }, server.id);
     }
@@ -627,11 +646,11 @@ const ServerSettings = createSimpleContext({
     async function changeMcpSignInApp(
       change: (serverId: string) => Promise<McpSignInAppState>,
     ): Promise<McpSignInAppState> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       const state = await change(server.id);
       const signIns = await listMcpSignIns(server);
-      if (serverSettingsTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
+      if (mcpTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
       return state;
     }
 
@@ -663,7 +682,7 @@ const ServerSettings = createSimpleContext({
       failureCode: string,
       mutate: (serverId: string) => Promise<McpServerConfig[]>,
     ): Promise<void> {
-      const server = serverSettingsTarget();
+      const server = mcpTarget();
       if (!server) throw new Error(currentText().t("server.settings.unavailable"));
       const analytics = desktopAnalytics.scope();
       let operationSucceeded = false;
@@ -671,7 +690,7 @@ const ServerSettings = createSimpleContext({
         const configs = await mutate(server.id);
         analytics.track("team_action", { action, result: "succeeded", server_kind: server.kind });
         operationSucceeded = true;
-        if (serverSettingsTargetId() !== server.id) return;
+        if (mcpTargetId() !== server.id) return;
         // A read that is still in flight started before this write and would answer with the list
         // as it was, putting a removed server back or showing the old enabled state. The reply
         // carries the whole list, so nothing is lost by dropping that read.
@@ -680,7 +699,7 @@ const ServerSettings = createSimpleContext({
         setServerSettingsMcpError(null);
         // A saved row can name an address this computer is already signed in to.
         const signIns = await listMcpSignIns(server);
-        if (serverSettingsTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
+        if (mcpTargetId() === server.id) setServerSettingsMcpSignIns(signIns);
       } catch (error) {
         if (!operationSucceeded) {
           analytics.track("team_action", {
@@ -731,9 +750,11 @@ const ServerSettings = createSimpleContext({
       serverSettingsMcpError,
       serverSettingsMcpSignIns,
       serverSettingsTargetId,
+      mcpTargetId,
+      showMcpServers,
       serverSettingsMcpSignInRequest,
       clearMcpSignInRequest: () => setServerSettingsMcpSignInRequest(null),
-      openMcpSignIn,
+      requestMcpSignIn,
       serverSettingsMcpSignInPages,
       serverSettingsMcpSignInRelays,
       openMcpSignInRelay,

@@ -8,7 +8,13 @@ import { MarketplaceBrowse } from "./MarketplaceBrowse";
 import { MarketplaceSkillPage } from "./MarketplaceSkillPage";
 import { createMarketplaceListing } from "./marketplace-listing";
 import type { MarketplaceModel } from "./marketplace-model";
-import type { MarketplaceNavigation, MarketplaceScope, MarketplaceView } from "./marketplace-view";
+import type {
+  MarketplaceCustomApps,
+  MarketplaceNavigation,
+  MarketplaceProviderPage,
+  MarketplaceScope,
+  MarketplaceView,
+} from "./marketplace-view";
 
 export interface MarketplaceProps {
   model: MarketplaceModel;
@@ -20,9 +26,13 @@ export interface MarketplaceProps {
   variant?: "dialog" | "page" | undefined;
   /** The simple layout of the Agents tab and the page header. */
   simple?: boolean | undefined;
+  /** The custom apps page: add, edit, test and sign in to the MCP servers of the host. Absent: no such page. */
+  customApps?: MarketplaceCustomApps | undefined;
+  /** The page of one AI provider of the host. Absent: no provider opens here. */
+  providerPage?: MarketplaceProviderPage | undefined;
 }
 
-function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string): string {
+function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: string, customAppsTitle: string): string {
   switch (view.kind) {
     case "browse":
       return fallback;
@@ -31,6 +41,10 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
       return view.listing.name;
     case "app":
       return scope.model.apps().find((app) => app.id === view.id)?.name ?? fallback;
+    case "custom-apps":
+      return customAppsTitle;
+    case "provider":
+      return view.name;
   }
 }
 
@@ -38,7 +52,8 @@ function viewTitle(scope: MarketplaceScope, view: MarketplaceView, fallback: str
 function Crumbs(props: { scope: MarketplaceScope; page: boolean }) {
   const { t } = useText();
   const stack = () => props.scope.nav.state.stack;
-  const title = (view: MarketplaceView) => viewTitle(props.scope, view, t("marketplace.title"));
+  const title = (view: MarketplaceView) =>
+    viewTitle(props.scope, view, t("marketplace.title"), t("marketplace.app.customApps"));
   return (
     <nav class="marketplace-crumbs" aria-label={t("marketplace.crumbs.label")}>
       <For each={stack().slice(0, -1)}>
@@ -88,6 +103,9 @@ function MarketplaceWindow(props: MarketplaceProps) {
     nav,
     get simple() {
       return props.simple;
+    },
+    get customApps() {
+      return props.customApps;
     },
     agents: createMarketplaceListing({
       list: (query) => props.model.listAgents(query),
@@ -190,6 +208,16 @@ function MarketplaceWindow(props: MarketplaceProps) {
                 <Match when={view.kind === "app" && view.id} keyed>
                   {(id) => <MarketplaceAppPage scope={scope} id={id} />}
                 </Match>
+                <Match when={view.kind === "provider" ? props.providerPage : undefined}>
+                  {(page) => (
+                    <div class="marketplace-view marketplace-provider-page">
+                      {page()({ id: view.kind === "provider" ? view.id : "" })}
+                    </div>
+                  )}
+                </Match>
+                <Match when={view.kind === "custom-apps" ? props.customApps : undefined}>
+                  {(page) => page()({ adding: view.kind === "custom-apps" && view.adding, back: nav.back })}
+                </Match>
               </Switch>
             )}
           </Show>
@@ -230,7 +258,8 @@ function MarketplaceWindow(props: MarketplaceProps) {
  * keeps the search but does not show it, so the view goes back first. The handler is on the document
  * and after the delegated handlers, so a control that handles Escape keeps it. The focus can stay on
  * the control that opened the page, so a target outside the page also counts, except an open popup or
- * a text field.
+ * a text field. A text field of the page other than its search keeps Escape too, and a view that marks
+ * unsaved changes with `data-marketplace-unsaved` stays open.
  */
 function MarketplacePage(props: MarketplaceProps) {
   const { t } = useText();
@@ -242,7 +271,11 @@ function MarketplacePage(props: MarketplaceProps) {
       if (event.key !== "Escape" || event.defaultPrevented) return;
       const target = event.target instanceof Element ? event.target : null;
       if (target?.closest("[role=dialog], [role=alertdialog], [role=menu], [role=listbox]")) return;
-      if (target && !root.contains(target) && target.closest("input, textarea, select, [contenteditable]")) return;
+      // A text field keeps its Escape, except the search of the page, where Escape clears the search.
+      const field = target?.closest("input, textarea, select, [contenteditable]");
+      if (field && !(root.contains(field) && field.closest(".marketplace-search"))) return;
+      // A form with unsaved changes, such as a custom app's, stays: going back would drop the draft.
+      if (root.querySelector("[data-marketplace-unsaved]")) return;
       event.preventDefault();
       const nav = props.nav;
       if (nav.state.stack.length > 1) nav.back();

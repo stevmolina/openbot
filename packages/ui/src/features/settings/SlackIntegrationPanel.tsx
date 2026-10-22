@@ -324,9 +324,9 @@ export function slackIntegrationState(
 type DialogTarget = { kind: "new"; before: ReadonlySet<string> } | { kind: "existing"; workspaceId: string };
 
 /**
- * Server settings > Connectors > Slack. A workspace installs the one OpenBot app, and its Slack
+ * Marketplace > Apps > Slack. A workspace installs the one OpenBot app, and its Slack
  * Orchestrator agent receives every request, asks the team and answers. The connect dialog does both
- * steps. No token reaches this component. Server settings > Connectors > Discord is the same page
+ * steps. No token reaches this component. Marketplace > Apps > Discord is the same page
  * for a Discord server, with `platform` "discord".
  */
 export function SlackIntegrationPanel(props: SlackIntegrationPanelProps) {

@@ -1,8 +1,10 @@
 import type { ServerSummary } from "@openbot/contracts/ipc";
+import { Button, ChevronLeft } from "@openbot/ui";
 import { ServerMark } from "@openbot/ui/features/servers/ServerRail";
 import type { SettingsPagePlacement } from "@openbot/ui/features/settings/SettingsDialogShell";
+import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
-import { onSettled } from "solid-js";
+import { onSettled, Show } from "solid-js";
 
 /**
  * The frame of a settings page, on desktop and on the web: the heading and the section list at the
@@ -17,7 +19,13 @@ export function SettingsPageFrame(props: {
   onMounts: (mounts: SettingsPagePlacement | undefined) => void;
   /** Escape outside a popup or a text field of the window. */
   onEscape: () => void;
+  /**
+   * A Back button above the heading. The simple layout gives it: there the settings page covers the
+   * sidebar and its bottom bar, so the page needs its own way out.
+   */
+  onBack?: (() => void) | undefined;
 }) {
+  const { t } = useText();
   let nav!: HTMLDivElement;
   let content!: HTMLDivElement;
   let root!: HTMLDivElement;
@@ -49,6 +57,21 @@ export function SettingsPageFrame(props: {
   return (
     <div class="settings-page" ref={root}>
       <div class="settings-page-nav">
+        <Show when={props.onBack}>
+          {(back) => (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              class="settings-page-back"
+              data-cuelume-tap="navigate"
+              onClick={() => back()()}
+            >
+              <ChevronLeft aria-hidden="true" />
+              {t("common.back")}
+            </Button>
+          )}
+        </Show>
         {props.heading}
         {props.children}
         <div class="settings-page-sections" ref={nav} hidden={props.sectionsHidden} />

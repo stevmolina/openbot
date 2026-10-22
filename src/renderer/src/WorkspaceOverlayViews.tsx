@@ -1,5 +1,6 @@
-import type { AddedAgent, McpServerConfig, ServerSummary } from "@openbot/contracts/ipc";
+import type { AddedAgent, ServerSummary } from "@openbot/contracts/ipc";
 import { MCP_SERVERS_CAPABILITY } from "@openbot/contracts/ipc";
+import type { MarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
 import type { ComponentProps } from "@solidjs/web";
 import { createMemo, Loading, omit, Show } from "solid-js";
 import type { AgentTemplateInstallCalls } from "./features/agent-templates/agent-templates-port";
@@ -9,6 +10,7 @@ import type { ConnectorRegistry } from "./features/connectors/connector-registry
 import { useConversationController } from "./features/conversation/conversation-controller-context";
 import type { ServerStorageOptions } from "./features/files/ServerStoragePanel";
 import { canManageStorage, serverHasStorage } from "./features/files/storage-usage";
+import type { ServerMcpOptions } from "./features/servers/ServerMcpPage";
 import type { ServerSettingsModalProps } from "./features/servers/ServerSettingsModal";
 import type { ServerUpdateOptions } from "./features/servers/ServerUpdatePanel";
 import {
@@ -21,6 +23,7 @@ import {
 import type { MarketplaceCalls } from "./features/settings/marketplace-calls";
 import type { MarketplaceAgentRow } from "./features/settings/marketplace-controller";
 import { MARKETPLACE_PLUGINS } from "./features/settings/marketplace-plugin-catalog";
+import type { HostProviderSettings } from "./features/settings/ProviderSettingsSection";
 import {
   AgentTemplateInstall,
   GlobalSearch,
@@ -79,9 +82,24 @@ export function MarketplaceOverlay(props: {
   calls?: MarketplaceCalls | undefined;
   /** A dialog, or a page of the desktop window. */
   variant?: "dialog" | "page" | undefined;
+  /** Where the user is, when the owner opens a tab or a page of the Marketplace. */
+  nav?: MarketplaceNavigation | undefined;
+  /**
+   * The MCP servers of `server`, for Apps › Custom apps. They show only where Server settings › MCP
+   * showed them: a remote host answers 403 to a `member` and 400 without the capability.
+   */
+  mcp?: Omit<ServerMcpOptions, "canManage" | "serverId"> | undefined;
+  /** The AI providers of `server`, for the page of one provider. Absent when this account cannot manage them. */
+  providers?: HostProviderSettings | undefined;
 }) {
   const controller = useConversationController();
   const manage = createMemo(() => serverCanAdminister(props.server, "skills-admin-v1"));
+  const customApps = createMemo((): ServerMcpOptions | undefined => {
+    const mcp = props.mcp;
+    const server = props.server;
+    if (!mcp || !serverCanAdminister(server, MCP_SERVERS_CAPABILITY)) return undefined;
+    return { ...mcp, serverId: server.id, canManage: serverRoleCanAdminister(server) };
+  });
   /* What both example controls need: a managed agent whose composer is free to take another line. */
   const composerFree = createMemo(
     () =>
@@ -106,6 +124,11 @@ export function MarketplaceOverlay(props: {
         <MarketplaceModal
           open={true}
           variant={props.variant}
+          nav={props.nav}
+          customApps={customApps()}
+          providers={props.providers}
+          providersHostName={props.server?.kind === "remote" ? props.server.name : undefined}
+          providersServerId={props.server?.id}
           calls={props.calls}
           connectors={props.connectors}
           agents={manage() ? props.agents : []}
@@ -183,23 +206,21 @@ export function SharedAgentInstallOverlay(props: {
 }
 
 /**
- * Settings for one server. The MCP and Storage sections are gated on the server here: a remote host
- * answers 403 to a `member` and 400 without the capability, so neither ever sees the MCP section,
- * and a host without `storage-v1` has no Storage section at all.
+ * Settings for one server. The Storage section is gated on the server here: a host without
+ * `storage-v1` has no Storage section at all. The MCP servers and the connectors are apps, so they
+ * are in the Apps area of the Marketplace and not here.
  */
 export function ServerSettingsOverlay(
-  props: Omit<ServerSettingsModalProps, "mcpServers" | "storage" | "hostUpdate"> & {
-    mcpServers: McpServerConfig[];
+  props: Omit<ServerSettingsModalProps, "storage" | "hostUpdate"> & {
     storage: Omit<ServerStorageOptions, "canManage">;
     hostUpdate: ServerUpdateOptions;
   },
 ) {
-  const modal = omit(props, "mcpServers", "storage", "hostUpdate");
+  const modal = omit(props, "storage", "hostUpdate");
   return (
     <Loading>
       <ServerSettingsModal
         {...modal}
-        mcpServers={serverCanAdminister(props.server, MCP_SERVERS_CAPABILITY) ? props.mcpServers : undefined}
         storage={
           serverHasStorage(props.server) ? { ...props.storage, canManage: canManageStorage(props.server) } : undefined
         }

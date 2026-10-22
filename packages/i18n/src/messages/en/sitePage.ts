@@ -51,7 +51,7 @@ export const messages = defineMessages("sitePage", {
   "sitePage.connect.failure.tabClosed":
     "The OpenBot tab that started the {name} connection did not answer. Open OpenBot in your browser and connect {name} again.",
   "sitePage.connect.failure.failed": "{name} did not finish the connection. Try again.",
-  // {serverSettings}, {connectors} and {connect} are the names of these screens and that button in the app.
+  // {serverSettings} is the Marketplace page, {connectors} its Apps tab, and {connect} that button in the app.
   "sitePage.connect.restartHint":
     "In OpenBot, open {serverSettings}, then {connectors}, then {name}, and select {connect}.",
   "sitePage.connect.notOpened":

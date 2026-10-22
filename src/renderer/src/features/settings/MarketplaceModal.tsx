@@ -1,6 +1,12 @@
+import { isAgentProvider } from "@openbot/contracts/ipc";
 import { Marketplace } from "@openbot/ui/features/marketplace/Marketplace";
 import type { MarketplaceApp } from "@openbot/ui/features/marketplace/marketplace-model";
-import { createMarketplaceNavigation } from "@openbot/ui/features/marketplace/marketplace-view";
+import {
+  createMarketplaceNavigation,
+  type MarketplaceCustomApps,
+  type MarketplaceNavigation,
+  type MarketplaceProviderPage,
+} from "@openbot/ui/features/marketplace/marketplace-view";
 import { McpKeyDialog } from "@openbot/ui/features/settings/McpKeyDialog";
 import { McpLocalDialog } from "@openbot/ui/features/settings/McpLocalDialog";
 import { McpSignInDialog } from "@openbot/ui/features/settings/McpSignInDialog";
@@ -8,7 +14,9 @@ import { McpSignInRelayDialog } from "@openbot/ui/features/settings/McpSignInPag
 import { PluginUninstallDialog } from "@openbot/ui/features/settings/PluginUninstallDialog";
 import { createEffect, createSignal, Match, Show, Switch, untrack } from "solid-js";
 import { simpleLayout } from "../../simple-layout";
+import { type ServerMcpOptions, ServerMcpPage } from "../servers/ServerMcpPage";
 import { createMarketplaceController, type MarketplaceControllerProps } from "./marketplace-controller";
+import { type HostProviderSettings, HostProviderSettingsPanel } from "./ProviderSettingsSection";
 
 export interface MarketplaceModalProps extends MarketplaceControllerProps {
   /**
@@ -29,12 +37,60 @@ export interface MarketplaceModalProps extends MarketplaceControllerProps {
   onInitialPluginSlugConsumed?: (() => void) | undefined;
   /** A dialog, or a page of the desktop window. */
   variant?: "dialog" | "page" | undefined;
+  /**
+   * Where the user is. The owner keeps it when another part of the window opens the Apps tab or the
+   * custom apps page. Absent: the Marketplace keeps its own.
+   */
+  nav?: MarketplaceNavigation | undefined;
+  /** The MCP servers of the host, for the custom apps page. Absent when this account cannot manage them. */
+  customApps?: ServerMcpOptions | undefined;
+  /**
+   * The AI providers of the host, for the page of one provider in the Apps area. Absent when this
+   * account cannot manage them.
+   */
+  providers?: HostProviderSettings | undefined;
+  /** The joined server whose providers `providers` holds. Absent: this computer. */
+  providersHostName?: string | undefined;
+  /** The server of `providers`. Another server opens a new provider page. */
+  providersServerId?: string | undefined;
 }
 
 /** The Marketplace on this computer's or a joined server's data, with the dialogs it opens. */
 export function MarketplaceModal(props: MarketplaceModalProps) {
-  const nav = createMarketplaceNavigation();
+  const nav = props.nav ?? createMarketplaceNavigation();
   const controller = createMarketplaceController(props);
+  /** The page of one AI provider: the provider page of the server settings, opened on that provider. */
+  const [providerMount, setProviderMount] = createSignal<HTMLElement>();
+  const providerPage: MarketplaceProviderPage = (page) => (
+    // Keyed on the server: another server's providers start a new page, which reads that server's state.
+    <Show when={props.providers ? `server:${props.providersServerId ?? "local"}` : undefined} keyed>
+      {(serverKey) => (
+        <Show when={serverKey ? props.providers : undefined}>
+          {(providers) => (
+            <div ref={setProviderMount} class="marketplace-provider-panel">
+              <HostProviderSettingsPanel
+                {...providers()}
+                hostName={props.providersHostName}
+                selectMount={providerMount()}
+                initialProvider={isAgentProvider(page.id) ? page.id : undefined}
+              />
+            </div>
+          )}
+        </Show>
+      )}
+    </Show>
+  );
+  /** Apps › Custom apps. Each change there reads the apps again, so the cards show it. */
+  const customApps: MarketplaceCustomApps = (page) => (
+    // Keyed on the server: another server opens a new page, which reads that server's list.
+    <Show when={props.customApps?.serverId} keyed>
+      {(serverId) => (
+        <Show when={props.customApps?.serverId === serverId ? props.customApps : undefined}>
+          {(options) => <ServerMcpPage options={options()} adding={page.adding} onChanged={controller.reloadApps} />}
+        </Show>
+      )}
+    </Show>
+  );
   /**
    * A Connect press from a chat card. It runs when the listing is in the apps and their states are
    * read, so an installed app is not installed again.
@@ -101,8 +157,19 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
       untrack(() => startConnect(slug));
     },
   );
+  // A page that the server on screen cannot show goes back to the Apps tab: the user switched to a
+  // server where this account manages no MCP servers or no providers.
+  createEffect(
+    () => {
+      const view = nav.state.stack.at(-1);
+      return (view?.kind === "custom-apps" && !props.customApps) || (view?.kind === "provider" && !props.providers);
+    },
+    (gone) => {
+      if (gone) nav.backTo(0);
+    },
+  );
   // Slack, Discord and Telegram change with no event from main, so each available connector is
-  // followed while the window is open, as in Settings › Connectors.
+  // followed while the window is open.
   createEffect(
     () => (props.open ? props.connectors?.available() : undefined),
     (controllers) => {
@@ -129,6 +196,8 @@ export function MarketplaceModal(props: MarketplaceModalProps) {
         onOpenChange={props.onOpenChange}
         variant={props.variant}
         simple={simpleLayout()}
+        customApps={props.customApps ? customApps : undefined}
+        providerPage={props.providers ? providerPage : undefined}
       />
       {/* The confirmation and the connect step are beside the Marketplace: each is one decision
           over the page it was started from, not a part of that page. */}

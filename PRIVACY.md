@@ -527,7 +527,7 @@ is not included in analytics; provider output uses the application's secret reda
   choosing Sign out on it, deletes its record. These values are redacted from logs, exports and diagnostics.
   The port and secret of the local MCP sign-in server are kept in
   `~/Library/Application Support/OpenBot/openbot-mcp-oauth-proxy-v1.json`, encrypted in the same way.
-- The GitHub connection (Server settings > Connectors) is kept in
+- The GitHub connection (Marketplace > Apps) is kept in
   `~/Library/Application Support/OpenBot/openbot-github-connector-v1.json`, encrypted by the operating
   system's secret storage. It holds the GitHub access and refresh tokens, the account name, ID and
   avatar address, and the port and secret of the local GitHub MCP server.
@@ -554,7 +554,7 @@ is not included in analytics; provider output uses the application's secret reda
   or a one-time code is read from 1Password when the browser fills it, goes only to that page, and
   is never sent to an agent, a provider, a log or a team member. The token and each filled value
   are redacted from logs, exports and diagnostics. An owner or admin of a joined server can paste a
-  service account token for that server in Server settings › Connectors. The token goes once, over the
+  service account token for that server in Marketplace › Apps. The token goes once, over the
   encrypted connection, to the server, which keeps it in the same file on its own disk. The
   computer that sent it does not keep it, and no answer from the server carries it.
 - `~/Library/Application Support/OpenBot/logs/trace.ndjson` is a local trace of IPC calls,

@@ -93,7 +93,6 @@ export const messages = {
   "connector.hub.onHost": "{host} üzerinde",
   "connector.hub.notSetUp": "Ayarlanmadı",
   "connector.hub.available": "Kullanılabilir",
-  "connector.hub.localOnly": "Yalnızca kendi bilgisayarınız",
   // {name} Slack gibi bir entegrasyonun adıdır.
   "connector.hub.open": "{name} uygulamasını aç",
   "connector.hub.setUp": "Ayarla",

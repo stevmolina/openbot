@@ -806,6 +806,11 @@ export function createMarketplaceController(props: MarketplaceControllerProps) {
   return {
     model,
     appStatesRead,
+    /** Reads the host's MCP servers again, after the custom apps page changed them. */
+    reloadApps: () => {
+      const serverId = props.pluginServerId;
+      if (serverId) void readServers(serverId);
+    },
     connecting,
     uninstalling,
     uninstallPlan,

@@ -1,9 +1,5 @@
 import type { CentralAuthUser, RoutineFields, ServerSummary } from "@openbot/contracts/ipc";
 import { classifyFailure } from "@openbot/telemetry";
-import { isAgentAccount } from "@openbot/ui/components/provider-accounts";
-import type { AcpRegistrySettingsApi } from "@openbot/ui/features/custom-providers/AcpRegistrySettings";
-import type { CustomAgentSettingsApi } from "@openbot/ui/features/custom-providers/CustomAgentSettings";
-import { providerDiagnosticsText } from "@openbot/ui/features/provider-diagnostics/provider-diagnostics";
 import { LeaveServerDialog } from "@openbot/ui/features/servers/LeaveServerDialog";
 import { RestartServerDialog } from "@openbot/ui/features/servers/RestartServerDialog";
 import type { HostedSiteDeleteResult } from "@openbot/ui/features/settings/stores/hosted-sites-store";
@@ -14,12 +10,8 @@ import { desktopAnalytics } from "./analytics";
 import { appPort } from "./app-port";
 import { useAuth } from "./features/account/account-context";
 import { useAgents } from "./features/agents/agents-context";
-import type { ConnectorRegistry } from "./features/connectors/connector-registry";
 import { useConnectors } from "./features/connectors/connectors-context";
 import { conversationPort } from "./features/conversation/conversation-port";
-import { useCustomAgents } from "./features/custom-agents/custom-agents-context";
-import { useCustomProviders } from "./features/custom-providers/custom-providers-context";
-import { useProviderDetection } from "./features/custom-providers/provider-detection-context";
 import type { ServerStorageOptions } from "./features/files/ServerStoragePanel";
 import { useSetup } from "./features/onboarding/onboarding-context";
 import { useRemoteDesktop } from "./features/remote-desktop/remote-desktop-context";
@@ -36,11 +28,10 @@ import { useServerSelection } from "./features/servers/server-selection";
 import { useServerSettings } from "./features/servers/server-settings";
 import { useServerSwitch } from "./features/servers/server-switch";
 import { useServers } from "./features/servers/servers-context";
-import type { HostProviderSettings } from "./features/settings/ProviderSettingsSection";
+import { useHostProviderSettings } from "./features/settings/host-provider-settings";
 import { useSettings } from "./features/settings/settings-context";
 import { useUpdates } from "./features/updates/updates-context";
 import { useWhatsNew } from "./features/updates/whats-new-context";
-import { usePlanLimitRows } from "./features/usage/plan-limit-rows";
 import { useWindowPage } from "./features/window/window-page-context";
 import { useGlobalSearchSources } from "./global-search-sources";
 import { RemoteDesktopWorkspace, SettingsModal } from "./lazy-views";
@@ -88,7 +79,6 @@ export function WorkspaceOverlays(props: AccountProps) {
     (open) => {
       if (!open) return;
       connectors.active.reload();
-      connectors.settings.reload();
     },
   );
   return (
@@ -99,7 +89,7 @@ export function WorkspaceOverlays(props: AccountProps) {
       <HostedUpsell account={props.account} />
       <LeaveServer />
       <RestartServer />
-      <ServerSettings connectors={connectors.settings} />
+      <ServerSettings />
       <AppSettings account={props.account} />
       <GlobalMessageSearch />
       <RemoteDesktop />
@@ -121,6 +111,7 @@ export function SkillsMarketplace() {
   const {
     skillsMarketplaceOpen,
     setSkillsMarketplaceOpen,
+    marketplaceNav,
     pendingPluginSlug,
     setPendingPluginSlug,
     pendingPluginConnect,
@@ -132,6 +123,45 @@ export function SkillsMarketplace() {
   const { openInstalledMarketplaceAgent } = useServerSelection();
   const connectors = useConnectors();
   const { remoteDesktopWorkspaceVisible, hideRemoteDesktopWorkspace } = useRemoteDesktop();
+  const { toolRuntimeStatuses, providerAdminServerId } = useProviders();
+  /** The AI providers of the selected server, for a provider page of the Apps area. */
+  const providerSettings = useHostProviderSettings();
+  const {
+    showMcpServers,
+    serverSettingsMcp,
+    serverSettingsMcpError,
+    serverSettingsMcpSignIns,
+    serverSettingsMcpSignInRequest,
+    clearMcpSignInRequest,
+    serverSettingsMcpSignInPages,
+    serverSettingsMcpSignInRelays,
+    openMcpSignInRelay,
+    pasteMcpSignInRelay,
+    signInMcpServer,
+    cancelMcpSignIn,
+    signOutMcpServer,
+    mcpSignInApp,
+    saveMcpSignInApp,
+    removeMcpSignInApp,
+    refreshMcpServers,
+    saveMcpServer,
+    removeMcpServer,
+    setMcpServerEnabled,
+    testMcpServer,
+  } = useServerSettings();
+  // The MCP lists follow the server of the Apps area, which is the selected server.
+  createEffect(
+    () => (skillsMarketplaceOpen() ? activeServer()?.id : undefined),
+    (serverId) => {
+      if (serverId) showMcpServers(serverId);
+    },
+  );
+  /**
+   * Whether the tool runtimes the providers context holds are this server's: this computer's, or,
+   * over `providers-v1`, those of the host of the joined server on screen.
+   */
+  const holdsToolRuntimes = (server: ServerSummary) =>
+    server.kind === "local" ? providerAdminServerId() === undefined : server.id === providerAdminServerId();
   // The remote desktop covers the window card, so a link or a search that opens the page hides it.
   // The remote desktop session stays.
   createEffect(skillsMarketplaceOpen, (open) => {
@@ -156,6 +186,64 @@ export function SkillsMarketplace() {
       }}
       connectors={connectors.active}
       variant="page"
+      nav={marketplaceNav}
+      providers={(() => {
+        const server = activeServer();
+        return server ? providerSettings(server) : undefined;
+      })()}
+      mcp={(() => {
+        const server = activeServer();
+        if (!server) return undefined;
+        return {
+          servers: serverSettingsMcp(),
+          // Only for the computer whose runtimes this window holds: another host starts its servers
+          // with its own runtime, which this window has not read.
+          toolRuntimeNote: holdsToolRuntimes(server) ? mcpToolRuntimeNote(toolRuntimeStatuses().bun) : null,
+          loadError: serverSettingsMcpError(),
+          // The page reads the list of its own server: the target first, so a switch cannot drop the read.
+          onShown: () => {
+            showMcpServers(server.id);
+            void refreshMcpServers();
+          },
+          onRetryLoad: () => void refreshMcpServers(),
+          onSave: saveMcpServer,
+          onRemove: removeMcpServer,
+          onSetEnabled: setMcpServerEnabled,
+          onTest: testMcpServer,
+          signInRequest: serverSettingsMcpSignInRequest(),
+          onSignInRequestHandled: clearMcpSignInRequest,
+          // A remote host with `sign-in-relay-v1` opens the page in this computer's browser. An older
+          // host's page shows here through the live view, which streams the active server only.
+          signIn:
+            server.kind === "local" || remoteMcpSignIn(server)
+              ? {
+                  states: serverSettingsMcpSignIns(),
+                  remote:
+                    server.kind === "remote"
+                      ? {
+                          hostName: server.name,
+                          runtime: conversationPort().browser,
+                          clipboard: serverSupportsCapability(server, "browser-view-clipboard"),
+                          pages: serverSettingsMcpSignInPages(),
+                          relay: serverSupportsCapability(server, "sign-in-relay-v1")
+                            ? {
+                                pages: serverSettingsMcpSignInRelays(),
+                                open: openMcpSignInRelay,
+                                paste: pasteMcpSignInRelay,
+                              }
+                            : undefined,
+                        }
+                      : undefined,
+                  start: signInMcpServer,
+                  cancel: cancelMcpSignIn,
+                  signOut: signOutMcpServer,
+                  app: serverSupportsCapability(server, "mcp-sign-in-app-v1")
+                    ? { load: mcpSignInApp, save: saveMcpSignInApp, remove: removeMcpSignInApp }
+                    : undefined,
+                }
+              : undefined,
+        };
+      })()}
     />
   );
 }
@@ -305,66 +393,15 @@ function RestartServer() {
  * Settings for one server, which is any server on the rail rather than the
  * active one - hence the target held by the domain instead of `activeServer()`.
  */
-function ServerSettings(props: { connectors: ConnectorRegistry }) {
+function ServerSettings() {
   const windowPage = useWindowPage();
-  const usageRows = usePlanLimitRows();
   const platform = usePlatform();
+  const { connection } = useProviders();
   const { hostStatus, setServerMuted, setServerNotificationLevel, hostedServerIds, hostedServersLoaded } = useServers();
   const { selectAgent, selectGlobalSearchMessage } = useNavigation();
   const { selectServer } = useServerSelection();
   const { setPendingAgentSelection } = useServerSwitch();
-  const { agentList, agentStatus } = useAgents();
-  const { setupState, saveSetup } = useSetup();
-  const {
-    toolRuntimeStatuses,
-    providerAdminServerId,
-    providerRuntimeStatuses,
-    providerAvailableVersions,
-    providerRuntimeDownloadsAvailable,
-    downloadProviderRuntime,
-    startProviderUpdate,
-    cancelProviderRuntimeDownload,
-    cancelProviderSignIn,
-    openProviderInstallGuide,
-    setProviderOn,
-    providerAccounts,
-    restartProvider,
-    cancelProviderRestart,
-    connection,
-    providerKeys,
-    hostCustomProviders,
-  } = useProviders();
-  const localEndpoints = useCustomProviders();
-  const localAgents = useCustomAgents();
-  const detection = useProviderDetection();
-  /** A custom agent is a command on this computer, so only the local server lists or runs one. */
-  const customAgents: CustomAgentSettingsApi = {
-    get agents() {
-      return localAgents.customAgents();
-    },
-    save: localAgents.saveCustomAgent,
-    remove: localAgents.deleteCustomAgent,
-    check: localAgents.checkCustomAgent,
-    // One process group runs every custom agent, so its restart is the restart of all of them.
-    get restartPending() {
-      return agentStatus().providers?.some((provider) => provider.id === "acp" && provider.restartPending) === true;
-    },
-    get lastError() {
-      return agentStatus().providers?.find((provider) => provider.id === "acp")?.lastError;
-    },
-    get diagnostics() {
-      const status = agentStatus().providers?.find((provider) => provider.id === "acp");
-      return status ? providerDiagnosticsText(status) : undefined;
-    },
-    restart: () => restartProvider("acp"),
-    cancelRestart: () => cancelProviderRestart("acp"),
-  };
-  /**
-   * Whether the tool runtimes the providers context holds are this server's: this computer's, or,
-   * over `providers-v1`, those of the host of the joined server on screen.
-   */
-  const holdsToolRuntimes = (server: ServerSummary) =>
-    server.kind === "local" ? providerAdminServerId() === undefined : server.id === providerAdminServerId();
+  const providerSettings = useHostProviderSettings();
   const {
     openServerSettings,
     serverSettingsTarget,
@@ -385,26 +422,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
     removeServerMember,
     leaveServer,
     revokeServerInvite,
-    serverSettingsMcp,
-    serverSettingsMcpError,
-    serverSettingsMcpSignIns,
-    serverSettingsMcpSignInRequest,
-    clearMcpSignInRequest,
-    serverSettingsMcpSignInPages,
-    serverSettingsMcpSignInRelays,
-    openMcpSignInRelay,
-    pasteMcpSignInRelay,
-    signInMcpServer,
-    cancelMcpSignIn,
-    signOutMcpServer,
-    mcpSignInApp,
-    saveMcpSignInApp,
-    removeMcpSignInApp,
-    refreshMcpServers,
-    saveMcpServer,
-    removeMcpServer,
-    setMcpServerEnabled,
-    testMcpServer,
   } = useServerSettings();
   // The workspace belongs to the selected server. For another server, the switch comes first and
   // the agent is published for the scope it lands in; a message there opens as its agent's chat.
@@ -414,138 +431,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
     void selectServer(server.id).then((selected) => {
       if (selected) setPendingAgentSelection(agentId);
     });
-  };
-
-  /**
-   * The providers of the computer the agents of `server` run on: this one, or the host of a joined
-   * server that the account administers over `providers-v1`. The provider state belongs to the
-   * selected server only, so it is read only while `server` is the selected one.
-   */
-  const registryApis = new Map<string, AcpRegistrySettingsApi>();
-  function registryFor(server: ServerSummary): AcpRegistrySettingsApi {
-    const existing = registryApis.get(server.id);
-    if (existing) return existing;
-    const api: AcpRegistrySettingsApi = {
-      search: (query) => appPort().acpRegistry.search(query, server.id),
-      status: () => appPort().acpRegistry.status(server.id),
-      install: async (input) => {
-        const result = await appPort().acpRegistry.install(input, server.id);
-        if (server.kind === "local") await localAgents.refreshCustomAgents();
-        return result;
-      },
-      cancel: (id) => appPort().acpRegistry.cancel(id, server.id),
-      remove: (id) => appPort().acpRegistry.remove(id, server.id),
-    };
-    registryApis.set(server.id, api);
-    return api;
-  }
-  const providerSettings = (server: ServerSummary): HostProviderSettings | undefined => {
-    const local = server.kind === "local";
-    if (!server.active || (!local && server.id !== providerAdminServerId())) return undefined;
-    /**
-     * A named endpoint merges into the `opencode acp` process of that computer. This does not need
-     * `providerRuntimeDownloadsAvailable()`: a build without managed runtime downloads still has custom endpoints.
-     */
-    const endpoints = local ? localEndpoints : hostCustomProviders;
-    return {
-      get defaultProvider() {
-        const state = setupState();
-        return local && state ? { ...state, save: saveSetup } : undefined;
-      },
-      get agentStatus() {
-        return agentStatus();
-      },
-      get providerRuntimeStatuses() {
-        return providerRuntimeDownloadsAvailable() ? providerRuntimeStatuses() : undefined;
-      },
-      get providerAvailableVersions() {
-        return providerRuntimeDownloadsAvailable() ? providerAvailableVersions() : undefined;
-      },
-      get onUpdateProvider() {
-        return providerRuntimeDownloadsAvailable() ? startProviderUpdate : undefined;
-      },
-      get onDownloadProvider() {
-        return providerRuntimeDownloadsAvailable() ? downloadProviderRuntime : undefined;
-      },
-      get onCancelProviderDownload() {
-        return providerRuntimeDownloadsAvailable() ? cancelProviderRuntimeDownload : undefined;
-      },
-      get customProviders() {
-        return endpoints.customProviders();
-      },
-      onAddCustomProvider: endpoints.saveCustomProvider,
-      onDeleteCustomProvider: endpoints.deleteCustomProvider,
-      // The Team API has no edit route, so only this computer's endpoints have Edit.
-      onUpdateCustomProvider: local ? localEndpoints.updateCustomProvider : undefined,
-      get providerKeys() {
-        return providerRuntimeDownloadsAvailable() ? providerKeys() : undefined;
-      },
-      get connection() {
-        return providerRuntimeDownloadsAvailable() ? connection : undefined;
-      },
-      // The browser sign-in, the install guide, the scan and custom agents are of this computer.
-      get onCancelProviderSignIn() {
-        return local && providerRuntimeDownloadsAvailable() ? cancelProviderSignIn : undefined;
-      },
-      get onInstallProvider() {
-        return local && providerRuntimeDownloadsAvailable() ? openProviderInstallGuide : undefined;
-      },
-      onSetProviderOn: local ? setProviderOn : undefined,
-      get providerUsers() {
-        return Object.fromEntries(
-          (agentStatus().providers ?? []).map((provider) => [
-            provider.id,
-            agentList()
-              .filter((agent) => agent.provider === provider.id)
-              .map((agent) => agent.name),
-          ]),
-        );
-      },
-      get providerAccountUsers() {
-        return Object.fromEntries(
-          (agentStatus().providers ?? []).map((provider) => [
-            provider.id,
-            Object.fromEntries(
-              (provider.accounts ?? []).map((account) => [
-                account.id,
-                agentList()
-                  .filter(
-                    (agent) => agent.provider === provider.id && isAgentAccount(agent.providerAccountId, account.id),
-                  )
-                  .map((agent) => agent.name),
-              ]),
-            ),
-          ]),
-        );
-      },
-      // The active server's accounts: a joined host offers them only with `provider-accounts-v1`.
-      get accountActions() {
-        return providerAccounts();
-      },
-      // The readings are of the active server, which is the only server with a Providers tab.
-      get usage() {
-        return usageRows();
-      },
-      onRestartProvider: local ? restartProvider : undefined,
-      onCancelProviderRestart: local ? cancelProviderRestart : undefined,
-      get providerDetection() {
-        return local ? detection.detection() : undefined;
-      },
-      detectedProviderApi: local ? detection.api : undefined,
-      get takenAgentIds() {
-        return detection.takenAgentIds();
-      },
-      customAgents: local ? customAgents : undefined,
-      acpRegistry: serverCanAdminister(server, "acp-registry-v1") ? registryFor(server) : undefined,
-      get detectionSettings() {
-        return local ? (detection.settingsValue() ?? undefined) : undefined;
-      },
-      onDetectionSettingsChange: detection.setSettings,
-      get detectionSettingsError() {
-        return detection.settingsError();
-      },
-      onShown: local ? () => void detection.scan() : undefined,
-    };
   };
 
   /**
@@ -614,50 +499,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
           onRemoveServer={hostedServersLoaded() && !hostedServerIds().has(server().id) ? leaveServer : undefined}
           onOpenScreenRecordingSettings={() => appPort().openExternal("mac-screen-recording")}
           onRecheckScreenRecording={recheckScreenRecording}
-          mcpServers={serverSettingsMcp()}
-          // Only for the computer whose runtimes this window holds: another host starts its servers
-          // with its own runtime, which this window has not read.
-          mcpToolRuntimeNote={holdsToolRuntimes(server()) ? mcpToolRuntimeNote(toolRuntimeStatuses().bun) : null}
-          mcpLoadError={serverSettingsMcpError()}
-          onMcpSectionShown={() => void refreshMcpServers()}
-          onRetryMcpServers={() => void refreshMcpServers()}
-          onSaveMcpServer={saveMcpServer}
-          onRemoveMcpServer={removeMcpServer}
-          onSetMcpServerEnabled={setMcpServerEnabled}
-          onTestMcpServer={testMcpServer}
-          // A remote host with `sign-in-relay-v1` opens the page in this computer's browser. An older
-          // host's page shows here through the live view, which streams the active server only.
-          mcpSignInRequest={serverSettingsMcpSignInRequest()}
-          onMcpSignInRequestHandled={clearMcpSignInRequest}
-          mcpSignIn={
-            server().kind === "local" || remoteMcpSignIn(server())
-              ? {
-                  states: serverSettingsMcpSignIns(),
-                  remote:
-                    server().kind === "remote"
-                      ? {
-                          hostName: server().name,
-                          runtime: conversationPort().browser,
-                          clipboard: serverSupportsCapability(server(), "browser-view-clipboard"),
-                          pages: serverSettingsMcpSignInPages(),
-                          relay: serverSupportsCapability(server(), "sign-in-relay-v1")
-                            ? {
-                                pages: serverSettingsMcpSignInRelays(),
-                                open: openMcpSignInRelay,
-                                paste: pasteMcpSignInRelay,
-                              }
-                            : undefined,
-                        }
-                      : undefined,
-                  start: signInMcpServer,
-                  cancel: cancelMcpSignIn,
-                  signOut: signOutMcpServer,
-                  app: serverSupportsCapability(server(), "mcp-sign-in-app-v1")
-                    ? { load: mcpSignInApp, save: saveMcpSignInApp, remove: removeMcpSignInApp }
-                    : undefined,
-                }
-              : undefined
-          }
           storage={storageOptions(server())}
           providers={providerSettings(server())}
           onSwitchToManageProviders={
@@ -698,7 +539,6 @@ function ServerSettings(props: { connectors: ConnectorRegistry }) {
                 ? {}
                 : undefined
           }
-          connectors={props.connectors}
           // The feed listens on this computer, so a calendar app on another one cannot read it.
           routineFeed={
             server().kind === "local"

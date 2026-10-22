@@ -1,12 +1,11 @@
 import { ProviderLogo } from "@openbot/brand";
-import { Button, Link, MotionTooltip, Store } from "@openbot/ui";
+import { Button, MotionTooltip, Plug, Store } from "@openbot/ui";
 import { AccountUsageDetails } from "@openbot/ui/features/account/AccountUsageDetails";
 import { type AccountUsageProviderRow, accountUsageRowKey } from "@openbot/ui/features/account/account-usage-view";
 import { useText } from "@openbot/ui/text";
 import { For, Show } from "solid-js";
-import { useConnectors } from "../connectors/connectors-context";
-import { useServerSettings } from "../servers/server-settings";
 import { useServers } from "../servers/servers-context";
+import { useHostProviderSettings } from "../settings/host-provider-settings";
 import { useSettings } from "../settings/settings-context";
 import { usePlanLimitRows } from "../usage/plan-limit-rows";
 import { useWindowPage } from "../window/window-page-context";
@@ -14,10 +13,10 @@ import { SimpleSidebarLink } from "./SimpleSidebarLink";
 
 /**
  * One AI provider: its logo, its name and a dot. The dot is green while the provider has room, and
- * orange when a limit is close or reached. As its rail ring did, the row opens the usage page, and its
- * hover card shows the limits with their reset times.
+ * orange when a limit is close or reached. The row opens the page of the provider in the Apps area,
+ * and its hover card shows the limits with their reset times.
  */
-function ProviderRow(props: { row: AccountUsageProviderRow; onOpen: (button: HTMLElement) => void }) {
+function ProviderRow(props: { row: AccountUsageProviderRow; current: boolean; onOpen: (button: HTMLElement) => void }) {
   const { t } = useText();
   const attention = () => props.row.tone !== "neutral";
   const label = () =>
@@ -28,6 +27,7 @@ function ProviderRow(props: { row: AccountUsageProviderRow; onOpen: (button: HTM
       type="button"
       class="simple-sidebar-link simple-provider-row"
       aria-label={label()}
+      aria-current={props.current ? "page" : undefined}
       data-cuelume-navigate=""
       onClick={(event) => props.onOpen(event.currentTarget)}
     >
@@ -64,44 +64,63 @@ function ProviderRow(props: { row: AccountUsageProviderRow; onOpen: (button: HTM
 }
 
 /**
- * The plug list: the Marketplace, the connectors of the server, then one row per AI provider account,
- * the accounts that the rail showed as usage rings.
+ * The plug list: the Marketplace, its Apps area, then one row per AI provider account, the accounts
+ * that the rail showed as usage rings. The connectors and the MCP servers are apps, so they are in
+ * the Apps area, not in the server settings.
  */
 export function SimplePlugList() {
   const { t } = useText();
   const windowPage = useWindowPage();
-  const { setSkillsMarketplaceOpen } = useSettings();
+  const { setSkillsMarketplaceOpen, marketplaceNav, openApps, openProvider } = useSettings();
   const { activeServer } = useServers();
-  const { openServerSettings } = useServerSettings();
-  const connectors = useConnectors();
+  const providerSettings = useHostProviderSettings();
   const providerRows = usePlanLimitRows();
-  const connectorCount = () => connectors.active.available().length;
+  const marketplaceOpen = () => windowPage.page() === "marketplace";
+  /** The provider whose page is open in the Apps area, if one is. */
+  const openProviderId = () => {
+    const view = marketplaceNav.state.stack.at(-1);
+    return marketplaceOpen() && view?.kind === "provider" ? view.id : null;
+  };
+  const appsOpen = () => marketplaceOpen() && marketplaceNav.state.tab === "apps" && openProviderId() === null;
+  /**
+   * A provider row opens its page in the Apps area, not the server settings. An account that cannot
+   * manage the providers of this server sees the usage page, as before.
+   */
+  const openRow = (row: AccountUsageProviderRow, button: HTMLElement) => {
+    const server = activeServer();
+    if (server && providerSettings(server)) openProvider(row.provider, row.name);
+    else windowPage.openUsage(button);
+  };
 
   return (
     <div class="simple-sidebar-links simple-sidebar-list">
       <SimpleSidebarLink
         label={t("app.rail.marketplace")}
         icon={<Store />}
-        current={windowPage.page() === "marketplace"}
-        onClick={() => setSkillsMarketplaceOpen(true)}
+        current={marketplaceOpen() && marketplaceNav.state.tab !== "apps" && openProviderId() === null}
+        onClick={() => {
+          // The Marketplace row starts on the first tab, also while the Apps tab is open.
+          marketplaceNav.reset();
+          setSkillsMarketplaceOpen(true);
+        }}
       />
-      {/* The server settings hold the connectors, and show their section only while one is available. */}
-      <Show when={connectorCount() > 0 ? activeServer() : undefined}>
-        {(server) => (
-          <SimpleSidebarLink
-            label={t("server.settings.connectorsTitle")}
-            icon={<Link />}
-            meta={String(connectorCount())}
-            current={windowPage.page() === "server-settings"}
-            onClick={(button) => openServerSettings(server().id, button, "connectors")}
-          />
-        )}
-      </Show>
+      <SimpleSidebarLink
+        label={t("marketplace.tab.apps")}
+        icon={<Plug />}
+        current={appsOpen()}
+        onClick={() => openApps()}
+      />
       <Show when={providerRows().length > 0}>
         <h2 class="simple-sidebar-group">{t("simple.plug.providers")}</h2>
         {/* A status update builds new rows. The key keeps each row, and its open hover card, mounted. */}
         <For each={providerRows()} keyed={accountUsageRowKey}>
-          {(row) => <ProviderRow row={row()} onOpen={windowPage.openUsage} />}
+          {(row) => (
+            <ProviderRow
+              row={row()}
+              current={openProviderId() === row().provider}
+              onOpen={(button) => openRow(row(), button)}
+            />
+          )}
         </For>
       </Show>
     </div>

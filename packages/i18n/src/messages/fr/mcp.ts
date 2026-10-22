@@ -104,7 +104,6 @@ export const messages = {
     "Ses outils ne sont plus proposés aux agents de ce serveur. La configuration n’est pas conservée.",
   "mcp.panel.removeConfirm": "Supprimer le serveur MCP",
   "mcp.panel.actionsFor": "Actions pour {name}",
-  "mcp.panel.testUnavailable": "Ce serveur ne peut pas être testé ici.",
   "mcp.panel.signIn": "Se connecter",
   "mcp.panel.signOut": "Se déconnecter",
   "mcp.panel.cancelSignIn": "Annuler la connexion",

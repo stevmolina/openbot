@@ -102,6 +102,8 @@ interface ProviderSettingsSectionProps {
   detectionSettings?: JSX.Element;
   usage?: readonly AccountUsageProviderRow[] | undefined;
   onDetailChange?: ((detail: ProviderSettingsDetail | null) => void) | undefined;
+  /** The provider whose page shows first, in place of the list. */
+  initialProvider?: AgentProviderId | undefined;
 }
 
 /** The provider list of the computer the agents run on, with its custom endpoint dialogs. */
@@ -253,6 +255,7 @@ function ProviderSettingsSection(props: ProviderSettingsSectionProps) {
         accountActions={props.accountActions}
         menuMount={props.selectMount}
         onDetailChange={props.onDetailChange}
+        initialProvider={props.initialProvider}
         footer={
           <>
             <Show when={props.providerDetection}>
@@ -472,6 +475,8 @@ export function HostProviderSettingsPanel(
     hostName?: string | undefined;
     selectMount: HTMLElement | undefined;
     onDetailChange?: ((detail: ProviderSettingsDetail | null) => void) | undefined;
+    /** The provider whose page shows first: the Apps area opens one provider. */
+    initialProvider?: AgentProviderId | undefined;
   },
 ) {
   const keys = createProviderKeyState({
@@ -533,6 +538,7 @@ export function HostProviderSettingsPanel(
         onSignInProvider={props.providerKeys ? keys.openKeyDialog : undefined}
         usage={props.usage}
         onDetailChange={props.onDetailChange}
+        initialProvider={props.initialProvider}
         detectionSettings={
           <Show when={props.detectionSettings}>
             {(value) => (

@@ -250,7 +250,7 @@ environment value, and show an address without its query: the user enters a key 
 MCP. An edit keeps the row's headers and environment, and an edit that would send them to another
 transport, origin, command, arguments or folder is refused. The approval masks known secrets in the command line and names
 the folder a stdio server starts in. A sign-in shows an `mcp-sign-in:<id>` card in
-the conversation. Its Sign in opens Server settings, MCP, and starts the row's normal sign-in, so a
+the conversation. Its Sign in opens Marketplace, Apps, Custom apps, and starts the row's normal sign-in, so a
 joined server signs in through its relay or live page. Continue sends a message that tells the agent
 to test again. A saved change reaches the agents from their next turn.
 

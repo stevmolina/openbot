@@ -21,5 +21,6 @@ export const messages = defineMessages("status.agent", {
   "status.agent.mcpServerEnable": "Turn on the MCP server {name} for every agent on this server.",
   "status.agent.mcpServerDisable": "Turn off the MCP server {name} for every agent on this server.",
   "status.agent.mcpServerRemove": "Remove the MCP server {name} and its sign-in from every agent on this server.",
-  "status.agent.mcpSignInRequested": "The MCP server {name} needs a sign-in. Sign in from Server settings, MCP.",
+  "status.agent.mcpSignInRequested":
+    "The MCP server {name} needs a sign-in. Sign in from Marketplace, Apps, Custom apps.",
 });

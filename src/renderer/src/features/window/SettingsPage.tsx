@@ -3,6 +3,7 @@ import { Button, Input, Search } from "@openbot/ui";
 import { createSignal, For, flush, Show } from "solid-js";
 import { useI18n } from "../../i18n-context";
 import { usePlatform } from "../../platform";
+import { simpleLayout } from "../../simple-layout";
 import { useServerSettings } from "../servers/server-settings";
 import { useSettings } from "../settings/settings-context";
 import { navItem, navItems, type SettingsTab, settingsTabShown } from "../settings/settings-tabs";
@@ -114,6 +115,8 @@ export function SettingsPage(props: { kind: SettingsKind }) {
         if (query()) setQuery("");
         else windowPage.showAgents();
       }}
+      // The simple layout hides the sidebar under a settings page, so the page has its own way back.
+      onBack={simpleLayout() ? () => windowPage.showAgents() : undefined}
     >
       <Show when={props.kind === "personal"}>
         <label class="search-field settings-page-search">

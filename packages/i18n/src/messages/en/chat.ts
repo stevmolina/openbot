@@ -330,7 +330,7 @@ export const messages = defineMessages("chat", {
   "chat.mcpSignIn.continue": "Continue",
   "chat.mcpSignIn.continueNamed": "Tell the agent to test {name} again",
   "chat.mcpSignIn.message": "I signed in to the MCP server {name}. Test it again.",
-  "chat.mcpSignIn.unavailable": "Sign in to {name} in OpenBot on your computer, in Server settings, MCP.",
+  "chat.mcpSignIn.unavailable": "Sign in to {name} in OpenBot on your computer, in Marketplace, Apps, Custom apps.",
   "chat.compaction.running": "Compacting context",
   "chat.compaction.completed": "Context compacted",
   "chat.compaction.failed": "Could not compact context",
