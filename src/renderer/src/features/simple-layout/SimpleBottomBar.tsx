@@ -31,27 +31,29 @@ export function SimpleBottomBar(props: { sidebar: SimpleSidebar }) {
   return (
     <nav class="simple-bar" aria-label={t("simple.bar.label")}>
       <SimplePhotoMenu current={props.sidebar.current() === "photo"} />
-      <BarButton
-        label={t("simple.bar.chat")}
-        current={props.sidebar.current() === "chat"}
-        onClick={props.sidebar.showChat}
-      >
-        <MessageCircle aria-hidden="true" />
-      </BarButton>
-      <BarButton
-        label={t("simple.bar.clock")}
-        current={props.sidebar.current() === "clock"}
-        onClick={props.sidebar.showClock}
-      >
-        <Clock3 aria-hidden="true" />
-      </BarButton>
-      <BarButton
-        label={t("simple.bar.plug")}
-        current={props.sidebar.current() === "plug"}
-        onClick={props.sidebar.showPlug}
-      >
-        <Plug aria-hidden="true" />
-      </BarButton>
+      <div class="simple-bar-nav">
+        <BarButton
+          label={t("simple.bar.chat")}
+          current={props.sidebar.current() === "chat"}
+          onClick={props.sidebar.showChat}
+        >
+          <MessageCircle aria-hidden="true" />
+        </BarButton>
+        <BarButton
+          label={t("simple.bar.clock")}
+          current={props.sidebar.current() === "clock"}
+          onClick={props.sidebar.showClock}
+        >
+          <Clock3 aria-hidden="true" />
+        </BarButton>
+        <BarButton
+          label={t("simple.bar.plug")}
+          current={props.sidebar.current() === "plug"}
+          onClick={props.sidebar.showPlug}
+        >
+          <Plug aria-hidden="true" />
+        </BarButton>
+      </div>
     </nav>
   );
 }

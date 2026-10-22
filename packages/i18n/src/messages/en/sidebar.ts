@@ -17,6 +17,7 @@ export const messages = defineMessages("sidebar", {
   "sidebar.topbar.localServer": "Local",
   "sidebar.resizer.compactWidth": "Compact ({width}px)",
   "sidebar.topbar.expand": "Expand sidebar",
+  "sidebar.topbar.collapse": "Collapse sidebar",
   "sidebar.topbar.openMarketplace": "Open Marketplace",
   "sidebar.topbar.marketplace": "Marketplace",
   "sidebar.empty.noAgents": "No agents yet",

@@ -33,6 +33,20 @@ export function SidebarTopbar() {
       >
         {(serverMenu) => <ServerMenu {...serverMenu()} serverName={props.serverName} compact={props.compact} />}
       </Show>
+      <Show when={props.onCollapse && !props.compact}>
+        <Button
+          variant="ghost"
+          type="button"
+          class="sidebar-icon-button sidebar-collapse-button no-drag"
+          onClick={() => props.onCollapse?.()}
+          aria-label={t("sidebar.topbar.collapse")}
+          aria-controls="agent-sidebar"
+          aria-expanded="true"
+          title={t("sidebar.topbar.collapse")}
+        >
+          <SidebarToggleIcon />
+        </Button>
+      </Show>
       <div class="sidebar-topbar-actions">
         <Show when={!props.compact && props.serverUpdate}>
           {(update) => {

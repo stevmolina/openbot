@@ -82,8 +82,19 @@
 }
 
 :root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .sidebar-topbar {
-  justify-content: flex-end;
+  justify-content: space-between;
   padding-right: var(--openbot-space-3);
+}
+
+/* The collapse button sits at the start of the top row, beside the window buttons. */
+:root[data-openbot-layout="simple"] .sidebar-topbar .sidebar-collapse-button {
+  color: var(--openbot-text-secondary);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :root[data-openbot-layout="simple"] .sidebar-topbar .sidebar-collapse-button:hover {
+    color: var(--openbot-text-primary);
+  }
 }
 
 :root[data-openbot-layout="simple"] .sidebar-topbar-actions {
@@ -105,7 +116,7 @@
   }
 }
 
-/* The bottom bar: the photo, then the chat, clock and plug buttons. */
+/* The bottom bar: the photo at the start, the chat, clock and plug buttons at the end. */
 .simple-bar {
   display: flex;
   flex: none;
@@ -117,6 +128,13 @@
   padding: var(--openbot-space-1-5);
 }
 
+.simple-bar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--openbot-space-1);
+  margin-left: auto;
+}
+
 .simple-bar-photo {
   position: relative;
   display: grid;
@@ -124,7 +142,6 @@
   height: 34px;
   flex: none;
   place-items: center;
-  margin-right: auto;
   border: 0;
   border-radius: var(--openbot-radius-pill);
   background: transparent;
@@ -200,6 +217,11 @@
 
 .sidebar-compact .simple-bar-photo {
   margin: 0 0 var(--openbot-space-1);
+}
+
+.sidebar-compact .simple-bar-nav {
+  flex-direction: column;
+  margin-left: 0;
 }
 
 /* The photo menu: who is signed in, then the pages that the rail held. */
@@ -335,10 +357,10 @@
 
 :root[data-openbot-layout="simple"] .sidebar .agent-row {
   height: auto;
-  min-height: 46px;
-  gap: 10px;
+  min-height: 58px;
+  gap: 12px;
   border-radius: var(--openbot-simple-row-radius);
-  padding: 7px var(--openbot-space-2);
+  padding: 8px var(--openbot-space-2);
 }
 
 :root[data-openbot-layout="simple"] .sidebar .agent-row + .agent-row {
@@ -349,19 +371,29 @@
   background: var(--openbot-bg-control-hover);
 }
 
-:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-avatar {
-  width: 32px;
-  height: 32px;
-  flex-basis: 32px;
+:root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row-avatar:not(.sidebar-pinned-avatar) {
+  width: 42px;
+  height: 42px;
+  flex-basis: 42px;
+}
+
+:root[data-openbot-layout="simple"]
+  .sidebar:not(.sidebar-compact)
+  .agent-row-avatar:not(.sidebar-pinned-avatar)
+  > :is(.agent-avatar, .person-avatar) {
+  width: 42px;
+  height: 42px;
 }
 
 :root[data-openbot-layout="simple"] .sidebar .agent-row-name strong {
+  font-size: var(--openbot-text-xl);
+  line-height: var(--openbot-leading-xl);
   font-weight: var(--openbot-weight-medium);
 }
 
 :root[data-openbot-layout="simple"] .sidebar .agent-row-preview {
-  font-size: var(--openbot-text-sm);
-  line-height: var(--openbot-leading-sm);
+  font-size: var(--openbot-text-lg);
+  line-height: var(--openbot-leading-lg);
 }
 
 :root[data-openbot-layout="simple"] .sidebar:not(.sidebar-compact) .agent-row:has(.agent-row-agent-status-unread) {
