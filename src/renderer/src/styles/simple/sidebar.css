@@ -368,6 +368,37 @@
   background: var(--openbot-simple-dot-attention);
 }
 
+/* The compact sidebar shows only the icons of the link rows, as it does for the agent rows. A line
+ * stands in for each group heading, and the provider dot sits on the corner of the logo. */
+.sidebar-compact .simple-sidebar-links {
+  padding-inline: 12px;
+}
+
+.sidebar-compact .simple-sidebar-links .simple-sidebar-link {
+  position: relative;
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.sidebar-compact :is(.simple-sidebar-link-label, .simple-sidebar-link-meta) {
+  display: none;
+}
+
+.sidebar-compact .simple-sidebar-group {
+  height: 1px;
+  overflow: hidden;
+  margin: var(--openbot-space-2) var(--openbot-space-3);
+  background: var(--openbot-border);
+  color: transparent;
+}
+
+.sidebar-compact .simple-provider-dot {
+  position: absolute;
+  top: 9px;
+  right: 14px;
+  margin-left: 0;
+}
+
 /* The agent rows: the avatar, the name and one line of the last message. The title shows in the agent
  * panel, and an accent dot at the end marks unread messages. */
 :root[data-openbot-layout="simple"] .sidebar :is(.agent-role-badge, .agent-row-time) {
