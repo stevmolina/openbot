@@ -218,6 +218,11 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
   const [filter, setFilter] = createSignal("");
   /** The right side shows the rail entry's models, or the recent models of every provider. */
   const [view, setView] = createSignal<"provider" | "recent">("provider");
+  /**
+   * The effort menu of the selected row. It is modal, so while it is open a pointer anywhere else
+   * reaches the page, not the panel: it must close only the menu, and Escape must close only the menu.
+   */
+  const [effortOpen, setEffortOpen] = createSignal(false);
   let trigger: HTMLButtonElement | undefined;
   let recentButton: HTMLButtonElement | undefined;
   const providerButtons = new Map<RailKey, HTMLButtonElement>();
@@ -483,6 +488,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
       const target = event.target;
       if (
         !open() ||
+        effortOpen() ||
         (target instanceof Node && root?.contains(target)) ||
         (target instanceof Element && target.closest(".provider-model-effort-menu"))
       ) {
@@ -490,8 +496,9 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
       }
       setOpen(false);
     };
-    window.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => window.removeEventListener("pointerdown", closeOnOutsidePointer);
+    // Capture runs before the effort menu's own outside handler, which closes the menu first.
+    window.addEventListener("pointerdown", closeOnOutsidePointer, true);
+    return () => window.removeEventListener("pointerdown", closeOnOutsidePointer, true);
   });
 
   createEffect(
@@ -501,8 +508,14 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
     },
   );
 
+  createEffect(open, (isOpen) => {
+    if (!isOpen) setEffortOpen(false);
+  });
+
   function setPickerOpen(next: boolean): void {
     if (props.disabled) return;
+    // A dismiss that the open effort menu caused closes only that menu.
+    if (!next && effortOpen()) return;
     if (next) {
       setOpenedKeys(untrack(() => railKeys().filter(entryUsable)));
       const key = activeKey();
@@ -603,7 +616,9 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
   /** Tab and Shift+Tab stay inside the open panel; Escape closes it and gives focus back to the trigger. */
   function onPanelKeyDown(event: KeyboardEvent): void {
     // The effort menu is in a portal, but its keys come here too. It closes itself.
-    if (event.target instanceof Element && event.target.closest(".provider-model-effort-menu")) return;
+    if (effortOpen() || (event.target instanceof Element && event.target.closest(".provider-model-effort-menu"))) {
+      return;
+    }
     if (event.key === "Escape") {
       // Focus goes back first: the panel is hidden from assistive technology once it closes.
       event.preventDefault();
@@ -968,7 +983,6 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                 const effortName = () =>
                   effortOptions().find((option) => option.id === effortValue())?.name ??
                   t("provider.picker.selectEffort");
-                const [effortOpen, setEffortOpen] = createSignal(false);
                 let effortMenu: HTMLElement | undefined;
                 const showsFast = () => ownsSelection() && modelFast(selectedModel());
                 /** The one model of the list that Tab stops at: the chosen one, or else the first. */
