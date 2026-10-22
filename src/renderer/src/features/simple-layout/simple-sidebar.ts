@@ -40,10 +40,15 @@ export function createSimpleSidebar() {
   const list = createMemo(() => pageList() ?? heldList());
 
   // The clock list holds the routines, so Tasks or Schedule opened from search shows the Routines view.
+  // An open channel has no row in that view, and the sidebar puts the agents view back while a channel
+  // is selected, so the channel closes here (as it does for the Routines button). Without this the two
+  // effects flip the view forever.
   createEffect(
     () => simpleLayout() && list() === "clock" && layout.sidebarView() === "agents",
     (needsRoutines) => {
-      if (needsRoutines) layout.setSidebarView("routines");
+      if (!needsRoutines) return;
+      if (channels.state.selectedId !== null) channels.close();
+      layout.setSidebarView("routines");
     },
   );
 

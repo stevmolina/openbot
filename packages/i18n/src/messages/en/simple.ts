@@ -26,6 +26,8 @@ export const messages = defineMessages("simple", {
   "simple.plug.providerOn": "{name}, available",
   "simple.plug.providerAttention": "{name}, needs attention",
   "simple.menu.switchHost": "Switch host",
+  "simple.menu.moveHostUp": "Move this host up",
+  "simple.menu.moveHostDown": "Move this host down",
 
   // Pages: Routines, Schedule, Usage and Marketplace.
   "simple.routine.title": "{name} routine",
@@ -46,7 +48,6 @@ export const messages = defineMessages("simple", {
   "simple.usage.byAgent": "By agent",
   "simple.usage.runsOn": "Runs on",
   "simple.usage.moreNumbers": "More numbers",
-  "simple.market.categories": "Categories",
   "simple.market.mostInstalled": "Most installed",
   "simple.market.allAgents": "All agents",
   "simple.market.viewAll": "View all",

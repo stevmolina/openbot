@@ -74,6 +74,9 @@ interface SimpleAgentPanelProps {
   computerUse?: JSX.Element;
   onOpenRuntime: () => void;
   onOpenMore: () => void;
+  /** Ref callbacks of the two page rows, so Back from their pages returns the focus to them. */
+  runtimeRef?: ((element: HTMLButtonElement) => void) | undefined;
+  moreRef?: ((element: HTMLButtonElement) => void) | undefined;
 }
 
 /** The agent panel of the simple layout under the face: the name, then Details, Library and Computer. */
@@ -102,6 +105,7 @@ export function SimpleAgentPanel(props: SimpleAgentPanelProps): JSX.Element {
             <SimpleSection label={t("simple.agentPanel.runsOn")}>
               <div class="simple-agent-card">
                 <Button
+                  ref={props.runtimeRef}
                   variant="ghost"
                   type="button"
                   class="simple-agent-card-row"
@@ -158,7 +162,13 @@ export function SimpleAgentPanel(props: SimpleAgentPanelProps): JSX.Element {
                 </SimpleSection>
               )}
             </Show>
-            <Button variant="ghost" type="button" class="simple-agent-more" onClick={() => props.onOpenMore()}>
+            <Button
+              ref={props.moreRef}
+              variant="ghost"
+              type="button"
+              class="simple-agent-more"
+              onClick={() => props.onOpenMore()}
+            >
               {t("simple.agentPanel.more")}
             </Button>
           </SlidingTabs.Content>

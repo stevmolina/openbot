@@ -197,17 +197,23 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
       });
   }
 
+  // Each load takes a number. A slow answer for an older load must not replace a newer one, or a deleted
+  // routine would show again.
+  let routinesRequest = 0;
   function loadRoutinesCount(port: RoutinesPort): void {
+    const request = ++routinesRequest;
+    const stale = () => request !== routinesRequest;
     void port
       .list()
       .catch(() => [])
       .then(async (items) => {
+        if (stale()) return;
         setDraft((state) => {
           state.routines.count = items.length;
         });
         if (!untrack(simpleLayout)) return;
         const rows = await routineRows(items);
-        if (port.ownerId !== untrack(() => props.agent.id)) return;
+        if (stale() || port.ownerId !== untrack(() => props.agent.id)) return;
         setDraft((state) => {
           state.routines.rows = rows;
         });

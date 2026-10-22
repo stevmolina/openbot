@@ -2,8 +2,11 @@ import { createSignal } from "solid-js";
 
 /**
  * The simple layout of this fork: the light theme, the sidebar bottom bar in place of the page rail,
- * and the tabbed agent panel. It is on unless the user turned it off. Off shows the upstream layout,
- * so the stylesheet keys every change on the two attributes that `applySimpleLayout` sets.
+ * and the tabbed agent panel. It exists only on the desktop renderer: `startSimpleLayout`, which only
+ * the desktop entry calls, reads the saved choice (on unless the user turned it off). The web client and
+ * the landing playground import the same components but never call it, so they keep the upstream layout.
+ * Off shows the upstream layout, so the stylesheet keys every change on the two attributes that
+ * `applySimpleLayout` sets.
  *
  * Reading `window.localStorage` throws when the browser blocks storage, so it is read inside the guard.
  */
@@ -17,7 +20,8 @@ function readSimpleLayout(): boolean {
   }
 }
 
-const [simpleLayout, setSimpleLayoutSignal] = createSignal(readSimpleLayout());
+const [simpleLayout, setSimpleLayoutSignal] = createSignal(false);
+const [simpleLayoutSupported, setSimpleLayoutSupported] = createSignal(false);
 
 function applySimpleLayout(enabled: boolean): void {
   const root = document.documentElement;
@@ -32,11 +36,18 @@ function applySimpleLayout(enabled: boolean): void {
 
 /** Sets the attributes before the first render, so the dark theme does not flash. */
 export function startSimpleLayout(): void {
-  applySimpleLayout(simpleLayout());
+  setSimpleLayoutSupported(true);
+  // The attributes use the value read here: a signal write is not visible to a read in the same tick.
+  const enabled = readSimpleLayout();
+  setSimpleLayoutSignal(enabled);
+  applySimpleLayout(enabled);
 }
 
-/** Whether the simple layout is on. Components that change structure, not only style, read it. */
-export { simpleLayout };
+/**
+ * `simpleLayout`: whether the simple layout is on. Components that change structure, not only style, read it.
+ * `simpleLayoutSupported`: whether this renderer offers it, true after `startSimpleLayout` ran (desktop only).
+ */
+export { simpleLayout, simpleLayoutSupported };
 
 export function setSimpleLayout(enabled: boolean): void {
   try {

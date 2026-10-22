@@ -3,7 +3,7 @@ import { Button, Heading, Text } from "@openbot/ui";
 import { avatarHeadColor } from "@openbot/ui/bloub-avatar";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
 import { useText } from "@openbot/ui/text";
-import { createSignal, For, Show } from "solid-js";
+import { For, Show } from "solid-js";
 import { AgentState, useInstalls } from "./MarketplaceCards";
 import type { MarketplaceScope } from "./marketplace-view";
 
@@ -82,9 +82,12 @@ export function SimpleAgentHome(props: {
   items: readonly MarketplaceAgentSummary[];
   /** True while a search or a filter narrows the list. */
   narrowed: boolean;
+  /** Whether the list shows every loaded row. The parent owns it, so "Load more" can expand the list. */
+  expanded: boolean;
+  onExpandedChange: (expanded: boolean) => void;
 }) {
   const { t } = useText();
-  const [expanded, setExpanded] = createSignal(false);
+  const expanded = () => props.expanded;
   const featured = () =>
     props.narrowed ? [] : [...props.items].sort((a, b) => b.installs - a.installs).slice(0, FEATURED_LIMIT);
   const rest = () => props.items.filter((item) => !featured().includes(item));
@@ -110,7 +113,7 @@ export function SimpleAgentHome(props: {
                 size="xs"
                 class="simple-market-view-all"
                 aria-expanded={expanded() ? "true" : "false"}
-                onClick={() => setExpanded((value) => !value)}
+                onClick={() => props.onExpandedChange(!props.expanded)}
               >
                 {expanded() ? t("simple.market.showLess") : t("simple.market.viewAll")}
               </Button>

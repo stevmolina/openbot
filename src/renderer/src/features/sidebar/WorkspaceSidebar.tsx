@@ -245,7 +245,8 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
       footer={
         <>
           {/* One card at a time: the community card waits until the mobile app card is dismissed. */}
-          {/* The photo menu of the simple layout holds the mobile app instead. */}
+          {/* The photo menu of the simple layout holds the mobile app instead, so there the community
+              card waits for nothing. The footer sits above the bottom bar in the sidebar's column. */}
           <Show when={!platform.landingPreview && !mobileAppDismissed() && !simpleLayout()}>
             <SidebarMobileAppCard
               onOpenInstall={() => openAppSettings(null, "mobile-connect")}
@@ -255,7 +256,9 @@ export function WorkspaceSidebar(props: { peopleEnabled: boolean }) {
               }}
             />
           </Show>
-          <Show when={!platform.landingPreview && mobileAppDismissed() && !communityCard.dismissed()}>
+          <Show
+            when={!platform.landingPreview && (simpleLayout() || mobileAppDismissed()) && !communityCard.dismissed()}
+          >
             <SidebarCommunityCard
               onJoinDiscord={() => void appPort().openExternal("discord")}
               onFollowX={() => void appPort().openExternal("x")}

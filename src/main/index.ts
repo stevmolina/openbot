@@ -179,9 +179,11 @@ if (commandLineUserDataDirectory) {
       ),
     ),
   );
-} else if (app.getName() !== "OpenBot") {
-  // A renamed fork build, such as OpenBot Light, keeps its data apart from the official app.
-  // `setName` below hides the packaged name, so the folder is fixed here, before it runs.
+}
+// A renamed fork build, such as OpenBot Light, keeps its data apart from the official app and leaves
+// `openbot://` to it. `setName` below hides the packaged name, so it is read here, before it runs.
+const renamedPackagedBuild = app.isPackaged && app.getName() !== "OpenBot";
+if (renamedPackagedBuild && !commandLineUserDataDirectory) {
   app.setPath("userData", join(app.getPath("appData"), app.getName()));
 }
 app.setName("OpenBot");
@@ -983,8 +985,9 @@ if (!hasSingleInstanceLock) {
         installLinuxDesktopEntry({ platform: process.platform, environment: process.env, iconPath: appIconPath }),
       );
       if (
-        process.platform === "linux" ||
-        ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged)
+        !renamedPackagedBuild &&
+        (process.platform === "linux" ||
+          ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged))
       ) {
         if (!app.setAsDefaultProtocolClient("openbot")) {
           logger.warn("Unable to register the openbot:// scheme. Invitation links will not open OpenBot.");

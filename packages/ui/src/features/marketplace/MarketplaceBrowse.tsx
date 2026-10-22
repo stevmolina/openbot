@@ -2,7 +2,7 @@ import { SKILL_CATEGORIES, type SkillCategory } from "@openbot/contracts/ipc";
 import { Button, Input, Search, Skeleton, SlidingTabs, Text } from "@openbot/ui";
 import { useText } from "@openbot/ui/text";
 import type { JSX } from "@solidjs/web";
-import { createEffect, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { AgentGrid, AppCard, SkillGrid } from "./MarketplaceCards";
 import { type FilterGroup, MarketplaceFilter } from "./MarketplaceFilter";
 import { skillAgents } from "./MarketplaceInstallSkill";
@@ -114,6 +114,8 @@ function ListingPanel(props: {
   count: number;
   empty: JSX.Element;
   children: JSX.Element;
+  /** Runs when "Load more" is pressed, for a list that shows a collapsed part of the loaded rows. */
+  onLoadMore?: (() => void) | undefined;
 }) {
   const { t } = useText();
   const failure = () => (
@@ -158,7 +160,10 @@ function ListingPanel(props: {
                 class="marketplace-load-more"
                 data-cuelume-tap="navigate"
                 loading={props.listing.loadingMore()}
-                onClick={props.listing.loadMore}
+                onClick={() => {
+                  props.onLoadMore?.();
+                  props.listing.loadMore();
+                }}
               >
                 {t("marketplace.loadMore")}
               </Button>
@@ -172,6 +177,9 @@ function ListingPanel(props: {
 
 export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
   const { t, format } = useText();
+  // The simple layout's "All agents" list shows a few rows until it is expanded; "Load more" expands it
+  // too, so a row that loaded is never hidden.
+  const [simpleHomeExpanded, setSimpleHomeExpanded] = createSignal(false);
   const model = () => props.scope.model;
   const nav = () => props.scope.nav;
   const state = () => props.scope.nav.state;
@@ -364,6 +372,7 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
           <SlidingTabs.Content value="agents">
             <ListingPanel
               listing={props.scope.agents}
+              onLoadMore={() => setSimpleHomeExpanded(true)}
               loadingLabel={t("marketplace.loading.agents")}
               count={agents().length}
               empty={
@@ -377,7 +386,13 @@ export function MarketplaceBrowse(props: { scope: MarketplaceScope }) {
               }
             >
               <Show when={props.scope.simple} fallback={<AgentGrid scope={props.scope} items={agents()} />}>
-                <SimpleAgentHome scope={props.scope} items={agents()} narrowed={searching() || agentsFiltered()} />
+                <SimpleAgentHome
+                  scope={props.scope}
+                  items={agents()}
+                  narrowed={searching() || agentsFiltered()}
+                  expanded={simpleHomeExpanded()}
+                  onExpandedChange={setSimpleHomeExpanded}
+                />
               </Show>
             </ListingPanel>
           </SlidingTabs.Content>

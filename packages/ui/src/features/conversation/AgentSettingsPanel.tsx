@@ -902,6 +902,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
 
   /** The inline name and title of the simple layout save on Enter, as they do when the focus leaves. */
   function blurOnEnter(event: KeyboardEvent & { currentTarget: HTMLInputElement }): void {
+    if (event.isComposing) return;
     if (event.key === "Enter") event.currentTarget.blur();
   }
 
@@ -1350,6 +1351,8 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                   }
                   onOpenRuntime={() => openPage("runtime")}
                   onOpenMore={() => openPage("more")}
+                  runtimeRef={pageRowRef("runtime")}
+                  moreRef={pageRowRef("more")}
                 />
               )}
             </Show>

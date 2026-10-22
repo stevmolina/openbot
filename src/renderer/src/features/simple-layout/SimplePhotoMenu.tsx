@@ -1,6 +1,8 @@
 import { isUpdateActivePhase } from "@openbot/contracts/ipc";
 import {
+  ArrowDown,
   ArrowLeftRight,
+  ArrowUp,
   BookOpen,
   ChartArea,
   Check,
@@ -25,6 +27,7 @@ import { appPort } from "../../app-port";
 import { usePlatform } from "../../platform";
 import { useAuth } from "../account/account-context";
 import { useServerActions } from "../servers/server-actions";
+import { useServers } from "../servers/servers-context";
 import { useSettings } from "../settings/settings-context";
 import { useUpdates } from "../updates/updates-context";
 import { useWhatsNew } from "../updates/whats-new-context";
@@ -51,6 +54,7 @@ export function SimplePhotoMenu(props: { current: boolean }) {
   const updates = useUpdates();
   const whatsNew = useWhatsNew();
   const serverActions = useServerActions();
+  const { reorderServers } = useServers();
   const help = createHelpNews(() => whatsNew.state.version);
   const [open, setOpen] = createSignal(false);
   let trigger: HTMLElement | undefined;
@@ -62,6 +66,29 @@ export function SimplePhotoMenu(props: { current: boolean }) {
     return t(phase === "ready" || phase === "installing" ? "account.update.ready" : "account.update.available");
   };
   const activeServer = () => serverActions.orderedServers().find((server) => server.active);
+  /* The server rail is hidden in the simple layout, and its drag handle was the only way to order the
+   * hosts. That order sets Cmd+1..9, so the menu moves the active host one place among the remote hosts
+   * (the local host stays first), with the same reorder as the rail. */
+  const remoteServerIds = () =>
+    serverActions
+      .orderedServers()
+      .filter((server) => server.kind === "remote")
+      .map((server) => server.id);
+  const moveActiveServer = (direction: -1 | 1) => {
+    const ids = remoteServerIds();
+    const index = ids.indexOf(activeServer()?.id ?? "");
+    const moved = ids[index];
+    const displaced = ids[index + direction];
+    if (moved === undefined || displaced === undefined) return;
+    ids[index] = displaced;
+    ids[index + direction] = moved;
+    void reorderServers(ids);
+  };
+  const canMoveActiveServer = (direction: -1 | 1) => {
+    const ids = remoteServerIds();
+    const index = ids.indexOf(activeServer()?.id ?? "");
+    return index >= 0 && ids[index + direction] !== undefined;
+  };
   const openLink = (destination: HelpLinkDestination) =>
     trackHelpLink(destination, (target) => void appPort().openExternal(target));
   const label = () => (updateNotice() ? `${t("simple.bar.account")}. ${updateNotice()}` : t("simple.bar.account"));
@@ -211,6 +238,20 @@ export function SimplePhotoMenu(props: { current: boolean }) {
                     {(server) => (
                       <>
                         <DropdownMenu.Separator />
+                        <Show when={remoteServerIds().length >= 2}>
+                          <Show when={canMoveActiveServer(-1)}>
+                            <DropdownMenu.Item onSelect={() => moveActiveServer(-1)}>
+                              <ArrowUp class="agent-context-icon size-4" aria-hidden="true" />
+                              <span>{t("simple.menu.moveHostUp")}</span>
+                            </DropdownMenu.Item>
+                          </Show>
+                          <Show when={canMoveActiveServer(1)}>
+                            <DropdownMenu.Item onSelect={() => moveActiveServer(1)}>
+                              <ArrowDown class="agent-context-icon size-4" aria-hidden="true" />
+                              <span>{t("simple.menu.moveHostDown")}</span>
+                            </DropdownMenu.Item>
+                          </Show>
+                        </Show>
                         <ServerActionItems
                           menu={DropdownMenu}
                           server={server()}
