@@ -53,6 +53,7 @@ import { providerAccountName } from "./provider-accounts";
 import {
   customProviderIds,
   groupPickerModels,
+  hasSpecificDescription,
   isCustomModel,
   type PickerModel,
   type PickerModelGroup,
@@ -736,7 +737,9 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
               </Show>
             </span>
             <span class="provider-model-rail-name">{name()}</span>
-            <span class="provider-model-rail-dot" data-state={status().state} aria-hidden="true" />
+            <Show when={status().state !== "available"}>
+              <span class="provider-model-rail-dot" data-state={status().state} aria-hidden="true" />
+            </Show>
           </Tabs.Trigger>
         </Tooltip.Trigger>
         <Tooltip.Portal>
@@ -942,6 +945,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                     current={isCurrentItem}
                     defaultModel={(item) => item.model.id === railDefaultModel(railOf(item.key))}
                     entryName={entryName}
+                    peers={entryModels}
                     onChoose={chooseResult}
                     onKeyDown={onListKeyDown}
                   />
@@ -1186,7 +1190,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                                   if (!isSelected()) selectModel(model, accountId());
                                 }}
                               >
-                                <ModelOptionText model={model} isDefault={isDefault} />
+                                <ModelOptionText model={model} peers={models()} isDefault={isDefault} />
                                 <Show when={isSelected()}>
                                   <CheckIcon />
                                 </Show>
@@ -1267,11 +1271,18 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
 }
 
 /** The name, the badges and the one-line description of a model row. */
-function ModelOptionText(props: { model: PickerModel; isDefault: boolean; entryName?: string | undefined }) {
+function ModelOptionText(props: {
+  model: PickerModel;
+  /** The models of the same provider: a description that all of them share is not shown. */
+  peers: readonly PickerModel[];
+  isDefault: boolean;
+  entryName?: string | undefined;
+}) {
   const text = useText();
   const description = () => {
     const value = props.model.description.trim();
-    return value && value !== props.model.name ? text.sourceText(value) : props.entryName;
+    const specific = value !== props.model.name && hasSpecificDescription(props.model, props.peers);
+    return specific ? text.sourceText(value) : props.entryName;
   };
   return (
     <span class="provider-model-option-text">
@@ -1300,6 +1311,7 @@ function ModelResults(props: {
   current: (item: ResultItem) => boolean;
   defaultModel: (item: ResultItem) => boolean;
   entryName: (key: RailKey) => string;
+  peers: (key: RailKey) => readonly PickerModel[];
   onChoose: (item: ResultItem) => void;
   onKeyDown: (event: KeyboardEvent) => void;
 }) {
@@ -1368,6 +1380,7 @@ function ModelResults(props: {
                 </Show>
                 <ModelOptionText
                   model={item.model}
+                  peers={props.peers(item.key)}
                   isDefault={props.defaultModel(item)}
                   entryName={props.headings ? undefined : props.entryName(item.key)}
                 />

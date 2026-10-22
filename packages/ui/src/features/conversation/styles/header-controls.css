@@ -466,29 +466,21 @@
   line-height: 18px;
 }
 
-/* The success color when the provider is connected; the states below recolor it. */
+/* A dot only marks a provider that needs attention. A connected provider has none. */
 .provider-model-rail-dot {
   width: 7px;
   height: 7px;
   flex: 0 0 7px;
   border-radius: var(--openbot-radius-pill);
-  background: var(--openbot-success);
-  box-shadow: 0 0 0 3px var(--openbot-success-soft);
+  background: var(--openbot-text-dim);
 }
 
 .provider-model-rail-dot:is([data-state="sign-in-required"], [data-state="outdated"]) {
   background: var(--openbot-warning);
-  box-shadow: none;
-}
-
-.provider-model-rail-dot:is([data-state="not-installed"], [data-state="error"]) {
-  background: var(--openbot-text-dim);
-  box-shadow: none;
 }
 
 .provider-model-rail-dot[data-state="checking"] {
   background: var(--openbot-text-muted);
-  box-shadow: none;
   animation: provider-model-dot-pulse 1.2s ease-in-out infinite;
 }
 
@@ -584,13 +576,25 @@
   gap: var(--openbot-space-2);
   /* The right inset lives on the text, not the row, so the action button can line its right edge up
    * with the search field and the model rows below it. */
-  padding: var(--openbot-space-1-5) 0 var(--openbot-space-2) var(--ui-menu-inset);
+  padding: var(--openbot-space-1) 0 var(--openbot-space-1) var(--ui-menu-inset);
 }
 
+/* The name and the version share one line. The version is the part that gives way. */
 .provider-model-heading-text {
+  display: flex;
   flex: 1 1 auto;
   min-width: 0;
+  align-items: baseline;
+  gap: var(--openbot-space-2);
   padding-right: 4px;
+}
+
+.provider-model-heading-text strong {
+  flex: 0 0 auto;
+}
+
+.provider-model-heading-text span {
+  min-width: 0;
 }
 
 /* The icons are raw lucide exports with no intrinsic size, and only the icon-only button sizes
@@ -646,7 +650,6 @@
 }
 
 .provider-model-heading span {
-  margin-top: 1px;
   color: var(--openbot-text-muted);
   font-size: var(--openbot-text-sm);
   line-height: 16px;
@@ -688,7 +691,7 @@
 /* Each row is as high as the effort control, so the switch and the segments have room. */
 .provider-model-effort > :first-child {
   display: flex;
-  min-height: var(--openbot-control-md);
+  min-height: var(--openbot-control-sm);
   align-items: center;
 }
 
@@ -707,7 +710,7 @@
   min-width: 0;
   gap: var(--openbot-space-0-5);
   border-radius: var(--ui-menu-item-radius);
-  background: var(--ui-menu-item-hover);
+  background: color-mix(in srgb, var(--openbot-text-primary) 3%, transparent);
   padding: var(--openbot-space-0-5);
 }
 
@@ -723,7 +726,7 @@
   display: flex;
   flex: 1;
   min-width: 0;
-  height: calc(var(--openbot-control-md) - 2 * var(--openbot-space-0-5));
+  height: calc(var(--openbot-control-sm) - 2 * var(--openbot-space-0-5));
   align-items: center;
   justify-content: center;
   border-radius: var(--provider-model-segment-radius);
@@ -763,10 +766,9 @@
   left: 0;
   z-index: 0;
   width: 0;
-  height: calc(var(--openbot-control-md) - 2 * var(--openbot-space-0-5));
+  height: calc(var(--openbot-control-sm) - 2 * var(--openbot-space-0-5));
   border-radius: var(--provider-model-segment-radius);
-  background: color-mix(in srgb, var(--openbot-text-primary) 12%, transparent);
-  box-shadow: inset 0 1px 0 var(--ui-menu-highlight);
+  background: color-mix(in srgb, var(--openbot-text-primary) 9%, transparent);
   pointer-events: none;
   transition:
     transform var(--provider-model-effort-duration) var(--provider-model-effort-ease),
@@ -814,7 +816,7 @@
   background: var(--ui-menu-item-hover);
 }
 
-/* The check of the selected model is a filled circle on the left, as in the menus. */
+/* A model row is one line. The selected row has a quiet background and a check on the right. */
 .provider-model-option {
   position: relative;
   display: flex;
@@ -825,8 +827,7 @@
   border: 0;
   border-radius: var(--ui-menu-item-radius);
   background: transparent;
-  padding: var(--openbot-space-1-5) var(--ui-menu-inset) var(--openbot-space-1-5)
-    calc(var(--ui-menu-inset) + var(--openbot-icon-md) + var(--openbot-space-2));
+  padding: var(--openbot-space-1) var(--ui-menu-inset);
   color: var(--openbot-text-primary);
   cursor: pointer;
   text-align: left;
@@ -835,27 +836,7 @@
     color var(--openbot-duration-hover) ease;
 }
 
-.provider-model-option::before {
-  position: absolute;
-  top: 50%;
-  left: var(--ui-menu-inset);
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-  box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, var(--openbot-text-primary) 22%, transparent);
-  border-radius: var(--openbot-radius-pill);
-  content: "";
-  translate: 0 -50%;
-  transition:
-    background-color var(--ui-menu-duration) ease-out,
-    border-color var(--ui-menu-duration) ease-out;
-}
-
-.provider-model-option-selected::before {
-  border-color: transparent;
-  background: var(--openbot-text-primary);
-}
-
+.provider-model-option.provider-model-option-selected,
 .provider-model-option:hover:not(:disabled),
 .provider-model-option:focus-visible {
   background: var(--ui-menu-item-hover);
@@ -881,30 +862,25 @@
   line-height: 18px;
 }
 
+/* The default and Free badges are quiet text, with no pill. */
 .provider-model-option-name small {
   flex: 0 0 auto;
-  border-radius: var(--openbot-radius-pill);
-  background: color-mix(in srgb, var(--openbot-text-primary) 7%, transparent);
-  padding: 1px var(--openbot-space-1-5);
   color: var(--openbot-text-muted);
   font-size: var(--openbot-text-sm);
-  font-weight: 500;
+  font-weight: var(--openbot-weight-regular);
   line-height: 15px;
 }
 
-/* The tick sits in the filled circle, cut out of it in the panel color. */
+/* The tick of the selected row, at its right edge. */
 .provider-model-check {
-  position: absolute;
-  top: 50%;
-  left: calc(var(--ui-menu-inset) + (var(--openbot-icon-md) - var(--openbot-icon-sm)) / 2);
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
+  flex: 0 0 auto;
   fill: none;
-  stroke: var(--ui-menu-bg);
+  stroke: var(--openbot-text-secondary);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2.5;
-  translate: 0 -50%;
+  stroke-width: 2;
 }
 
 /* While the list across providers shows, the provider panels wait behind it. */
@@ -1039,7 +1015,6 @@
   .provider-model-trigger,
   .provider-model-rail-button,
   .provider-model-option,
-  .provider-model-option::before,
   .provider-model-effort-segment-control,
   .provider-model-effort-pill {
     transition: none;
