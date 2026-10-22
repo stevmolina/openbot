@@ -10,7 +10,6 @@ import { McpKeyDialog } from "@openbot/ui/features/settings/McpKeyDialog";
 import type { McpKeyFlow } from "@openbot/ui/features/settings/mcp-connect-auth";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { MARKETPLACE_PLUGINS } from "../src/features/settings/marketplace-plugin-catalog";
 import {
   AAVE,
   CONNECT_GLOBALS,
@@ -65,16 +64,40 @@ const POSTGRES = {
 /** A server that asks for nothing still comes through a connect step, so a dead one is found now. */
 const NOTHING_ASKED: McpKeyFlow = { id: "none", kind: "key", label: "Connect", fields: [] };
 
-/** The user's own link, which replaces the listing's address, with a key only some servers need. */
-const COMPOSIO = MARKETPLACE_PLUGINS.find((plugin) => plugin.slug === "composio")?.apps[0];
-if (!COMPOSIO) throw new Error("The catalog must carry the Composio plugin with an app.");
+/**
+ * The user's own link, which replaces the listing's address, with a key beside it. No catalog
+ * listing asks for this now, so the story keeps its own server: a service that gives each user a
+ * link on its host.
+ */
+const OWN_LINK = {
+  subject: {
+    name: "Own link",
+    iconUrl: null,
+    config: { ...subjectFor(AAVE).config, name: "own-link", url: "https://mcp.example.com/" },
+  },
+  flow: {
+    id: "own-link",
+    kind: "key",
+    label: "MCP link",
+    fields: [
+      {
+        id: "url",
+        label: "MCP URL",
+        url: true,
+        placeholder: "https://mcp.example.com/u/…",
+        hint: "The link in your account settings",
+      },
+      { id: "api-key", label: "API key", header: "x-api-key", placeholder: "Paste the key" },
+    ],
+  } satisfies McpKeyFlow,
+};
 
 /** One token, the key a server issues beside its sign-in, two values over a command, a link, and none. */
 const SERVERS = {
   figma: () => ({ subject: subjectFor(FIGMA), flow: keyFlowFor(FIGMA) }),
   linear: () => ({ subject: subjectFor(LINEAR), flow: keyFlowFor(LINEAR) }),
   postgres: () => POSTGRES,
-  composio: () => ({ subject: subjectFor(COMPOSIO), flow: keyFlowFor(COMPOSIO) }),
+  ownLink: () => OWN_LINK,
   aave: () => ({ subject: subjectFor(AAVE), flow: NOTHING_ASKED }),
 };
 

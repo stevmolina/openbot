@@ -203,17 +203,17 @@ export const messages = {
   "marketplace.plugin.stripe.prompt.link": "Rascunhe um link de pagamento para o plano Pro a 49 por mês.",
   "marketplace.plugin.posthog.tagline": "Analytics de produto e flags",
   "marketplace.plugin.posthog.description":
-    "O PostHog permite que agentes consultem eventos e funis, inspecionem feature flags e resumam o que mudou depois de um release. Uma chave de API pessoal das configurações do projeto vai em um header Authorization.",
+    "O PostHog permite que agentes consultem eventos e funis, inspecionem feature flags e resumam o que mudou depois de um release. Cada usuário entra com a própria conta PostHog pelo navegador.",
   "marketplace.plugin.posthog.app":
-    "Acesso a eventos, funis e feature flags, através do servidor MCP do PostHog com uma chave de API pessoal.",
+    "Acesso a eventos, funis e feature flags, através do servidor MCP do PostHog com login pelo navegador.",
   "marketplace.plugin.posthog.prompt.funnel": "Como está o funil de cadastro dos últimos 14 dias?",
   "marketplace.plugin.posthog.prompt.flag": "Quais feature flags estão ativas para este usuário?",
   "marketplace.plugin.posthog.prompt.release": "A ativação mudou depois do release da semana passada?",
   "marketplace.plugin.airtable.tagline": "Bases e registros",
   "marketplace.plugin.airtable.description":
-    "O Airtable permite que agentes listem bases, leiam e atualizem registros, e resumam o conteúdo de tabelas. Uma chave de API da página da conta é passada ao servidor local como uma variável de ambiente.",
+    "O Airtable permite que agentes listem bases, leiam e atualizem registros, e resumam o conteúdo de tabelas. Cada usuário entra com a própria conta Airtable pelo navegador e escolhe as bases que compartilha.",
   "marketplace.plugin.airtable.app":
-    "Listagem de bases e acesso a registros, através de um servidor MCP local com uma chave de API do Airtable.",
+    "Listagem de bases e acesso a registros, através do servidor MCP do Airtable com login pelo navegador.",
   "marketplace.plugin.airtable.prompt.bases": "A quais bases eu tenho acesso?",
   "marketplace.plugin.airtable.prompt.records": "Resuma a tabela de acompanhamento do lançamento.",
   "marketplace.plugin.airtable.prompt.update":
@@ -236,26 +236,21 @@ export const messages = {
   "marketplace.plugin.braveSearch.prompt.compare": "Compare estes dois fornecedores com fontes citadas.",
   "marketplace.plugin.resend.tagline": "E-mail transacional",
   "marketplace.plugin.resend.description":
-    "O Resend permite que agentes enviem e-mails transacionais e verifiquem a entrega por uma única API. Uma chave de API do painel do Resend é passada ao servidor local como uma variável de ambiente.",
+    "O Resend permite que agentes enviem e-mails transacionais e verifiquem a entrega por uma única API. Cada usuário entra com a própria conta Resend pelo navegador.",
   "marketplace.plugin.resend.app":
-    "Envio de e-mails e verificação de entrega, através de um servidor MCP local com uma chave de API do Resend.",
+    "Envio de e-mails e verificação de entrega, através do servidor MCP do Resend com login pelo navegador.",
   "marketplace.plugin.resend.prompt.send": "Envie o rascunho do anúncio de lançamento para a lista beta.",
   "marketplace.plugin.resend.prompt.status": "O e-mail da fatura chegou ao cliente?",
   "marketplace.plugin.resend.prompt.template": "Rascunhe um e-mail de redefinição de senha para o novo fluxo.",
-  "marketplace.plugin.composio.tagline": "Muitos apps pelo seu próprio link do Composio",
+  "marketplace.plugin.composio.tagline": "Muitos apps com um único login no Composio",
   "marketplace.plugin.composio.description":
-    "O Composio conecta agentes ao Gmail, Slack, GitHub e centenas de outros apps por um único servidor MCP. Conecte os apps que quiser na sua conta Composio e cole aqui a URL do MCP e a chave de API dela.",
+    "O Composio conecta agentes ao Gmail, Slack, GitHub e centenas de outros apps por um único servidor MCP. Entre na sua conta Composio pelo navegador e depois conecte no Composio os apps que quiser.",
   "marketplace.plugin.composio.app":
-    "Os apps que você adiciona ao seu servidor MCP do Composio, através do link da sua conta Composio.",
+    "Os apps que você conecta na sua conta Composio, através do servidor MCP do Composio com login pelo navegador.",
   "marketplace.plugin.composio.prompt.inbox": "Resuma meus e-mails não lidos e rascunhe respostas para os urgentes.",
   "marketplace.plugin.composio.prompt.handoff": "Publique um resumo deste pull request no canal da nossa equipe.",
   "marketplace.plugin.composio.prompt.apps": "Quais apps e ações você pode usar pelo Composio?",
-  "marketplace.plugin.composio.hint.url": "O URL de um servidor MCP na sua conta Composio",
-  "marketplace.plugin.composio.hint.apiKey": "Ela fica na sua conta Composio, em Settings > Sessions & API Key.",
   "marketplace.auth.apiKey": "Chave de API",
-  "marketplace.auth.personalApiKey": "Chave de API pessoal",
-  "marketplace.auth.mcpUrl": "URL do MCP",
-  "marketplace.auth.createKey": "Criar uma chave",
   "marketplace.skill.installMenu.install": "Instalar",
   "marketplace.skill.installMenu.installNamed": "Instalar {name}",
   "marketplace.skill.installMenu.allAgents": "Todos os agentes",

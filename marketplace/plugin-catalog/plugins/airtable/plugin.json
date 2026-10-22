@@ -2,11 +2,11 @@
   "slug": "airtable",
   "name": "Airtable",
   "tagline": "Bases and records",
-  "description": "Airtable lets agents list bases, read and update records, and summarize table contents. An API key from the account page is passed to the local server as one environment variable.",
+  "description": "Airtable lets agents list bases, read and update records, and summarize table contents. Each user signs in to their own Airtable account through the browser and selects the bases to share.",
   "category": "data-analytics",
   "creatorName": "airtable.com",
   "iconUrl": "https://airtable.com/favicon.ico",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "prompts": [
     { "id": "prompt-bases", "text": "What bases do I have access to?" },
     { "id": "prompt-records", "text": "Summarize the launch tracker table." },
@@ -16,30 +16,13 @@
     {
       "id": "app-airtable-mcp",
       "name": "Airtable",
-      "description": "Base listing and record access, over a local MCP server with an Airtable API key.",
+      "description": "Base listing and record access, over Airtable's MCP server with browser sign-in.",
       "iconUrl": "https://airtable.com/favicon.ico",
       "server": {
         "name": "airtable",
-        "transport": "stdio",
-        "command": "npx",
-        "args": ["-y", "airtable-mcp-server"],
-        "auth": [
-          {
-            "id": "airtable-key",
-            "kind": "key",
-            "label": "API key",
-            "fields": [
-              {
-                "id": "token",
-                "label": "API key",
-                "env": "AIRTABLE_API_KEY",
-                "hint": "Airtable account page → API"
-              }
-            ],
-            "docsUrl": "https://airtable.com/developers/web/api/introduction",
-            "docsLabel": "Get a key"
-          }
-        ]
+        "transport": "http",
+        "url": "https://mcp.airtable.com/mcp",
+        "auth": [{ "id": "airtable-oauth", "kind": "link", "label": "Sign in" }]
       }
     }
   ],

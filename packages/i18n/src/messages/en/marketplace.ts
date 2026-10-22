@@ -216,17 +216,16 @@ export const messages = defineMessages("marketplace", {
   "marketplace.plugin.stripe.prompt.link": "Draft a payment link for the Pro plan at 49 per month.",
   "marketplace.plugin.posthog.tagline": "Product analytics and flags",
   "marketplace.plugin.posthog.description":
-    "PostHog lets agents query events and funnels, inspect feature flags, and summarize what changed after a release. A personal API key from the project settings goes into one Authorization header.",
+    "PostHog lets agents query events and funnels, inspect feature flags, and summarize what changed after a release. Each user signs in to their own PostHog account through the browser.",
   "marketplace.plugin.posthog.app":
-    "Event, funnel, and feature-flag access, over PostHog's MCP server with a personal API key.",
+    "Event, funnel, and feature-flag access, over PostHog's MCP server with browser sign-in.",
   "marketplace.plugin.posthog.prompt.funnel": "How does the signup funnel look for the last 14 days?",
   "marketplace.plugin.posthog.prompt.flag": "Which feature flags are enabled for this user?",
   "marketplace.plugin.posthog.prompt.release": "Did activation change after last week's release?",
   "marketplace.plugin.airtable.tagline": "Bases and records",
   "marketplace.plugin.airtable.description":
-    "Airtable lets agents list bases, read and update records, and summarize table contents. An API key from the account page is passed to the local server as one environment variable.",
-  "marketplace.plugin.airtable.app":
-    "Base listing and record access, over a local MCP server with an Airtable API key.",
+    "Airtable lets agents list bases, read and update records, and summarize table contents. Each user signs in to their own Airtable account through the browser and selects the bases to share.",
+  "marketplace.plugin.airtable.app": "Base listing and record access, over Airtable's MCP server with browser sign-in.",
   "marketplace.plugin.airtable.prompt.bases": "What bases do I have access to?",
   "marketplace.plugin.airtable.prompt.records": "Summarize the launch tracker table.",
   "marketplace.plugin.airtable.prompt.update": "Mark the shipped features as done in the roadmap base.",
@@ -247,26 +246,21 @@ export const messages = defineMessages("marketplace", {
   "marketplace.plugin.braveSearch.prompt.compare": "Compare these two vendors with cited sources.",
   "marketplace.plugin.resend.tagline": "Transactional email",
   "marketplace.plugin.resend.description":
-    "Resend lets agents send transactional email and check delivery through one API. An API key from the Resend dashboard is passed to the local server as one environment variable.",
-  "marketplace.plugin.resend.app": "Email sending and delivery checks, over a local MCP server with a Resend API key.",
+    "Resend lets agents send transactional email and check delivery through one API. Each user signs in to their own Resend account through the browser.",
+  "marketplace.plugin.resend.app": "Email sending and delivery checks, over Resend's MCP server with browser sign-in.",
   "marketplace.plugin.resend.prompt.send": "Send the launch announcement draft to the beta list.",
   "marketplace.plugin.resend.prompt.status": "Did the invoice email reach the customer?",
   "marketplace.plugin.resend.prompt.template": "Draft a password-reset email for the new flow.",
-  "marketplace.plugin.composio.tagline": "Many apps through your own Composio link",
+  "marketplace.plugin.composio.tagline": "Many apps through one Composio sign-in",
   "marketplace.plugin.composio.description":
-    "Composio connects agents to Gmail, Slack, GitHub, and hundreds of other apps through one MCP server. Connect the apps you want in your Composio account, then paste its MCP URL and API key here.",
+    "Composio connects agents to Gmail, Slack, GitHub, and hundreds of other apps through one MCP server. Sign in to your Composio account in the browser, then connect the apps you want in Composio.",
   "marketplace.plugin.composio.app":
-    "The apps you add to your Composio MCP server, over the link from your Composio account.",
+    "The apps you connect in your Composio account, over Composio's MCP server with browser sign-in.",
   "marketplace.plugin.composio.prompt.inbox": "Summarize my unread email and draft replies to the urgent ones.",
   "marketplace.plugin.composio.prompt.handoff": "Post a summary of this pull request to our team channel.",
   "marketplace.plugin.composio.prompt.apps": "Which apps and actions can you use through Composio?",
   // The connect form text of the catalog listings. Each English text is the catalog's own text, byte for byte.
-  "marketplace.plugin.composio.hint.url": "The URL of an MCP server in your Composio account",
-  "marketplace.plugin.composio.hint.apiKey": "Find it in your Composio account, in Settings > Sessions & API Key.",
   "marketplace.auth.apiKey": "API key",
-  "marketplace.auth.personalApiKey": "Personal API key",
-  "marketplace.auth.mcpUrl": "MCP URL",
-  "marketplace.auth.createKey": "Create a key",
 
   // Skills. {label} is the install button text: an agent name, "All agents" or "2 agents".
   "marketplace.skill.installMenu.install": "Install",

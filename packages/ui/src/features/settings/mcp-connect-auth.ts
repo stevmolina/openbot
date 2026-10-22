@@ -23,8 +23,9 @@ export interface McpAuthField {
   /** What the input is called on screen, as the server's own documentation calls it. */
   label: string;
   /**
-   * The value is the server's own address, for a service that gives each user a link, such as
-   * Composio. It replaces the listing's URL and must stay on the listing's host or a subdomain of it.
+   * The value is the server's own address, for a service that gives each user a link. It replaces
+   * the listing's URL and must stay on the listing's host or a subdomain of it. No listing uses it
+   * now: a service with one address and a browser sign-in is a `"link"` flow.
    */
   url?: boolean;
   /** The http header the value is sent in. */

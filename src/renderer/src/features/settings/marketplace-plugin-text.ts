@@ -233,12 +233,7 @@ const PLUGIN_TEXT = {
  */
 const AUTH_TEXT: Readonly<Record<string, AppTextKey>> = {
   "API key": "marketplace.auth.apiKey",
-  "Personal API key": "marketplace.auth.personalApiKey",
-  "MCP URL": "marketplace.auth.mcpUrl",
   "Get a key": "mcp.connect.getKey",
-  "Create a key": "marketplace.auth.createKey",
-  "The URL of an MCP server in your Composio account": "marketplace.plugin.composio.hint.url",
-  "Find it in your Composio account, in Settings > Sessions & API Key.": "marketplace.plugin.composio.hint.apiKey",
 };
 
 const english = translateFor("en");

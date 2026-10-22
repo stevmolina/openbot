@@ -1,0 +1,33 @@
+{
+  "slug": "composio",
+  "name": "Composio",
+  "tagline": "Many apps through one Composio sign-in",
+  "description": "Composio connects agents to Gmail, Slack, GitHub, and hundreds of other apps through one MCP server. Sign in to your Composio account in the browser, then connect the apps you want in Composio.",
+  "category": "automation",
+  "creatorName": "composio.dev",
+  "iconUrl": "https://composio.dev/favicon.ico",
+  "version": "1.2.0",
+  "prompts": [
+    { "id": "prompt-inbox", "text": "Summarize my unread email and draft replies to the urgent ones." },
+    { "id": "prompt-handoff", "text": "Post a summary of this pull request to our team channel." },
+    { "id": "prompt-apps", "text": "Which apps and actions can you use through Composio?" }
+  ],
+  "apps": [
+    {
+      "id": "app-composio-mcp",
+      "name": "Composio",
+      "description": "The apps you connect in your Composio account, over Composio's MCP server with browser sign-in.",
+      "iconUrl": "https://composio.dev/favicon.ico",
+      "server": {
+        "name": "composio",
+        "transport": "http",
+        "url": "https://connect.composio.dev/mcp",
+        "auth": [{ "id": "composio-oauth", "kind": "link", "label": "Sign in" }]
+      }
+    }
+  ],
+  "websiteUrl": "https://composio.dev",
+  "privacyPolicyUrl": "https://composio.dev/privacy-policy",
+  "termsUrl": "https://composio.dev/terms-of-service",
+  "skills": []
+}

@@ -70,15 +70,15 @@
     },
     {
       "slug": "posthog",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "featured": false,
-      "detailSha256": "a4127ec0a7415dccbd2e57aa928e6ed3b6acc0913f1c02ea03bd10206333f173"
+      "detailSha256": "bd301d1fd87c3fcb1ce30a048a265784c3d79845585f8f50dd9dccc4d0280a65"
     },
     {
       "slug": "airtable",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "featured": false,
-      "detailSha256": "e6a379f48703481c51f9457d670c278c33b106db5337d18658c190eeae127913"
+      "detailSha256": "404b046174830f37770a251c8bc9722f3cd8c6482d99b8c0952e8dcf030a5ffc"
     },
     {
       "slug": "firecrawl",
@@ -94,15 +94,15 @@
     },
     {
       "slug": "resend",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "featured": false,
-      "detailSha256": "06a649d220a6858a9856ff36661fe20c47219216235507778924b1c3e7c4b5ca"
+      "detailSha256": "d9e24098e65a85c9a37420823c09b68ed68d6906f0477861c21532f5ea3ea347"
     },
     {
       "slug": "composio",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "featured": false,
-      "detailSha256": "443362cf513bc0925fa9df7158def02d78a5e6c5a403ffb42759436a27367284"
+      "detailSha256": "fa5ab5db4f5a1129b4b0c2713cbd787e801acdae4c5e3ea34cf4c3356eb4d9e6"
     }
   ]
 }

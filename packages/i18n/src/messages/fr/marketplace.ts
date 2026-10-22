@@ -221,17 +221,17 @@ export const messages = {
   "marketplace.plugin.stripe.prompt.link": "Rédigez un lien de paiement pour le forfait Pro à 49 par mois.",
   "marketplace.plugin.posthog.tagline": "Analyse produit et feature flags",
   "marketplace.plugin.posthog.description":
-    "PostHog permet aux agents d’interroger les événements et les entonnoirs, d’inspecter les feature flags et de résumer ce qui a changé après une version. Une clé API personnelle des réglages du projet va dans un seul en-tête Authorization.",
+    "PostHog permet aux agents d’interroger les événements et les entonnoirs, d’inspecter les feature flags et de résumer ce qui a changé après une version. Chaque utilisateur se connecte à son propre compte PostHog dans le navigateur.",
   "marketplace.plugin.posthog.app":
-    "Accès aux événements, aux entonnoirs et aux feature flags, via le serveur MCP de PostHog avec une clé API personnelle.",
+    "Accès aux événements, aux entonnoirs et aux feature flags, via le serveur MCP de PostHog avec connexion dans le navigateur.",
   "marketplace.plugin.posthog.prompt.funnel": "À quoi ressemble l’entonnoir d’inscription sur les 14 derniers jours ?",
   "marketplace.plugin.posthog.prompt.flag": "Quels feature flags sont activés pour cet utilisateur ?",
   "marketplace.plugin.posthog.prompt.release": "L’activation a-t-elle changé après la version de la semaine dernière ?",
   "marketplace.plugin.airtable.tagline": "Bases et enregistrements",
   "marketplace.plugin.airtable.description":
-    "Airtable permet aux agents de lister les bases, de lire et de mettre à jour des enregistrements, et de résumer le contenu des tables. Une clé API de la page du compte est transmise au serveur local dans une variable d’environnement.",
+    "Airtable permet aux agents de lister les bases, de lire et de mettre à jour des enregistrements, et de résumer le contenu des tables. Chaque utilisateur se connecte à son propre compte Airtable dans le navigateur et choisit les bases à partager.",
   "marketplace.plugin.airtable.app":
-    "Liste des bases et accès aux enregistrements, via un serveur MCP local avec une clé API Airtable.",
+    "Liste des bases et accès aux enregistrements, via le serveur MCP d’Airtable avec connexion dans le navigateur.",
   "marketplace.plugin.airtable.prompt.bases": "À quelles bases ai-je accès ?",
   "marketplace.plugin.airtable.prompt.records": "Résumez la table de suivi du lancement.",
   "marketplace.plugin.airtable.prompt.update":
@@ -254,29 +254,23 @@ export const messages = {
   "marketplace.plugin.braveSearch.prompt.compare": "Comparez ces deux fournisseurs en citant les sources.",
   "marketplace.plugin.resend.tagline": "E-mails transactionnels",
   "marketplace.plugin.resend.description":
-    "Resend permet aux agents d’envoyer des e-mails transactionnels et de vérifier leur livraison via une seule API. Une clé API du tableau de bord Resend est transmise au serveur local dans une variable d’environnement.",
+    "Resend permet aux agents d’envoyer des e-mails transactionnels et de vérifier leur livraison via une seule API. Chaque utilisateur se connecte à son propre compte Resend dans le navigateur.",
   "marketplace.plugin.resend.app":
-    "Envoi d’e-mails et vérification de la livraison, via un serveur MCP local avec une clé API Resend.",
+    "Envoi d’e-mails et vérification de la livraison, via le serveur MCP de Resend avec connexion dans le navigateur.",
   "marketplace.plugin.resend.prompt.send": "Envoyez le brouillon de l’annonce de lancement à la liste bêta.",
   "marketplace.plugin.resend.prompt.status": "L’e-mail de facture est-il arrivé chez le client ?",
   "marketplace.plugin.resend.prompt.template":
     "Rédigez un e-mail de réinitialisation du mot de passe pour le nouveau parcours.",
-  "marketplace.plugin.composio.tagline": "De nombreuses apps via votre propre lien Composio",
+  "marketplace.plugin.composio.tagline": "De nombreuses apps avec une seule connexion Composio",
   "marketplace.plugin.composio.description":
-    "Composio connecte les agents à Gmail, Slack, GitHub et des centaines d’autres apps via un seul serveur MCP. Connectez les apps que vous voulez dans votre compte Composio, puis collez ici son URL MCP et sa clé API.",
+    "Composio connecte les agents à Gmail, Slack, GitHub et des centaines d’autres apps via un seul serveur MCP. Connectez-vous à votre compte Composio dans le navigateur, puis connectez dans Composio les apps que vous voulez.",
   "marketplace.plugin.composio.app":
-    "Les apps que vous ajoutez à votre serveur MCP Composio, via le lien de votre compte Composio.",
+    "Les apps que vous connectez dans votre compte Composio, via le serveur MCP de Composio avec connexion dans le navigateur.",
   "marketplace.plugin.composio.prompt.inbox": "Résumez mes e-mails non lus et rédigez des réponses aux plus urgents.",
   "marketplace.plugin.composio.prompt.handoff":
     "Publiez un résumé de cette pull request dans le canal de notre équipe.",
   "marketplace.plugin.composio.prompt.apps": "Quelles apps et actions pouvez-vous utiliser via Composio ?",
-  "marketplace.plugin.composio.hint.url": "L’URL d’un serveur MCP dans votre compte Composio",
-  "marketplace.plugin.composio.hint.apiKey":
-    "Vous la trouverez dans votre compte Composio, sous Settings > Sessions & API Key.",
   "marketplace.auth.apiKey": "Clé API",
-  "marketplace.auth.personalApiKey": "Clé API personnelle",
-  "marketplace.auth.mcpUrl": "URL MCP",
-  "marketplace.auth.createKey": "Créer une clé",
 
   "marketplace.skill.installMenu.install": "Installer",
   "marketplace.skill.installMenu.installNamed": "Installer {name}",

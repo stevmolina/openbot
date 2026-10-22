@@ -235,17 +235,17 @@ export const messages = {
   "marketplace.plugin.stripe.prompt.link": "Pro planı için aylık 49 tutarında bir ödeme bağlantısı taslağı hazırla.",
   "marketplace.plugin.posthog.tagline": "Ürün analitiği ve bayraklar",
   "marketplace.plugin.posthog.description":
-    "PostHog, ajanların olayları ve hunileri sorgulamasına, özellik bayraklarını incelemesine ve bir sürümden sonra neyin değiştiğini özetlemesine olanak tanır. Proje ayarlarındaki kişisel API anahtarı tek bir Authorization başlığına girer.",
+    "PostHog, ajanların olayları ve hunileri sorgulamasına, özellik bayraklarını incelemesine ve bir sürümden sonra neyin değiştiğini özetlemesine olanak tanır. Her kullanıcı tarayıcı üzerinden kendi PostHog hesabında oturum açar.",
   "marketplace.plugin.posthog.app":
-    "Olay, huni ve özellik bayrağı erişimi, kişisel API anahtarıyla PostHog'un MCP sunucusu üzerinden.",
+    "Olay, huni ve özellik bayrağı erişimi, tarayıcıda oturum açmayla PostHog'un MCP sunucusu üzerinden.",
   "marketplace.plugin.posthog.prompt.funnel": "Son 14 günde kayıt hunisi nasıl görünüyor?",
   "marketplace.plugin.posthog.prompt.flag": "Bu kullanıcı için hangi özellik bayrakları etkin?",
   "marketplace.plugin.posthog.prompt.release": "Geçen haftaki sürümden sonra etkinleştirme değişti mi?",
   "marketplace.plugin.airtable.tagline": "Tabanlar ve kayıtlar",
   "marketplace.plugin.airtable.description":
-    "Airtable, ajanların tabanları listelemesine, kayıtları okuyup güncellemesine ve tablo içeriklerini özetlemesine olanak tanır. Hesap sayfasındaki API anahtarı yerel sunucuya tek bir ortam değişkeni olarak aktarılır.",
+    "Airtable, ajanların tabanları listelemesine, kayıtları okuyup güncellemesine ve tablo içeriklerini özetlemesine olanak tanır. Her kullanıcı tarayıcı üzerinden kendi Airtable hesabında oturum açar ve paylaşacağı tabanları seçer.",
   "marketplace.plugin.airtable.app":
-    "Taban listeleme ve kayıt erişimi, Airtable API anahtarıyla yerel bir MCP sunucusu üzerinden.",
+    "Taban listeleme ve kayıt erişimi, tarayıcıda oturum açmayla Airtable'ın MCP sunucusu üzerinden.",
   "marketplace.plugin.airtable.prompt.bases": "Hangi tabanlara erişimim var?",
   "marketplace.plugin.airtable.prompt.records": "Lansman takip tablosunu özetle.",
   "marketplace.plugin.airtable.prompt.update":
@@ -267,28 +267,22 @@ export const messages = {
   "marketplace.plugin.braveSearch.prompt.compare": "Bu iki tedarikçiyi kaynak göstererek karşılaştır.",
   "marketplace.plugin.resend.tagline": "İşlemsel e-posta",
   "marketplace.plugin.resend.description":
-    "Resend, ajanların tek bir API üzerinden işlemsel e-posta göndermesine ve teslimatı kontrol etmesine olanak tanır. Resend panosundaki API anahtarı yerel sunucuya tek bir ortam değişkeni olarak aktarılır.",
+    "Resend, ajanların tek bir API üzerinden işlemsel e-posta göndermesine ve teslimatı kontrol etmesine olanak tanır. Her kullanıcı tarayıcı üzerinden kendi Resend hesabında oturum açar.",
   "marketplace.plugin.resend.app":
-    "E-posta gönderme ve teslimat kontrolleri, Resend API anahtarıyla yerel bir MCP sunucusu üzerinden.",
+    "E-posta gönderimi ve teslimat kontrolü, tarayıcıda oturum açmayla Resend'in MCP sunucusu üzerinden.",
   "marketplace.plugin.resend.prompt.send": "Lansman duyurusu taslağını beta listesine gönder.",
   "marketplace.plugin.resend.prompt.status": "Fatura e-postası müşteriye ulaştı mı?",
   "marketplace.plugin.resend.prompt.template": "Yeni akış için bir parola sıfırlama e-postası taslağı hazırla.",
-  "marketplace.plugin.composio.tagline": "Kendi Composio bağlantınız üzerinden birçok uygulama",
+  "marketplace.plugin.composio.tagline": "Tek Composio oturumuyla birçok uygulama",
   "marketplace.plugin.composio.description":
-    "Composio, ajanları tek bir MCP sunucusu üzerinden Gmail, Slack, GitHub ve yüzlerce başka uygulamaya bağlar. İstediğiniz uygulamaları Composio hesabınızda bağlayın, ardından MCP URL'sini ve API anahtarını buraya yapıştırın.",
+    "Composio, ajanları tek bir MCP sunucusu üzerinden Gmail, Slack, GitHub ve yüzlerce başka uygulamaya bağlar. Tarayıcıda Composio hesabınızda oturum açın, ardından istediğiniz uygulamaları Composio'da bağlayın.",
   "marketplace.plugin.composio.app":
-    "Composio MCP sunucunuza eklediğiniz uygulamalar, Composio hesabınızdaki bağlantı üzerinden.",
+    "Composio hesabınızda bağladığınız uygulamalar, tarayıcıda oturum açmayla Composio'nun MCP sunucusu üzerinden.",
   "marketplace.plugin.composio.prompt.inbox":
     "Okunmamış e-postalarımı özetle ve acil olanlara yanıt taslakları hazırla.",
   "marketplace.plugin.composio.prompt.handoff": "Bu çekme isteğinin özetini ekip kanalımıza gönder.",
   "marketplace.plugin.composio.prompt.apps": "Composio üzerinden hangi uygulamaları ve eylemleri kullanabilirsin?",
-  "marketplace.plugin.composio.hint.url": "Composio hesabınızdaki bir MCP sunucusunun URL'si",
-  "marketplace.plugin.composio.hint.apiKey":
-    "Composio hesabınızda, Settings > Sessions & API Key altında bulabilirsiniz.",
   "marketplace.auth.apiKey": "API anahtarı",
-  "marketplace.auth.personalApiKey": "Kişisel API anahtarı",
-  "marketplace.auth.mcpUrl": "MCP URL'si",
-  "marketplace.auth.createKey": "Anahtar oluştur",
 
   // Skills. {label} is the install button text: an agent name, "All agents" or "2 agents".
   "marketplace.skill.installMenu.install": "Kur",
