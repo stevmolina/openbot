@@ -281,12 +281,16 @@
 }
 
 .provider-model-popover {
-  --provider-model-rail-bg: color-mix(in srgb, var(--openbot-bg-notch) 22%, var(--ui-menu-bg));
+  --provider-model-rail-bg: color-mix(in srgb, var(--openbot-text-primary) 3%, var(--ui-menu-bg));
   --provider-model-segment-radius: calc(var(--ui-menu-item-radius) - var(--openbot-space-0-5));
   position: relative;
   z-index: var(--openbot-layer-dropdown);
-  width: min(360px, calc(100vw - 24px));
-  min-height: 226px;
+  display: flex;
+  width: min(560px, calc(100vw - 24px));
+  /* One height for every provider, so the panel does not jump when the rail moves. */
+  height: min(460px, calc(100dvh - 100px), var(--kb-popper-content-available-height, 460px));
+  min-height: 260px;
+  flex-direction: column;
   overflow: hidden;
   border: 0;
   border-radius: var(--ui-menu-radius);
@@ -302,43 +306,95 @@
   animation: ui-menu-out var(--ui-menu-duration) var(--ui-menu-ease) both;
 }
 
+/* One search for the models of every provider, above the rail and the list. */
+.provider-model-search-row {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  border-bottom: 1px solid var(--openbot-border);
+  padding: var(--ui-menu-padding);
+}
+
+.provider-model-search-icon {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--ui-menu-padding) + var(--ui-menu-inset));
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
+  pointer-events: none;
+  stroke-width: var(--openbot-icon-stroke);
+  translate: 0 -50%;
+}
+
+.provider-model-search-row .provider-model-search {
+  width: 100%;
+  margin: 0;
+  padding-left: calc(var(--ui-menu-inset) + var(--openbot-icon-sm) + var(--openbot-space-2));
+}
+
+.provider-model-search-row .provider-model-search::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
 .provider-model-layout {
-  max-height: min(520px, calc(100dvh - 100px), var(--kb-popper-content-available-height, 520px));
   display: flex;
   width: 100%;
-  min-height: inherit;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .provider-model-rail {
   display: flex;
-  width: 52px;
-  flex: 0 0 52px;
+  width: 176px;
+  flex: 0 0 176px;
   flex-direction: column;
-  align-items: center;
-  gap: var(--openbot-space-1);
+  align-items: stretch;
+  gap: var(--openbot-space-0-5);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-right: 1px solid var(--openbot-border);
   background: var(--provider-model-rail-bg);
-  padding: 9px 7px;
+  padding: var(--ui-menu-padding);
 }
 
 .provider-model-rail-tabs {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--openbot-space-1);
+  align-items: stretch;
+  gap: var(--openbot-space-0-5);
 }
 
-/* Opens the provider settings, to connect a provider that the rail leaves out. */
-.provider-model-rail-add {
+/* The heading over the providers that are not ready yet. */
+.provider-model-rail-heading {
+  padding: var(--openbot-space-2) var(--openbot-space-2) var(--openbot-space-1);
   color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+  font-weight: var(--openbot-weight-medium);
+  line-height: 16px;
 }
 
-.provider-model-rail-add:hover {
+/* Opens the provider settings, to add or connect a provider. */
+.provider-model-rail .provider-model-rail-add {
+  margin-top: auto;
+  color: var(--openbot-text-muted);
+  font-weight: var(--openbot-weight-regular);
+}
+
+.provider-model-rail .provider-model-rail-add:hover {
   color: var(--openbot-text-primary);
+}
+
+.provider-model-rail-add svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  stroke-width: var(--openbot-icon-stroke);
 }
 
 .provider-model-rail-tooltip-trigger {
   display: flex;
+  flex-direction: column;
 }
 
 .provider-model-rail-tooltip {
@@ -366,39 +422,101 @@
   font-weight: var(--openbot-weight-regular);
 }
 
-.provider-model-rail-button {
+/* A rail row: the provider mark, its name and a status dot. */
+.provider-model-rail .provider-model-rail-button {
   position: relative;
-  display: grid;
-  width: 36px;
+  display: flex;
+  width: 100%;
   height: 36px;
   flex: 0 0 36px;
-  place-items: center;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--openbot-space-2);
   border: 0;
   border-radius: var(--ui-menu-item-radius);
   background: transparent;
-  padding: 0;
+  padding: 0 var(--openbot-space-2);
+  color: var(--openbot-text-secondary);
+  font-size: var(--openbot-text-md);
+  font-weight: var(--openbot-weight-medium);
+  text-align: left;
   cursor: pointer;
+  box-shadow: none;
   transition:
     background-color var(--openbot-duration-hover) ease,
+    color var(--openbot-duration-hover) ease,
     opacity var(--openbot-duration-hover) ease;
 }
 
-.provider-model-rail-button:hover {
-  background: var(--ui-menu-item-hover);
+.provider-model-rail-mark {
+  position: relative;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
 }
 
-.provider-model-rail-button-selected {
+.provider-model-rail-name {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 18px;
+}
+
+/* The success color when the provider is connected; the states below recolor it. */
+.provider-model-rail-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: var(--openbot-radius-pill);
+  background: var(--openbot-success);
+  box-shadow: 0 0 0 3px var(--openbot-success-soft);
+}
+
+.provider-model-rail-dot:is([data-state="sign-in-required"], [data-state="outdated"]) {
+  background: var(--openbot-warning);
+  box-shadow: none;
+}
+
+.provider-model-rail-dot:is([data-state="not-installed"], [data-state="error"]) {
+  background: var(--openbot-text-dim);
+  box-shadow: none;
+}
+
+.provider-model-rail-dot[data-state="checking"] {
+  background: var(--openbot-text-muted);
+  box-shadow: none;
+  animation: provider-model-dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes provider-model-dot-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.provider-model-rail .provider-model-rail-button:hover {
+  background: var(--ui-menu-item-hover);
+  color: var(--openbot-text-primary);
+}
+
+.provider-model-rail .provider-model-rail-button-selected {
   background: color-mix(in srgb, var(--openbot-text-primary) 8%, transparent);
   box-shadow: inset 0 0 0 1px var(--ui-menu-edge);
+  color: var(--openbot-text-primary);
 }
 
 .provider-model-rail-button .provider-model-mark {
-  opacity: 0.48;
+  opacity: 0.72;
 }
 
-.provider-model-rail-button:not(.provider-model-rail-button-selected, .provider-model-rail-button-unavailable):hover
-  .provider-model-mark {
-  opacity: 0.8;
+/* A provider that cannot run: a dim row. The dot uses the warning color when the user can fix it here
+ * (sign in, update), and the dim text color otherwise. The panel offers the way to connect it. */
+.provider-model-rail-button-unavailable .provider-model-mark {
+  opacity: 0.36;
 }
 
 .provider-model-rail-button-selected .provider-model-mark {
@@ -406,44 +524,32 @@
   opacity: 1;
 }
 
-/* A provider that cannot run: a dim mark and a dot. The dot uses the warning color when the user can
- * fix it here (sign in, update), and the muted text color otherwise. The tooltip names the state. */
-.provider-model-rail-button-unavailable .provider-model-mark {
-  opacity: 0.28;
+.provider-model-rail-button:hover .provider-model-mark {
+  opacity: 1;
 }
 
 .provider-model-rail-button-unavailable:is(:hover, .provider-model-rail-button-selected) .provider-model-mark {
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
-.provider-model-rail-button:is(
-  [data-state="not-installed"],
-  [data-state="sign-in-required"],
-  [data-state="outdated"],
-  [data-state="error"]
-)::after {
-  position: absolute;
-  top: var(--openbot-space-1-5);
-  right: var(--openbot-space-1-5);
-  width: 6px;
-  height: 6px;
-  border-radius: var(--openbot-radius-pill);
-  background: var(--openbot-text-muted);
-  box-shadow: 0 0 0 2px var(--provider-model-rail-bg);
-  content: "";
+.provider-model-rail .provider-model-rail-button-unavailable {
+  color: var(--openbot-text-muted);
 }
 
-.provider-model-rail-button:is([data-state="sign-in-required"], [data-state="outdated"])::after {
-  background: var(--openbot-warning);
+/* The clock of the Recent row is a line icon: it keeps no fill, also when it is selected. */
+.provider-model-rail .provider-model-rail-recent .provider-model-mark {
+  fill: none;
+  color: var(--openbot-text-secondary);
+  stroke-width: var(--openbot-icon-stroke);
 }
 
 /* The place of an account in its provider's list, when the provider has more than one. */
 .provider-model-rail-account {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
-  min-width: 16px;
-  height: 16px;
+  right: -5px;
+  bottom: -4px;
+  min-width: 14px;
+  height: 14px;
   padding: 0 3px;
   box-sizing: border-box;
   display: grid;
@@ -467,7 +573,7 @@
   padding: var(--ui-menu-padding);
 }
 
-.provider-model-panel:not([data-selected]) {
+.provider-model-panel:not([data-selected], .provider-model-results) {
   display: none;
 }
 
@@ -801,6 +907,121 @@
   translate: 0 -50%;
 }
 
+/* While the list across providers shows, the provider panels wait behind it. */
+.provider-model-layout[data-results] .provider-model-panel:not(.provider-model-results) {
+  display: none;
+}
+
+/* A model row: the name and its badges, and one quiet line under them. */
+.provider-model-option-text {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 1px;
+}
+
+.provider-model-option-description {
+  overflow: hidden;
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.provider-model-option:disabled .provider-model-option-description {
+  color: var(--openbot-text-dim);
+}
+
+/* A row of a list across providers carries the mark of its provider before the name. */
+.provider-model-result-option {
+  justify-content: flex-start;
+  gap: var(--openbot-space-2);
+}
+
+.provider-model-option.provider-model-result-option > .provider-model-mark {
+  flex: 0 0 auto;
+}
+
+.provider-model-result-group {
+  display: flex;
+  align-items: center;
+  gap: var(--openbot-space-1-5);
+}
+
+.provider-model-result-group:not(:first-child) {
+  margin-top: var(--openbot-space-1);
+}
+
+/* A provider to connect: its mark, what is missing, and the one action that fixes it. */
+.provider-model-empty.provider-model-connect {
+  justify-items: center;
+  gap: var(--openbot-space-2);
+  padding: var(--openbot-space-6) var(--openbot-space-4);
+  color: var(--openbot-text-secondary);
+  text-align: center;
+}
+
+.provider-model-empty.provider-model-connect > .provider-model-mark {
+  width: 28px;
+  height: 28px;
+  flex-basis: 28px;
+  opacity: 0.8;
+}
+
+.provider-model-connect > .ui-button {
+  min-width: 96px;
+}
+
+/* The composer chip: no frame until the pointer or the panel asks for one. */
+.provider-model-trigger.provider-model-trigger-composer {
+  max-width: 220px;
+  height: var(--openbot-control-sm);
+  gap: var(--openbot-space-1-5);
+  border-color: transparent;
+  background: transparent;
+  padding: 0 var(--openbot-space-2);
+  box-shadow: none;
+  color: var(--openbot-text-secondary);
+}
+
+/* As in the header, the Fast chip gets its own room, so the model name keeps its width. */
+.provider-model-trigger.provider-model-trigger-composer:has(.provider-model-trigger-fast) {
+  max-width: 296px;
+}
+
+.provider-model-trigger.provider-model-trigger-composer:hover:not(:disabled),
+.provider-model-trigger.provider-model-trigger-composer[aria-expanded="true"] {
+  border-color: transparent;
+  background: var(--openbot-hover);
+  color: var(--openbot-text-primary);
+}
+
+.provider-model-trigger-composer .provider-model-trigger-name {
+  font-size: var(--openbot-text-sm);
+}
+
+.provider-model-trigger-composer .provider-model-trigger-effort {
+  font-size: var(--openbot-text-sm);
+}
+
+/* A narrow window keeps the marks of the rail and drops the names; the panel heading names the tab. */
+@media (max-width: 640px) {
+  .provider-model-rail {
+    width: 52px;
+    flex-basis: 52px;
+  }
+
+  .provider-model-rail :is(.provider-model-rail-name, .provider-model-rail-heading, .provider-model-rail-dot) {
+    display: none;
+  }
+
+  .provider-model-rail .provider-model-rail-button {
+    justify-content: center;
+    padding: 0;
+  }
+}
+
 @media (max-width: 720px) {
   /* A form field keeps the width of its row. */
   .provider-model-trigger:not(.provider-model-trigger-field) {
@@ -830,7 +1051,8 @@
     animation: none;
   }
 
-  .provider-model-trigger-mark[data-entering] {
+  .provider-model-trigger-mark[data-entering],
+  .provider-model-rail-dot[data-state="checking"] {
     animation: none;
   }
 }

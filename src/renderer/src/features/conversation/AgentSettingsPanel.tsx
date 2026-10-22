@@ -25,6 +25,7 @@ import { AgentSkillsModal, type AgentSkillsMode, assignedSkillCount, type SkillD
 import { conversationPort, type SharedTableCalls } from "./conversation-port";
 import type { ConversationRuntime } from "./conversation-runtime";
 import { agentMemoriesPort } from "./memories-port";
+import { recentModels } from "./recent-models";
 import { isEventRoutine, routineListSummary } from "./routine-summary";
 import type { EventRoutinesApi } from "./routine-webhooks-api";
 import { agentRoutinesPort, eventRoutinesPort, type RoutineEditorRecord, type RoutinesPort } from "./routines-port";
@@ -428,6 +429,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
   return (
     <SharedAgentSettingsPanel
       {...props}
+      recentModels={recentModels()}
       width={panelWidth()}
       onResize={setPanelWidth}
       onResizeEnd={saveSettingsPanelWidth}

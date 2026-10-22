@@ -58,7 +58,11 @@ import {
 } from "@openbot/ui";
 import { normalizeAvatarFile } from "@openbot/ui/avatar-image";
 import { AVATAR_HUE_OPTIONS, avatarCandidateSeeds, avatarHueSwatch } from "@openbot/ui/bloub-avatar";
-import { ProviderModelPicker, reasoningLabel } from "@openbot/ui/components/ProviderModelPicker";
+import {
+  ProviderModelPicker,
+  type RecentModelChoice,
+  reasoningLabel,
+} from "@openbot/ui/components/ProviderModelPicker";
 import {
   SettingsField,
   SettingsLinkGroup,
@@ -145,6 +149,8 @@ export interface AgentSettingsPanelProps {
   canConnectProvider?: ((provider: AgentProviderId) => boolean) | undefined;
   /** Opens the provider settings from the model picker. */
   onManageProviders?: ((trigger: HTMLElement) => void) | undefined;
+  /** Models chosen before, newest first, for the model picker's Recent view. */
+  recentModels?: readonly RecentModelChoice[] | undefined;
   maxWidth: () => number;
   onClose: () => void;
   width: number;
@@ -1207,6 +1213,7 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                   onConnectProvider={props.onConnectProvider}
                   canConnectProvider={props.canConnectProvider}
                   onManageProviders={props.onManageProviders}
+                  recentModels={props.recentModels}
                   providerChangesDisabled={props.working}
                   disabledReason={
                     props.working
