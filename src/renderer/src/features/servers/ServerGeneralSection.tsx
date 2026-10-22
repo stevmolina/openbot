@@ -3,7 +3,6 @@ import type { AvatarImageInput, ServerNotificationLevel } from "@openbot/contrac
 import { SERVER_NOTIFICATION_LEVELS } from "@openbot/contracts/ipc";
 import {
   Button,
-  Image,
   ImageRemoveButton,
   Input,
   Item,
@@ -365,7 +364,13 @@ export function createServerGeneralSection(host: ServerSettingsSectionHost): Ser
                     >
                       <Show
                         when={panels.identity.logoUrl}
-                        fallback={<Image class="server-settings-logo-placeholder" aria-hidden="true" />}
+                        fallback={
+                          <ServerLogo
+                            name={panels.identity.name || props.server.name}
+                            seed={props.server.id}
+                            url={null}
+                          />
+                        }
                       >
                         {(logoUrl) => (
                           <ServerLogo

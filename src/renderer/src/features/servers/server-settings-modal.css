@@ -70,11 +70,6 @@
   pointer-events: none;
 }
 
-.server-settings-logo-placeholder {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-}
-
 .server-settings-item-error {
   color: var(--openbot-danger);
 }
