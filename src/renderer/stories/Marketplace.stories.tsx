@@ -262,8 +262,8 @@ export const CustomApps = at((nav) => {
 });
 
 /**
- * Add custom app opens the form. Paste `https://mcp.granola.ai/mcp` into Command to launch: the
- * form moves to Streamable HTTP. Save tests the server, which asks for a sign-in, signs in, and saves.
+ * Add custom app opens the form. Type `https://mcp.granola.ai/mcp` into URL or command: the
+ * form reads it as a Streamable HTTP server. Save tests the server, which asks for a sign-in, signs in, and saves.
  */
 export const AddCustomApp = at((nav) => {
   tab("apps")(nav);
