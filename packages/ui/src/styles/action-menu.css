@@ -258,6 +258,22 @@
   stroke: var(--ui-menu-row-highlight);
 }
 
+/* Details drawn after the solid shape: the gear's center, the question mark, the phone's speaker. */
+.ui-action-menu
+  :is(:hover, [data-highlighted], [aria-expanded="true"])
+  > :is([class~="lucide-settings"], [class~="lucide-circle-question-mark"], [class~="lucide-smartphone"])
+  > :not(:first-child) {
+  fill: none;
+  stroke: var(--ui-menu-row-highlight);
+}
+
+.ui-action-menu
+  :is(:hover, [data-highlighted], [aria-expanded="true"])
+  > [class~="lucide-settings"]
+  > circle:not(:first-child) {
+  fill: var(--ui-menu-row-highlight);
+}
+
 /* A tooltip that opens and closes with the motion of a submenu, and moves to the next trigger of its
  * group. menu-motion.tsx leaves the copy that plays the exit. */
 .ui-motion-tooltip-trigger {
