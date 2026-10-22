@@ -54,6 +54,7 @@ import {
   groupPickerModels,
   hasSpecificDescription,
   isCustomModel,
+  olderPickerModels,
   type PickerModel,
   pickerModels,
 } from "./provider-model-options";
@@ -223,6 +224,8 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
    * reaches the page, not the panel: it must close only the menu, and Escape must close only the menu.
    */
   const [effortOpen, setEffortOpen] = createSignal(false);
+  /** The older models of a long list are in view. Each open picker and each rail entry starts without them. */
+  const [showOlder, setShowOlder] = createSignal(false);
   let trigger: HTMLButtonElement | undefined;
   let recentButton: HTMLButtonElement | undefined;
   const providerButtons = new Map<RailKey, HTMLButtonElement>();
@@ -522,6 +525,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
       setRailProvider(visibleKeys().includes(key) ? key : (visibleKeys()[0] ?? CUSTOM_RAIL));
       setFilter("");
       setView("provider");
+      setShowOlder(false);
       // The panel is placed after it mounts, and a row that is not placed yet does not take the focus.
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
@@ -554,6 +558,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
     setRailProvider(provider);
     setFilter("");
     setView("provider");
+    setShowOlder(false);
   }
 
   /** A choice from the recent list. The panel of its provider opens, with its effort. */
@@ -955,7 +960,7 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                 const models = () => entryModels(key);
                 /** A long list, such as an OpenCode catalog, keeps a filter field above it. */
                 const showsFilter = () => models().length > FILTER_MIN_MODELS;
-                const groups = createMemo(() => groupPickerModels(models(), showsFilter() ? filter() : ""));
+                const filtering = () => showsFilter() && filter().trim() !== "";
                 let filterInput: HTMLInputElement | undefined;
                 // An endpoint and a custom agent can both list `goose/default`: match the provider too.
                 // Another account of the same provider lists the same models, but not this agent's.
@@ -964,6 +969,28 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                   const model = selected();
                   return model ? pickerModelKey(model) : props.value;
                 };
+                /** The model a new agent starts on. A provider with no default of its own starts on its first model. */
+                const startModel = () =>
+                  railDefaultModel(provider) || (provider === CUSTOM_RAIL ? null : (models()[0]?.id ?? null));
+                /**
+                 * The models that wait behind "Show older models": each one has a newer model of its family
+                 * here. The chosen model and the default model always stay, and a filter searches them all.
+                 */
+                const olderModels = createMemo(() => {
+                  if (filtering()) return [];
+                  const older = olderPickerModels(models());
+                  return models().filter(
+                    (model) => older.has(model) && pickerModelKey(model) !== selectedKey() && model.id !== startModel(),
+                  );
+                });
+                /** One hidden model saves no room, so the list hides older models only when there are two or more. */
+                const collapsible = () => olderModels().length > 1;
+                const listModels = createMemo(() => {
+                  if (!collapsible() || showOlder()) return models();
+                  const hidden = new Set(olderModels());
+                  return models().filter((model) => !hidden.has(model));
+                });
+                const groups = createMemo(() => groupPickerModels(listModels(), showsFilter() ? filter() : ""));
                 // OpenCode and Custom share the `opencode` wire id; the tab whose list holds it owns it.
                 const ownsSelection = () =>
                   provider === CUSTOM_RAIL
@@ -1019,6 +1046,28 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                   popover?.querySelector<HTMLElement>(
                     ".provider-model-panel[data-selected] .provider-model-row-selected .provider-model-option",
                   );
+                /**
+                 * Shows or hides the older models. The focus goes to the first older model, which takes the
+                 * place of the row, so the list does not jump. After "Show fewer models" the row keeps it.
+                 */
+                function toggleOlder(button: HTMLElement): void {
+                  const expand = !showOlder();
+                  const first = olderModels().find((model) => entryModelEnabled(key, model));
+                  setShowOlder(expand);
+                  queueMicrotask(() => {
+                    if (expand && first) {
+                      const enabled = groups()
+                        .flatMap((group) => group.models)
+                        .filter((model) => entryModelEnabled(key, model));
+                      const target = visibleOptions()[enabled.indexOf(first)];
+                      if (target) {
+                        focusOption(target);
+                        return;
+                      }
+                    }
+                    focusOption(button);
+                  });
+                }
                 function onFilterKeyDown(event: KeyboardEvent): void {
                   if (event.key === "ArrowDown") {
                     const first = visibleOptions()[0];
@@ -1365,6 +1414,29 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                               </div>
                             )}
                           </For>
+                          <Show when={collapsible()}>
+                            {/* A quiet row after the models. The older models show in their places above it. */}
+                            <div class="provider-model-row">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                class="provider-model-option provider-model-more"
+                                aria-expanded={showOlder() ? "true" : "false"}
+                                tabindex={tabStop() === null ? 0 : -1}
+                                onClick={(event) => toggleOlder(event.currentTarget)}
+                                onKeyDown={onRowsKeyDown}
+                              >
+                                <span class="provider-model-option-name">
+                                  {showOlder() ? t("provider.picker.fewerModels") : t("provider.picker.olderModels")}
+                                </span>
+                                <Show when={!showOlder()}>
+                                  <small class="provider-model-option-tag" aria-hidden="true">
+                                    {format.number(olderModels().length)}
+                                  </small>
+                                </Show>
+                              </Button>
+                            </div>
+                          </Show>
                         </div>
                       </Show>
                     </div>

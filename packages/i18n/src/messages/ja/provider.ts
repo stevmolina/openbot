@@ -130,6 +130,8 @@ export const messages = {
   "provider.picker.recent": "最近",
   "provider.picker.recentModels": "最近使ったモデル",
   "provider.picker.setUp": "設定",
+  "provider.picker.olderModels": "以前のモデルを表示",
+  "provider.picker.fewerModels": "表示を減らす",
   "provider.status.signInRequired": "サインインが必要",
   "provider.model.free": "無料",
   "provider.model.default": "デフォルト",

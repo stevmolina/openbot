@@ -141,6 +141,8 @@ export const messages = defineMessages("provider", {
   "provider.picker.recent": "Recent",
   "provider.picker.recentModels": "Recently used models",
   "provider.picker.setUp": "Set up",
+  "provider.picker.olderModels": "Show older models",
+  "provider.picker.fewerModels": "Show fewer models",
   "provider.status.signInRequired": "Sign in required",
   "provider.model.free": "Free",
   "provider.model.default": "default",

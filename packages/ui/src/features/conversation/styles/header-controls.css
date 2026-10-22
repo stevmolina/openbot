@@ -672,6 +672,16 @@
   color: var(--openbot-text-dim);
 }
 
+/* "Show older models" is a row like a model, in smaller and quieter text. */
+.provider-model-row > .provider-model-option.provider-model-more {
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-md);
+}
+
+.provider-model-row > .provider-model-option.provider-model-more:is(:hover, :focus-visible) {
+  color: var(--openbot-text-primary);
+}
+
 .provider-model-row-actions {
   display: flex;
   flex: 0 0 auto;

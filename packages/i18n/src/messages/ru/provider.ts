@@ -146,6 +146,8 @@ export const messages = {
   "provider.picker.recent": "Недавние",
   "provider.picker.recentModels": "Недавние модели",
   "provider.picker.setUp": "Настроить",
+  "provider.picker.olderModels": "Показать старые модели",
+  "provider.picker.fewerModels": "Показать меньше моделей",
   "provider.status.signInRequired": "Нужно войти",
   "provider.model.free": "Бесплатно",
   "provider.model.default": "по умолчанию",

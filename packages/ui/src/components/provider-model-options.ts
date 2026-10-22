@@ -173,6 +173,71 @@ export function groupPickerModels(models: PickerModel[], search: string): Picker
     .map(([, group]) => group);
 }
 
+/** The family of a model and its version, as the model name gives them. */
+interface ModelLineage {
+  family: string;
+  version: number[];
+}
+
+/**
+ * The first version number of a name, as a whole word: `5.5`, `V2.6`, or `4-6` in an id-shaped name.
+ * A number glued to letters, such as `Qwen3`, `4o` or `30B`, is part of a word and not a version.
+ */
+const VERSION_PATTERN = /(?<![\p{L}\p{N}])v?(\d+(?:[.-]\d+)*)(?![\p{L}\p{N}])/iu;
+
+/**
+ * The family and version of a model, read from its name: `claude opus` at 5.5 for `Claude Opus 5.5`,
+ * and `gpt luna` at 6 for `GPT-6 Luna`. The catalog gives no release date and no family, and it sorts
+ * by the first version number of the name, so the picker reads the same number. The other words,
+ * sizes such as `30B` and tags such as `(1M context)` too, are the family. A name with no version
+ * number has no lineage.
+ */
+export function modelLineage(name: string): ModelLineage | null {
+  const match = VERSION_PATTERN.exec(name);
+  const digits = match?.[1];
+  if (!match || digits === undefined) return null;
+  const rest = `${name.slice(0, match.index)} ${name.slice(match.index + match[0].length)}`;
+  const family = rest
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .join(" ");
+  return family ? { family, version: digits.split(/[.-]/u).map(Number) } : null;
+}
+
+/** Newer first: a positive value when `left` is the older version. A missing part counts as 0. */
+function compareVersions(left: readonly number[], right: readonly number[]): number {
+  for (let index = 0; index < Math.max(left.length, right.length); index += 1) {
+    const difference = (right[index] ?? 0) - (left[index] ?? 0);
+    if (difference) return difference;
+  }
+  return 0;
+}
+
+/**
+ * The models that have a newer model of the same family in the list: `Claude Opus 5` beside
+ * `Claude Opus 5.5`. Each provider and each service of a catalog has its own families. All models of
+ * the newest version of a family stay, and a model with no lineage is never older.
+ */
+export function olderPickerModels(models: readonly PickerModel[]): ReadonlySet<PickerModel> {
+  const newest = new Map<string, number[]>();
+  const lineages = models.map((model) => {
+    const lineage = modelLineage(model.name);
+    if (!lineage) return null;
+    const key = `${model.provider}\n${model.service}\n${lineage.family}`;
+    const best = newest.get(key);
+    if (!best || compareVersions(lineage.version, best) < 0) newest.set(key, lineage.version);
+    return { key, version: lineage.version };
+  });
+  return new Set(
+    models.filter((_model, index) => {
+      const lineage = lineages[index];
+      const best = lineage && newest.get(lineage.key);
+      return Boolean(lineage && best && compareVersions(lineage.version, best) > 0);
+    }),
+  );
+}
+
 export function customProviderIds(providers: readonly CustomProviderSummary[]): ReadonlySet<string> {
   return new Set(providers.map((provider) => provider.id));
 }
