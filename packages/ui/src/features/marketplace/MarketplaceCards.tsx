@@ -6,7 +6,7 @@ import { For, Match, Show, Switch } from "solid-js";
 import { InstallSkill } from "./MarketplaceInstallSkill";
 import { AppLogo, Done, SkillMark } from "./MarketplaceParts";
 import { CATEGORY_LABELS } from "./marketplace-listing";
-import type { MarketplaceApp } from "./marketplace-model";
+import { type MarketplaceApp, skillDisplayName } from "./marketplace-model";
 import type { MarketplaceScope } from "./marketplace-view";
 
 /** "1,204 installs", in the reader's number format. */
@@ -104,13 +104,13 @@ function SkillCard(props: { scope: MarketplaceScope; skill: MarketplaceSkillSumm
         variant="ghost"
         class="marketplace-hitarea"
         data-cuelume-tap="navigate"
-        aria-label={t("marketplace.open", { name: props.skill.name })}
+        aria-label={t("marketplace.open", { name: skillDisplayName(props.skill.name) })}
         onClick={() => props.scope.nav.go({ kind: "skill", listing: props.skill })}
       />
       <div class="marketplace-card-head">
         <SkillMark skill={props.skill} size="md" />
         <Heading as="h3" size="sm" class="marketplace-card-name" id={id()}>
-          {props.skill.name}
+          {skillDisplayName(props.skill.name)}
         </Heading>
         <Show when={props.scope.model.agents().length > 0}>
           <div class="marketplace-card-action">

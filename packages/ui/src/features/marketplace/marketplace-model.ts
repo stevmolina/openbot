@@ -108,3 +108,13 @@ export interface MarketplaceModel {
   /** The last result, for a screen reader. */
   notice: () => string;
 }
+
+/** A name that is a bare slug, such as `secure-code-guidance`: lowercase words joined by hyphens. */
+const BARE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)+$/u;
+
+/** What a listing's name reads as on screen. A bare slug shows as a sentence: "Secure code guidance". */
+export function skillDisplayName(name: string): string {
+  if (!BARE_SLUG.test(name)) return name;
+  const sentence = name.replaceAll("-", " ");
+  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
+}

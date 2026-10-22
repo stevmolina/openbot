@@ -7,6 +7,7 @@ import { useInstalls } from "./MarketplaceCards";
 import { SkillAction, skillAgents } from "./MarketplaceInstallSkill";
 import { Block, DetailState, PageHead, Properties, SkillIcon, SkillMark, TryCard } from "./MarketplaceParts";
 import { CATEGORY_LABELS } from "./marketplace-listing";
+import { skillDisplayName } from "./marketplace-model";
 import { createDetail, type MarketplaceScope } from "./marketplace-view";
 
 export function MarketplaceSkillPage(props: { scope: MarketplaceScope; listing: MarketplaceSkillSummary }) {
@@ -62,7 +63,7 @@ export function MarketplaceSkillPage(props: { scope: MarketplaceScope; listing: 
     <div class="marketplace-view">
       <PageHead
         media={<SkillMark skill={skill()} size="md" />}
-        title={skill().name}
+        title={skillDisplayName(skill().name)}
         description={skill().description}
         actions={<SkillAction scope={props.scope} skill={skill()} />}
       />
@@ -78,8 +79,8 @@ export function MarketplaceSkillPage(props: { scope: MarketplaceScope; listing: 
               seed={skill().name}
               chip={{
                 kind: "skill",
-                name: skill().name,
-                icon: <SkillIcon url={skill().iconUrl} />,
+                name: skillDisplayName(skill().name),
+                icon: <SkillIcon url={skill().iconUrl} skill={skill()} />,
               }}
               requests={[{ id: "example", text: skillExamplePrompt(full(), t) }]}
               tryLabel={() => {

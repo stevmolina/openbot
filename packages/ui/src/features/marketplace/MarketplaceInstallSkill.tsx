@@ -4,7 +4,7 @@ import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
 import { useText } from "@openbot/ui/text";
 import { For, Show } from "solid-js";
 import { MenuCheck } from "./MarketplaceParts";
-import type { MarketplaceAgent } from "./marketplace-model";
+import { type MarketplaceAgent, skillDisplayName } from "./marketplace-model";
 import type { MarketplaceScope } from "./marketplace-view";
 
 /** The agents that have the skill, in any state. */
@@ -50,11 +50,11 @@ export function InstallSkill(props: { scope: MarketplaceScope; skill: Marketplac
         aria-busy={busy() ? "true" : undefined}
         aria-label={
           have().length === 0
-            ? t("marketplace.skill.installMenu.installNamed", { name: props.skill.name })
+            ? t("marketplace.skill.installMenu.installNamed", { name: skillDisplayName(props.skill.name) })
             : t("marketplace.skill.installMenu.change", {
                 count: have().length,
                 label: label(),
-                name: props.skill.name,
+                name: skillDisplayName(props.skill.name),
               })
         }
       >

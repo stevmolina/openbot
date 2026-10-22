@@ -27,6 +27,7 @@ import {
   STORY_MCP_SERVERS,
 } from "../src/preview/fixtures";
 import { STORY_CONNECTOR_DETAILS, storyConnectorSet } from "./connector-fixtures";
+import { firstPartySkillDetails, firstPartySkillFixtures } from "./first-party-skill-fixtures";
 import { createStoryMcpOptions, STORY_CUSTOM_APP_SERVERS } from "./mcp-story-options";
 
 function page<T extends { name: string; description: string; category?: string | undefined }>(
@@ -60,6 +61,8 @@ interface StoryProps {
   /** A member of a joined server browses and adds nothing. */
   member?: boolean;
   empty?: boolean;
+  /** The skills of the production catalog, which draw their own icons. */
+  firstParty?: boolean;
   /** Opens the window on this page, as a link or a click would. */
   start?: (nav: MarketplaceNavigation) => void;
   /** The custom apps page signs in through this joined server's browser. Absent: this computer. */
@@ -70,14 +73,16 @@ interface StoryProps {
 
 /** The real window on fixtures. Each action changes the fixture state, so the states can be tried. */
 function MarketplaceStory(props: StoryProps) {
-  const { member, empty, start, remoteHostName, signIns } = untrack(() => ({ ...props }));
+  const { member, empty, firstParty, start, remoteHostName, signIns } = untrack(() => ({ ...props }));
   // A member manages no MCP servers, so the Apps tab shows no custom apps page.
   const mcp = member
     ? undefined
     : createStoryMcpOptions({ servers: STORY_CUSTOM_APP_SERVERS, remoteHostName, initial: signIns });
   const agents = empty ? [] : STORY_MARKETPLACE_AGENTS;
-  const skills = empty ? [] : STORY_MARKETPLACE_SKILLS;
-  const firstSkill = STORY_MARKETPLACE_SKILLS[0];
+  const catalogSkills = firstParty ? firstPartySkillFixtures() : STORY_MARKETPLACE_SKILLS;
+  const skillDetails = firstParty ? firstPartySkillDetails(catalogSkills) : STORY_MARKETPLACE_SKILL_DETAILS;
+  const skills = empty ? [] : catalogSkills;
+  const firstSkill = catalogSkills[0];
   const connectors = storyConnectorSet();
   // The story fixes the names once, in the language it opens with.
   const connectorApps = untrack(() =>
@@ -153,7 +158,7 @@ function MarketplaceStory(props: StoryProps) {
     openChat: () => setOpen(false),
 
     listSkills: async (query) => page<MarketplaceSkillSummary>(skills, query),
-    loadSkill: async (id) => STORY_MARKETPLACE_SKILL_DETAILS[id],
+    loadSkill: async (id) => skillDetails[id],
     agents: () => (member ? [] : STORY_AGENT_SUMMARIES),
     activeAgentId: () => STORY_AGENT_SUMMARIES[0]?.id ?? "",
     readSkills: () => undefined,
@@ -295,6 +300,18 @@ export const SkillPage = at((nav) => {
   tab("skills")(nav);
   if (listing) nav.go({ kind: "skill", listing });
 });
+
+/** The skills of the production catalog: each draws its own line icon on a tint of its category colour. */
+export const FirstPartySkills = at(tab("skills"), { firstParty: true });
+
+export const FirstPartySkillPage = at(
+  (nav) => {
+    const listing = firstPartySkillFixtures()[0];
+    tab("skills")(nav);
+    if (listing) nav.go({ kind: "skill", listing });
+  },
+  { firstParty: true },
+);
 
 export const AgentPage = at((nav) => {
   const listing = STORY_MARKETPLACE_AGENTS[0];

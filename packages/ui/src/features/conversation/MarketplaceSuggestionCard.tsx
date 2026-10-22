@@ -3,6 +3,7 @@ import type { JSX } from "@solidjs/web";
 import { createUniqueId, Match, onSettled, Show, Switch } from "solid-js";
 import { useText } from "../../text";
 import { PluginIcon } from "../marketplace/PluginIcon";
+import type { SkillArtworkSubject } from "../marketplace/skill-artwork";
 
 /** An app connects to a service. A skill installs on the agent. */
 export type MarketplaceSuggestionKind = "app" | "skill";
@@ -19,6 +20,8 @@ export interface MarketplaceSuggestionCardProps {
   /** The one line under the name: the listing tagline. */
   description: string;
   iconUrl: string | null;
+  /** The listing of a skill suggestion: a first-party skill draws its own icon. */
+  skill?: SkillArtworkSubject | undefined;
   /** Drawn instead of the icon: the mark of an app with no listing icon, such as GitHub. */
   mark?: JSX.Element | undefined;
   state: MarketplaceSuggestionState;
@@ -74,6 +77,7 @@ export function MarketplaceSuggestionCard(props: MarketplaceSuggestionCardProps)
             fallback={
               <PluginIcon
                 iconUrl={props.iconUrl}
+                skill={props.kind === "skill" ? props.skill : undefined}
                 fallback={props.kind === "skill" ? "skill" : "plugin"}
                 class="marketplace-suggestion-icon"
               />

@@ -8,6 +8,7 @@ import { LogoTile } from "../settings/IntegrationLayout";
 import { useInstalls } from "./MarketplaceCards";
 import { Block, DetailState, PageHead, Properties, SkillMark } from "./MarketplaceParts";
 import { CATEGORY_LABELS } from "./marketplace-listing";
+import { skillDisplayName } from "./marketplace-model";
 import { createDetail, type MarketplaceScope } from "./marketplace-view";
 
 /**
@@ -79,10 +80,10 @@ export function MarketplaceAgentPage(props: { scope: MarketplaceScope; listing: 
                   <For each={detail.value()?.skills ?? []}>
                     {(skill) => (
                       <li class="marketplace-row">
-                        <SkillMark skill={{ iconUrl: null }} size="row" />
+                        <SkillMark skill={{ iconUrl: null, id: skill.skillId }} size="row" />
                         <span class="marketplace-row-copy">
                           <Text as="span" variant="label">
-                            {skill.name}
+                            {skillDisplayName(skill.name)}
                           </Text>
                           <Text as="span" variant="caption" tone="muted">
                             {t("marketplace.version", { version: skill.version })}

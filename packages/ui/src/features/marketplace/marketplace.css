@@ -337,6 +337,26 @@ body:has(.skills-marketplace) :is(.integration-dialog-backdrop, .integration-wiz
   border-radius: var(--openbot-radius-md);
 }
 
+/*
+ * First-party skill artwork: the own line icon of the skill in its category colour, on a soft tint
+ * of that colour. `style` sets `--skill-art-color` on the tile; the tint stays light in every theme.
+ */
+:is(
+  .marketplace-skill-mark,
+  .agent-skill-icon,
+  .skills-marketplace-icon,
+  .marketplace-suggestion .marketplace-suggestion-icon
+)[data-skill-artwork] {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--skill-art-color) 13%, var(--openbot-skill-tile-base));
+  color: var(--skill-art-color);
+}
+
+.skill-artwork-glyph {
+  color: var(--skill-art-color);
+  stroke-width: 1.8;
+}
+
 /* A plugin icon in a row. `PluginIcon` also draws the icon of the MCP connect dialog. */
 .skills-marketplace-icon {
   display: grid;
@@ -372,7 +392,7 @@ body:has(.skills-marketplace) :is(.integration-dialog-backdrop, .integration-wiz
   height: 100%;
 }
 
-.marketplace-skill-mark[data-kind="none"] > * {
+.marketplace-skill-mark:is([data-kind="none"], [data-kind="artwork"]) > * {
   width: 60%;
   height: 60%;
 }

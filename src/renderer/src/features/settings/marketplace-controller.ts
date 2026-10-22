@@ -15,12 +15,13 @@ import { connectorSummary } from "@openbot/ui/features/connectors/ConnectorDetai
 import { CONNECTOR_LISTINGS } from "@openbot/ui/features/connectors/connector-catalog";
 import { isConnectorId } from "@openbot/ui/features/connectors/connectors";
 import { safeBrowserUrl } from "@openbot/ui/features/conversation/RichMessageText";
-import type {
-  AgentListingState,
-  MarketplaceApp,
-  MarketplaceAppStatus,
-  MarketplaceModel,
-  SkillRead,
+import {
+  type AgentListingState,
+  type MarketplaceApp,
+  type MarketplaceAppStatus,
+  type MarketplaceModel,
+  type SkillRead,
+  skillDisplayName,
 } from "@openbot/ui/features/marketplace/marketplace-model";
 import { serverAddress } from "@openbot/ui/features/marketplace/marketplace-view";
 import type { McpConnectSubject } from "@openbot/ui/features/settings/McpConnectShell";
@@ -317,14 +318,18 @@ export function createMarketplaceController(props: MarketplaceControllerProps) {
     if (changed > 0)
       setNotice(
         t(on ? "marketplace.notice.skillInstalled" : "marketplace.notice.skillRemoved", {
-          name: skill.name,
+          name: skillDisplayName(skill.name),
           count: changed,
         }),
       );
     if (failed.length === 1 && agentIds.length === 1) setError(reason, lastCause);
     else if (failed.length > 0)
       setError(
-        t("marketplace.error.skillPartial", { name: skill.name, agents: format.list(failed), reason }),
+        t("marketplace.error.skillPartial", {
+          name: skillDisplayName(skill.name),
+          agents: format.list(failed),
+          reason,
+        }),
         lastCause,
       );
   }
