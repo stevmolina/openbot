@@ -88,6 +88,7 @@ export class TeamWebRtcFileTransfer {
     }
   >();
   #frames = Semaphore.makeUnsafe(1);
+  #lastFrame: Promise<void> = Promise.resolve();
   readonly #connectedPeers = new Set<string>();
   readonly #stateWaiters = new Set<() => void>();
   #stopped = false;
@@ -394,11 +395,18 @@ export class TeamWebRtcFileTransfer {
   ): void => {
     if (channel !== "files" || !this.#connectedPeers.has(peerId) || !this.#acceptPeer(peerId)) return;
     const transferId = fileTransferId(data);
-    void Effect.runPromise(
+    // A semaphore excludes concurrent writes, but a new frame can take a released permit
+    // before an older waiter resumes. Preserve the data channel's arrival order as well.
+    const previous = this.#lastFrame;
+    this.#lastFrame = Effect.runPromise(
       this.#owned(
-        this.#frames.withPermit(
-          this.#handleData(peerId, data).pipe(
-            Effect.catch((error) => this.#failFrame(peerId, transferId, error.cause)),
+        Effect.promise(() => previous).pipe(
+          Effect.andThen(
+            this.#frames.withPermit(
+              this.#handleData(peerId, data).pipe(
+                Effect.catch((error) => this.#failFrame(peerId, transferId, error.cause)),
+              ),
+            ),
           ),
         ),
       ),
