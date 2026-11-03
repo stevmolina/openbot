@@ -4716,8 +4716,10 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         text: input.text,
         draftIds: input.attachmentDraftIds ?? [],
         ...(input.voiceRecordingDraftId ? { voiceRecordingDraftId: input.voiceRecordingDraftId } : {}),
-        // A reply names a message of the agent's own chat, which a task does not show.
-        replyToMessageId: task ? null : (input.replyToMessageId ?? null),
+        // A quote in a task names a message of that task. A quote of another chat is left off.
+        replyToMessageId: task
+          ? this.#replyInThread(agent.id, task.threadId, input.replyToMessageId)
+          : (input.replyToMessageId ?? null),
         ...(idempotencyKey ? { idempotencyKey } : {}),
       })
       .pipe(
@@ -4871,6 +4873,40 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
       );
   }
 
+  /** A quote stays when it names a message of this thread. */
+  #replyInThread(agentId: string, threadId: string, replyToMessageId: string | null | undefined): string | null {
+    if (!replyToMessageId) return null;
+    const snapshot = this.#conversation.ensureSnapshot(agentId, threadId);
+    if (snapshot.messages.some((message) => message.id === replyToMessageId)) return replyToMessageId;
+    const [stored] = this.#store.database.readConversationMessages(agentId, threadId, [replyToMessageId]);
+    return stored ? replyToMessageId : null;
+  }
+
+  /** The conversation that holds this message: the agent's own chat, or one of its threads. */
+  #snapshotWithMessage(agentId: string, messageId: string): ConversationSnapshot | null {
+    const own = this.#conversation.ensureSnapshot(agentId, null);
+    if (own.agentId === agentId && own.messages.some((message) => message.id === messageId)) return own;
+    if (own.threadId) {
+      const [stored] = this.#store.database.readConversationMessages(agentId, own.threadId, [messageId]);
+      if (stored) {
+        own.messages.push(stored);
+        return own;
+      }
+    }
+    for (const threadId of this.#tasks.taskThreadIds(agentId)) {
+      const loaded = this.#conversation.loadedExecutionSnapshot(threadId);
+      if (loaded?.agentId === agentId && loaded.messages.some((message) => message.id === messageId)) return loaded;
+      const [stored] = this.#store.database.readConversationMessages(agentId, threadId, [messageId]);
+      if (!stored) continue;
+      this.#conversation.registerTaskThread(agentId, threadId);
+      const snapshot = this.#conversation.ensureSnapshot(agentId, threadId);
+      if (snapshot.threadId !== threadId) continue;
+      if (!snapshot.messages.some((message) => message.id === messageId)) snapshot.messages.push(stored);
+      return snapshot;
+    }
+    return null;
+  }
+
   readonly setMessageReaction = Effect.fn("AgentService.setMessageReaction")(function* (
     this: AgentService,
     input: SetMessageReactionInput,
@@ -4882,12 +4918,8 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
           (failure) => new AgentLifecycleFailed({ operation: "load reaction agent", cause: failure.cause }),
         ),
       );
-    const snapshot = this.#conversation.ensureSnapshot(agent.id, agent.threadId);
-    if (!snapshot.messages.some((message) => message.id === input.messageId)) {
-      const [message] = this.#store.database.readConversationMessages(agent.id, agent.threadId, [input.messageId]);
-      if (message) snapshot.messages.push(message);
-    }
-    if (!snapshot.messages.some((message) => message.id === input.messageId)) {
+    const snapshot = this.#snapshotWithMessage(agent.id, input.messageId);
+    if (!snapshot) {
       return yield* new AgentLifecycleFailed({
         operation: "set message reaction",
         cause: new Error(sourceText("error.agent.messageUnavailable")),
@@ -4901,6 +4933,15 @@ export class AgentService extends EventEmitter<AgentServiceEvents> {
         ),
       );
     this.#mailboxSync.syncMailboxMessages(snapshot);
+    // A thread snapshot does not take the main chat's mailbox rows, so its reaction is painted here.
+    if (this.#conversation.isExecutionThread(snapshot.threadId)) {
+      const reactions = this.#mailbox.reactionsFor(agent.id).get(input.messageId) ?? [];
+      const message = snapshot.messages.find((item) => item.id === input.messageId);
+      if (message) {
+        message.reactions = reactions;
+        message.reaction = reactions.find((reaction) => reaction.actor.kind === "user")?.emoji ?? null;
+      }
+    }
     this.#conversation.emitConversation(snapshot);
   }, Effect.uninterruptible).bind(this);
 

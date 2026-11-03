@@ -118,6 +118,14 @@ export class AgentTasks implements TaskLanes {
     return this.#store.openTaskIds(agentId);
   }
 
+  /** Every task thread of this agent, open or closed. */
+  taskThreadIds(agentId: string): string[] {
+    return this.#store.taskIdsForAgent(agentId).flatMap((taskId) => {
+      const task = this.#store.task(taskId);
+      return task ? [task.threadId] : [];
+    });
+  }
+
   limit(agentId: string): number {
     const agent = this.#hooks.agent(agentId);
     return agent ? agentTaskLimit(agent) : 1;
