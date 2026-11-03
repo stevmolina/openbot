@@ -140,6 +140,10 @@ jobs:
         if: env.CODE == 'true'
         run: bun run check:desktop:static
 
+      - name: Check ordered file transfers
+        if: env.CODE == 'true'
+        run: bun scripts/file-transfer-order-e2e.ts
+
       - parallel:
           - name: Check translation catalogs
             if: env.CODE == 'true'
