@@ -55,11 +55,9 @@ export interface AgentTasksHooks {
   queued(agentId: string): void;
 }
 
-/** Where `start_task` was called, as the tool router knows it. */
+/** The agent that starts a task, from its own chat or any execution thread. */
 export interface AgentTaskCaller {
   agentId: string;
-  /** A channel, messaging or task turn: only the agent's own chat starts a task. */
-  inExecutionThread: boolean;
 }
 
 /** Why a branch was not made. The cause holds the localized message for the person. */
@@ -446,7 +444,6 @@ export class AgentTasks implements TaskLanes {
     if (params.tool !== START_TASK_TOOL) return null;
     const parsed = startTaskToolSchema.safeParse(params.arguments);
     if (!parsed.success) return openBotToolFailure(sourceText("error.backend.taskToolInvalid"));
-    if (caller.inExecutionThread) return openBotToolFailure(sourceText("error.backend.taskOwnChatOnly"));
     const idempotencyKey = `start-task:${createHash("sha256")
       .update(JSON.stringify([caller.agentId, params.turnId, params.callId]))
       .digest("hex")}`;

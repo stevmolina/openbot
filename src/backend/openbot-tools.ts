@@ -559,7 +559,7 @@ export const OPENBOT_TOOL_DEFINITIONS: readonly OpenBotToolDefinition[] = [
   {
     name: START_TASK_TOOL,
     description:
-      "Start a task: a separate conversation of yours that runs beside this chat, with its own context, progress and stop. Use it only for long, independent work that the user asked for and that need not block this chat. The brief is the task's first message: write everything the task needs, because it does not see this chat. The task result stays in the task; you do not receive it. Only your own chat can start a task.",
+      "Start a task: a separate conversation of yours that runs beside this chat, with its own context, progress and stop. Use it only for long, independent work that the user asked for and that need not block this chat. The brief is the task's first message: write everything the task needs, because it does not see this chat. The task result stays in the task; you do not receive it. You can start a task from your own chat, another task, a channel or a messaging conversation. All tasks share the agent's task limits.",
     shape: startTaskToolSchema.shape,
   },
   ...MEMORY_RECALL_TOOL_DEFINITIONS,
