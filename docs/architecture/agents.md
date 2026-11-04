@@ -170,7 +170,8 @@ turn at a time. Other task messages wait with a `hold` reason: `task-limit`, `ag
 hosted server is separate.
 
 The user starts a task from the Tasks tab of the side panel ("New task") or moves a queued message to one ("Run as
-task"). The agent starts one with the `start_task` OpenBot tool, up to 8 open tasks. An agent has at most 50
+task"). The agent starts one with the `start_task` OpenBot tool from its own chat, another task, a channel
+or a messaging conversation, up to 8 open tasks across all of these conversations. An agent has at most 50
 open tasks (`INPUT_LIMITS.agentTasks`, the size of the task list), so each open task stays visible. A message to a
 running task waits in the task, or steers the turn when the agent's busy-message mode is "steer"
 and the provider steers natively, as in the main chat. Stop interrupts the task turn; close moves
